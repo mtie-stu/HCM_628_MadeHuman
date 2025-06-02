@@ -1,0 +1,6 @@
+@MadeHuman_Server_HostAddress = http://localhost:5089
+
+GET {{MadeHuman_Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
