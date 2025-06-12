@@ -1,0 +1,20 @@
+
+@startuml
+actor Packer
+participant "Hệ thống" as System
+
+Packer -> System : Quét QR đơn hàng (rổ đã Check + phiếu gửi hàng)
+System -> System : Kiểm tra mã đơn hàng
+alt Mã đơn hàng không hợp lệ
+    System -> Packer : Mã đơn hàng đang có lỗi\nvui lòng liên hệ staff gần nhất
+else Mã hợp lệ
+    System -> Packer : Hiển thị thông tin hàng hóa và số lượng\nPacker đóng hàng theo đơn
+    Packer -> System : Quét lại QR đơn hàng sau khi đóng gói
+    System -> System : Kiểm tra số lần quét đơn hàng
+    alt Đã quét 1 lần
+        System -> Packer : Xác nhận: Đơn hàng đã đóng gói thành công
+    else Quét > 2 lần
+        System -> Packer : Cảnh báo: Bạn đã đóng gói đơn hàng\nvui lòng không quét lại
+    end
+end
+@enduml

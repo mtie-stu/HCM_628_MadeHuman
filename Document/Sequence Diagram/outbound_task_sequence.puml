@@ -1,0 +1,40 @@
+
+@startuml
+actor Staff
+participant "Hệ thống" as System
+actor Picker
+
+Staff -> System : Quét mã đơn nhập từ nhà sản xuất
+System -> System : Kiểm tra đơn tồn tại?
+alt Đơn không tồn tại hoặc chưa xác nhận
+    System -> Staff : Thông báo: đơn chưa xác nhận hoặc không tồn tại
+else Đơn tồn tại
+    System -> Staff : Hiển thị thông tin đơn nhập\nGợi ý vị trí Zone Inbound
+    Staff -> System : Nhấn xác nhận
+    System -> Staff : Hỏi lại xác nhận (Yes/No)
+    alt Staff chọn No
+        System -> Staff : Hủy thao tác
+    else Staff chọn Yes
+        System -> System : Tạo nhiệm vụ nhập kho\n(Mã đơn, Mã nhiệm vụ, Zone)
+        Picker -> System : Quét lại mã đơn nhập
+        System -> Picker : Hiển thị nhiệm vụ nhập kho đã xác nhận
+        Picker -> System : Quét mã vị trí Zone Inbound
+        alt Vị trí không hợp lệ
+            System -> Picker : Thông báo: vị trí không hợp lệ
+        else Vị trí hợp lệ
+            System -> System : Di chuyển hàng vào vị trí lưu trữ
+            Picker -> System : Quét mã sản phẩm
+            alt Mã sản phẩm không hợp lệ
+                System -> Picker : Thông báo: mã sản phẩm không hợp lệ
+            else Mã sản phẩm hợp lệ
+                System -> System : Cập nhật số lượng +1
+                alt Thiếu số lượng sản phẩm
+                    System -> Picker : Liên hệ Staff gần nhất
+                else Đủ số lượng
+                    System -> Picker : Thông báo hoàn thành nhiệm vụ
+                end
+            end
+        end
+    end
+end
+@enduml

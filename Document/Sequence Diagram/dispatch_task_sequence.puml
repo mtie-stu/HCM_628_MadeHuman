@@ -1,0 +1,20 @@
+
+@startuml
+actor Dispatcher
+participant "Hệ thống" as System
+
+Dispatcher -> System : Quét mã đơn hàng trên phiếu xuất hàng
+System -> System : Kiểm tra trạng thái đơn hàng đã đóng gói?
+alt Chưa xác nhận hoặc không hợp lệ
+    System -> Dispatcher : Đơn hàng chưa xác nhận hoặc không khả dụng\n→ Liên hệ Staff
+else Đã đóng gói
+    System -> Dispatcher : Hiển thị mã đơn, người nhận, địa chỉ, đơn vị vận chuyển
+    Dispatcher -> System : Phân loại kiện hàng theo quận/huyện hoặc đơn vị vận chuyển
+    System -> System : Xác định địa chỉ và thông tin đơn hàng
+    alt Không hợp lệ
+        System -> Dispatcher : Cảnh báo: trạng thái hoặc thông tin không hợp lệ
+    else Hợp lệ
+        System -> Dispatcher : Xác nhận: Kiện hàng được phân loại thành công
+    end
+end
+@enduml
