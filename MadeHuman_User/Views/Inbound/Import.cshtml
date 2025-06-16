@@ -1,0 +1,53 @@
+﻿@model MadeHuman_User.Models.ImportTaskViewModel
+
+@{
+    ViewData["Title"] = "Nhập hàng";
+}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+
+<div class="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-sm">
+    <form asp-action="Import" method="post" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+        <!-- Mã nhiệm vụ nhập hàng -->
+        <div>
+            <label class="block text-lg font-normal text-black mb-1" for="TaskCode">Mã nhiệm vụ nhập hàng</label>
+            <div class="flex items-center gap-2">
+                <input asp-for="TaskCode" class="flex-grow bg-gray-100 text-gray-800 text-sm rounded px-3 py-2 border border-gray-200 focus:outline-none focus:ring-1 focus:ring-black" placeholder="Nhập mã nhiệm vụ..." />
+                <button type="submit" class="text-black text-xl" title="Quét mã nhiệm vụ">
+                    <i class="fas fa-qrcode"></i>
+                </button>
+            </div>
+
+            <!-- Thông tin sản phẩm đã chọn (SelectedProduct) -->
+            @if (Model?.SelectedProduct != null)
+            {
+                <div class="mt-6 max-w-xs border border-gray-200 rounded-md p-3">
+                    <img src="@Model.SelectedProduct.ImageUrl" alt="Ảnh sản phẩm" class="w-full h-auto rounded" height="180" width="300" />
+                    <p class="mt-2 text-xs text-gray-700">@Model.SelectedProduct.ProductName</p>
+                    <p class="text-xs font-semibold text-black">@Model.SelectedProduct.ProductItemId</p>
+                    <p class="text-xs text-gray-500">Số lượng yêu cầu: @Model.SelectedProduct.Quantity</p>
+                    <p class="text-xs text-gray-500">Vị trí lưu: @Model.SelectedProduct.LocationStorage</p>
+                </div>
+            }
+        </div>
+
+        <!-- Quét mã sản phẩm và nhập số lượng -->
+        <div>
+            <label class="block text-lg font-normal text-black mb-1" for="ScannedProductCode">Mã sản phẩm</label>
+            <div class="flex items-center gap-2 mb-6">
+                <input asp-for="ScannedProductCode" class="flex-grow bg-gray-100 text-gray-800 text-sm rounded px-3 py-2 border border-gray-200 focus:outline-none focus:ring-1 focus:ring-black" placeholder="Nhập hoặc quét mã sản phẩm..." />
+                <button type="submit" class="text-black text-xl" title="Quét mã sản phẩm">
+                    <i class="fas fa-qrcode"></i>
+                </button>
+            </div>
+
+            <label class="block text-lg font-normal text-black mb-1" for="ScannedQuantity">Số lượng nhập kho</label>
+            <input asp-for="ScannedQuantity" class="w-full bg-gray-100 text-gray-800 text-sm rounded px-3 py-2 border border-gray-200 focus:outline-none focus:ring-1 focus:ring-black" placeholder="Số lượng nhập..." />
+        </div>
+
+        <!-- Nút xác nhận nhập -->
+        <div class="col-span-2">
+            <button type="submit" class="mt-4 px-4 py-2 bg-black text-white rounded hover:bg-gray-800">Xác nhận nhập kho</button>
+        </div>
+    </form>
+</div>

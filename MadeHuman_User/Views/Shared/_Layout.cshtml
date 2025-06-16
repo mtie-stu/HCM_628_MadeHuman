@@ -1,4 +1,17 @@
-﻿<!DOCTYPE html>
+﻿@{
+    Layout = null;
+
+    string currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+    string currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+
+    string IsActive(string controller, string action)
+    {
+        return (currentController == controller && currentAction == action)
+            ? "bg-orange-100 text-orange-600 font-semibold"
+            : "text-gray-600 hover:bg-gray-100";
+    }
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="utf-8" />
