@@ -1,0 +1,48 @@
+﻿@model MadeHuman_User.Models.CheckerTaskMixViewModel
+
+@{
+    ViewData["Title"] = "Checker Task Mix";
+}
+
+<div class="container mx-auto p-4">
+    <h1 class="text-2xl font-bold mb-4">Checker Task Mix</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+            <p><strong>Task ID:</strong> @Model.TaskId</p>
+            <p><strong>Product Item:</strong> @Model.ProductItem</p>
+            <p><strong>Location Storage:</strong> @Model.LocationStorage</p>
+            <p><strong>Baskets:</strong> @Model.Baskets</p>
+            <p><strong>Quantity:</strong> @Model.Quantity</p>
+        </div>
+        <div>
+            <img src="@Model.ImageUrl" alt="Product Image" class="w-48 h-48 object-cover rounded" />
+        </div>
+    </div>
+
+    <table class="min-w-full bg-white border">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="py-2 px-4 border">Status</th>
+                <th class="py-2 px-4 border">Small Task ID</th>
+                <th class="py-2 px-4 border">Product Item ID</th>
+                <th class="py-2 px-4 border">Product Name</th>
+                <th class="py-2 px-4 border">Quantity</th>
+                <th class="py-2 px-4 border">Location Storage</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var task in Model.ProductTasks)
+            {
+                <tr>
+                    <td class="py-2 px-4 border">@task.Status</td>
+                    <td class="py-2 px-4 border">@task.SmallTaskID</td>
+                    <td class="py-2 px-4 border">@task.ProductItemID</td>
+                    <td class="py-2 px-4 border">@task.ProductName</td>
+                    <td class="py-2 px-4 border">@task.Quantity</td>
+                    <td class="py-2 px-4 border">@task.LocationStorage</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

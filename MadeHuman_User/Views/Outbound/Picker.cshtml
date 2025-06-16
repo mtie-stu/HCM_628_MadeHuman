@@ -1,0 +1,89 @@
+﻿@model MadeHuman_User.Models.PickerViewModel
+
+@{
+    ViewData["Title"] = "Picker";
+}
+
+<div class="max-w-7xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">Task ID <span class="bg-gray-200 px-3 py-1 rounded">@Model.TaskId</span></h1>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- LEFT: Input fields -->
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700">ProductItem</label>
+                <div class="flex items-center gap-2">
+                    <input asp-for="ProductItem" class="w-full bg-gray-100 px-3 py-2 rounded" placeholder="ProductItem..." />
+                    <button type="button" class="text-xl text-gray-600 hover:text-blue-600">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700">LocationStorage</label>
+                <div class="flex items-center gap-2">
+                    <input asp-for="LocationStorage" class="w-full bg-gray-100 px-3 py-2 rounded" placeholder="LocationStorage..." />
+                    <button type="button" class="text-xl text-gray-600 hover:text-blue-600">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700">Baskets</label>
+                <div class="flex items-center gap-2">
+                    <input asp-for="Baskets" class="w-full bg-gray-100 px-3 py-2 rounded" placeholder="Baskets..." />
+                    <button type="button" class="text-xl text-gray-600 hover:text-blue-600">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700">Quantity</label>
+                <div class="flex items-center gap-2">
+                    <input asp-for="Quantity" class="w-full bg-gray-100 px-3 py-2 rounded" placeholder="Quantity..." />
+                    <button type="button" class="text-xl text-gray-600 hover:text-blue-600">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Product display -->
+        <div class="border border-gray-300 rounded-md p-4 bg-gray-50 flex flex-col items-center justify-center">
+            <img src="@Model.ImageUrl" alt="Product Image" class="w-48 h-48 object-cover rounded mb-4" />
+            <div class="text-center">
+                <p class="text-sm font-semibold text-gray-700">Product</p>
+                <p class="text-base font-bold text-black">@Model.ProductItem</p>
+                <p class="text-sm text-gray-600">@Model.Quantity</p>
+                <p class="text-sm text-gray-600">@Model.LocationStorage</p>
+            </div>
+            <div class="mt-4 text-green-600 text-2xl">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer buttons -->
+    <div class="flex justify-between mt-6 items-center">
+        <div class="flex gap-1">
+            <button class="px-3 py-1 bg-orange-400 text-white rounded">1</button>
+            <button class="px-3 py-1 text-gray-600 hover:underline">2</button>
+            <span class="px-3 py-1 text-gray-400">...</span>
+            <button class="px-3 py-1 text-gray-600 hover:underline">5</button>
+            <button class="px-3 py-1 text-blue-500 hover:underline">Next</button>
+        </div>
+        <button class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg shadow-sm">
+            Check
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+}
