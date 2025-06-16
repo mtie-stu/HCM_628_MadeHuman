@@ -1,0 +1,91 @@
+﻿@model MadeHuman_Admin.Models.ExportTaskViewModel
+
+@{
+    ViewData["Title"] = "Xuất kho";
+}
+
+<!-- THÔNG BÁO -->
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <p>@error.ErrorMessage</p>
+        }
+    </div>
+}
+
+@if (ViewBag.Success != null)
+{
+    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+        <p>@ViewBag.Success</p>
+    </div>
+}
+
+<form asp-action="Export" method="post" class="max-w-6xl mx-auto my-6 rounded-lg border border-blue-500 p-6 flex flex-col sm:flex-row sm:items-start gap-6 bg-white shadow-md">
+    <!-- LEFT: Quét mã task Export -->
+    <div class="flex flex-col flex-1 max-w-md">
+        <h2 class="text-2xl mb-3 font-semibold text-blue-700">Mã Task Export</h2>
+        <div class="flex items-center gap-3 mb-4">
+            <input asp-for="ExportCode" placeholder="Nhập mã export" class="flex-1 bg-gray-100 placeholder-gray-400 rounded-md px-3 py-2 text-base outline-none" />
+            <button type="submit" class="text-2xl text-black hover:text-blue-600" title="Tìm mã export">
+                <i class="fas fa-qrcode"></i>
+            </button>
+        </div>
+
+        @if (Model?.Products != null && Model.Products.Any())
+        {
+            @foreach (var product in Model.Products)
+            {
+                <div class="border border-gray-300 rounded-md p-4 bg-gray-50 mb-4">
+                    <img src="@product.ImageUrl" alt="Ảnh sản phẩm" class="w-full rounded-md mb-3" />
+                    <p class="text-sm font-medium text-black">Tên: @product.ProductName</p>
+                    <p class="text-sm font-bold text-black">Mã SP: @product.ProductItemId</p>
+                    <p class="text-sm text-gray-600">Vị trí: @product.LocationStorage</p>
+                    <p class="text-sm text-gray-600">Số lượng tồn: @product.Quantity</p>
+                </div>
+            }
+        }
+        else if (!string.IsNullOrEmpty(Model?.ExportCode))
+        {
+            <p class="text-sm text-red-500 mt-2">Không tìm thấy thông tin sản phẩm với mã export trên.</p>
+        }
+    </div>
+
+    <!-- RIGHT: Nhập dữ liệu để xuất kho -->
+    <div class="flex flex-col flex-1 max-w-lg gap-6">
+        <div>
+            <label asp-for="ScannedLocationCode" class="block text-lg font-medium mb-1">Mã vị trí</label>
+            <div class="flex items-center gap-3">
+                <input asp-for="ScannedLocationCode" placeholder="Mã vị trí" class="flex-1 bg-gray-100 placeholder-gray-400 rounded-md px-3 py-2 text-base outline-none" />
+                <button type="button" class="text-2xl text-black hover:text-blue-600" title="Scan mã vị trí">
+                    <i class="fas fa-qrcode"></i>
+                </button>
+            </div>
+        </div>
+
+        <div>
+            <label asp-for="ScannedProductCode" class="block text-lg font-medium mb-1">Mã sản phẩm</label>
+            <div class="flex items-center gap-3">
+                <input asp-for="ScannedProductCode" placeholder="Mã sản phẩm" class="flex-1 bg-gray-100 placeholder-gray-400 rounded-md px-3 py-2 text-base outline-none" />
+                <button type="button" class="text-2xl text-black hover:text-blue-600" title="Scan mã sản phẩm">
+                    <i class="fas fa-qrcode"></i>
+                </button>
+            </div>
+        </div>
+
+        <div>
+            <label asp-for="ScannedQuantity" class="block text-lg font-medium mb-1">Số lượng</label>
+            <input asp-for="ScannedQuantity" placeholder="Số lượng cần xuất" class="w-full bg-gray-100 placeholder-gray-400 rounded-md px-3 py-2 text-base outline-none" />
+        </div>
+
+        <button type="submit" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white text-base font-medium py-2 px-4 rounded-lg shadow-sm transition duration-200">
+            Xuất kho
+        </button>
+    </div>
+</form>
+
+@section Scripts {
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+}
