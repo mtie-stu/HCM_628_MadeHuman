@@ -1,6 +1,7 @@
 ﻿using MadeHuman_Server.Data;
 using MadeHuman_Server.Model;
 using MadeHuman_Server.Service;
+using MadeHuman_Server.Service.WareHouse;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +27,10 @@ builder.Services.AddIdentity<AppUser, IdentityRole>()
 
 // JWT Service
 builder.Services.AddTransient<ITokenService, TokenService>();
+builder.Services.AddScoped<IWarehouseService, WareHouseSvc>();
+builder.Services.AddScoped<IWarehouseZoneService, WareHouseZoneSvc>();
+builder.Services.AddScoped<IWarehouseLocationService, WareHouseLocationSvc>();
+
 
 builder.Services.AddControllers();
 
@@ -84,9 +89,12 @@ var app = builder.Build();
 // Middleware pipeline
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
+
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 

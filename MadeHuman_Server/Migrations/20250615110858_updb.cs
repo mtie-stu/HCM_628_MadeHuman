@@ -33,6 +33,7 @@ namespace MadeHuman_Server.Migrations
                     Discriminator = table.Column<string>(type: "nvarchar(13)", maxLength: 13, nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Image = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UserTypes = table.Column<int>(type: "int", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -78,6 +79,33 @@ namespace MadeHuman_Server.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Combos", x => x.ComboId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "InboundReceipt",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ReceivedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InboundReceipt", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WareHouses",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Location = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    WarehouseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WareHouses", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -230,28 +258,66 @@ namespace MadeHuman_Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "InboundTasks",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreateBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreateAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    InboundReceiptId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InboundTasks", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_InboundTasks_InboundReceipt_InboundReceiptId",
+                        column: x => x.InboundReceiptId,
+                        principalTable: "InboundReceipt",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WarehouseZones",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    WarehouseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WarehouseZones", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WarehouseZones_WareHouses_WarehouseId",
+                        column: x => x.WarehouseId,
+                        principalTable: "WareHouses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ComboItems",
                 columns: table => new
                 {
                     ComboItemId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false),
-                    ComboId = table.Column<int>(type: "int", nullable: false),
-                    ProductId = table.Column<int>(type: "int", nullable: false),
-                    ComboId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ProductId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    ComboId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ComboItems", x => x.ComboItemId);
                     table.ForeignKey(
-                        name: "FK_ComboItems_Combos_ComboId1",
-                        column: x => x.ComboId1,
+                        name: "FK_ComboItems_Combos_ComboId",
+                        column: x => x.ComboId,
                         principalTable: "Combos",
                         principalColumn: "ComboId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ComboItems_Products_ProductId1",
-                        column: x => x.ProductId1,
+                        name: "FK_ComboItems_Products_ProductId",
+                        column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "ProductId",
                         onDelete: ReferentialAction.Cascade);
@@ -305,6 +371,25 @@ namespace MadeHuman_Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "WarehouseLocations",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    NameLocation = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ZoneId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WarehouseLocations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WarehouseLocations_WarehouseZones_ZoneId",
+                        column: x => x.ZoneId,
+                        principalTable: "WarehouseZones",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "OrderItems",
                 columns: table => new
                 {
@@ -328,6 +413,108 @@ namespace MadeHuman_Server.Migrations
                         column: x => x.ShopOrderId,
                         principalTable: "ShopOrders",
                         principalColumn: "ShopOrderId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "InboundReceiptItems",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    InboundReceiptId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProductSKUId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InboundReceiptItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_InboundReceiptItems_InboundReceipt_InboundReceiptId",
+                        column: x => x.InboundReceiptId,
+                        principalTable: "InboundReceipt",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_InboundReceiptItems_ProductSKUs_ProductSKUId",
+                        column: x => x.ProductSKUId,
+                        principalTable: "ProductSKUs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductBatches",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    StatusProductBatches = table.Column<int>(type: "int", nullable: false),
+                    ProductSKUsId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    InboundTaskId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductBatches", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ProductBatches_InboundTasks_InboundTaskId",
+                        column: x => x.InboundTaskId,
+                        principalTable: "InboundTasks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProductBatches_ProductSKUs_ProductSKUsId",
+                        column: x => x.ProductSKUsId,
+                        principalTable: "ProductSKUs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Inventory",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    StockQuantity = table.Column<int>(type: "int", nullable: true),
+                    QuantityBooked = table.Column<int>(type: "int", nullable: true),
+                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ProductSKUId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    WarehouseLocationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Inventory", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Inventory_ProductSKUs_ProductSKUId",
+                        column: x => x.ProductSKUId,
+                        principalTable: "ProductSKUs",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Inventory_WarehouseLocations_WarehouseLocationId",
+                        column: x => x.WarehouseLocationId,
+                        principalTable: "WarehouseLocations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "InventoryLogs",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    StockQuantity = table.Column<int>(type: "int", nullable: false),
+                    ChangeBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ActionInventoryLogs = table.Column<int>(type: "int", nullable: false),
+                    RemainingQuantity = table.Column<int>(type: "int", nullable: false),
+                    InventoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InventoryLogs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_InventoryLogs_Inventory_InventoryId",
+                        column: x => x.InventoryId,
+                        principalTable: "Inventory",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -371,14 +558,46 @@ namespace MadeHuman_Server.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ComboItems_ComboId1",
+                name: "IX_ComboItems_ComboId",
                 table: "ComboItems",
-                column: "ComboId1");
+                column: "ComboId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ComboItems_ProductId1",
+                name: "IX_ComboItems_ProductId",
                 table: "ComboItems",
-                column: "ProductId1");
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InboundReceiptItems_InboundReceiptId",
+                table: "InboundReceiptItems",
+                column: "InboundReceiptId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InboundReceiptItems_ProductSKUId",
+                table: "InboundReceiptItems",
+                column: "ProductSKUId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InboundTasks_InboundReceiptId",
+                table: "InboundTasks",
+                column: "InboundReceiptId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Inventory_ProductSKUId",
+                table: "Inventory",
+                column: "ProductSKUId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Inventory_WarehouseLocationId",
+                table: "Inventory",
+                column: "WarehouseLocationId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InventoryLogs_InventoryId",
+                table: "InventoryLogs",
+                column: "InventoryId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrderItems_ProductItemId",
@@ -389,6 +608,17 @@ namespace MadeHuman_Server.Migrations
                 name: "IX_OrderItems_ShopOrderId",
                 table: "OrderItems",
                 column: "ShopOrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductBatches_InboundTaskId",
+                table: "ProductBatches",
+                column: "InboundTaskId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductBatches_ProductSKUsId",
+                table: "ProductBatches",
+                column: "ProductSKUsId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductItems_ProductId",
@@ -414,6 +644,16 @@ namespace MadeHuman_Server.Migrations
                 name: "IX_ShopOrders_AppUserId",
                 table: "ShopOrders",
                 column: "AppUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WarehouseLocations_ZoneId",
+                table: "WarehouseLocations",
+                column: "ZoneId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WarehouseZones_WarehouseId",
+                table: "WarehouseZones",
+                column: "WarehouseId");
         }
 
         /// <inheritdoc />
@@ -438,13 +678,22 @@ namespace MadeHuman_Server.Migrations
                 name: "ComboItems");
 
             migrationBuilder.DropTable(
+                name: "InboundReceiptItems");
+
+            migrationBuilder.DropTable(
+                name: "InventoryLogs");
+
+            migrationBuilder.DropTable(
                 name: "OrderItems");
 
             migrationBuilder.DropTable(
-                name: "ProductSKUs");
+                name: "ProductBatches");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Inventory");
 
             migrationBuilder.DropTable(
                 name: "ProductItems");
@@ -453,16 +702,34 @@ namespace MadeHuman_Server.Migrations
                 name: "ShopOrders");
 
             migrationBuilder.DropTable(
+                name: "InboundTasks");
+
+            migrationBuilder.DropTable(
+                name: "ProductSKUs");
+
+            migrationBuilder.DropTable(
+                name: "WarehouseLocations");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "InboundReceipt");
+
+            migrationBuilder.DropTable(
                 name: "Combos");
 
             migrationBuilder.DropTable(
                 name: "Products");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
+                name: "WarehouseZones");
 
             migrationBuilder.DropTable(
                 name: "Categories");
+
+            migrationBuilder.DropTable(
+                name: "WareHouses");
         }
     }
 }

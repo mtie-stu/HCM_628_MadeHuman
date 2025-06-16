@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MadeHuman_Server.Model.Shop
 {
@@ -10,10 +11,11 @@ namespace MadeHuman_Server.Model.Shop
         public int Quantity { get; set; }
 
         // Foreign keys
-        public int ComboId { get; set; }
-        public int ProductId { get; set; }
+        public Guid ComboId { get; set; }
+        public Guid ProductId { get; set; }
 
         // Navigation properties
+
         public Combo Combo { get; set; }
         public Product Product { get; set; }
     }

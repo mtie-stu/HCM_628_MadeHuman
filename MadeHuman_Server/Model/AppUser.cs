@@ -5,9 +5,15 @@ namespace MadeHuman_Server.Model
 {
     public class AppUser : IdentityUser
     {
+        public enum UserType
+        {
+            Warehouse,
+            Customer
+        }
         public string? Name { get; set; }
         public string? Image { get; set; }
         public ICollection<ShopOrder> ShopOrders { get; set; }
+        public  UserType UserTypes { get; set; }
 
 
     }

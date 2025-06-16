@@ -1,0 +1,51 @@
+﻿using MadeHuman_Server.Service.WareHouse;
+using Madehuman_Share.ViewModel.WareHouse;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+
+namespace MadeHuman_Server.Controllers.WareHouse
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class WareHouseZoneController : ControllerBase
+    {
+        private readonly IWarehouseZoneService _service;
+
+        public WareHouseZoneController(IWarehouseZoneService service)
+        {
+            _service = service;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create(WareHouseZoneViewModel warehouse)
+        {
+            var result = await _service.CreateAsync(warehouse);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, WareHouseZoneViewModel warehouse)
+        {
+            var result = await _service.UpdateAsync(id, warehouse);
+            return Ok(result);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var result = await _service.GetByIdAsync(id);
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _service.GetAllAsync(); // phải là Task<...>
+            return Ok(result);
+        }
+        
+
+    }
+}
