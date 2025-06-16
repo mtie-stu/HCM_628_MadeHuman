@@ -24,8 +24,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Model\WareHouse\" />
     <Folder Include="Model\Outbound\" />
+    <Folder Include="Service\Inbound\" />
+    <Folder Include="Uploads\" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 ﻿using MadeHuman_Server.Model;
 using MadeHuman_Server.Service;
-using MadeHuman_Server.ViewModel;
+using MadeHuman_Share.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;

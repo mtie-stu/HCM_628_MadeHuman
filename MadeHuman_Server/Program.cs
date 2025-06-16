@@ -1,6 +1,7 @@
 using MadeHuman_Server.Data;
 using MadeHuman_Server.Model;
 using MadeHuman_Server.Service;
+using MadeHuman_Server.Service.WareHouse;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,10 @@ builder.Services.AddIdentity<AppUser, IdentityRole>()
     .AddDefaultTokenProviders();
 
 builder.Services.AddTransient<ITokenService, TokenService>();
+builder.Services.AddScoped<IWarehouseService, WareHouseSvc>();
+builder.Services.AddScoped<IWarehouseZoneService, WareHouseZoneSvc>();
+builder.Services.AddScoped<IWarehouseLocationService, WareHouseLocationSvc>();
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -75,9 +80,12 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
+
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 

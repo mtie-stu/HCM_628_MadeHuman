@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using MadeHuman_Server.Model.Inbound;
+using System.ComponentModel.DataAnnotations;
 
 namespace MadeHuman_Server.Model.Shop
 {
@@ -18,5 +19,7 @@ namespace MadeHuman_Server.Model.Shop
         // Navigation properties
         public Product Product { get; set; }
         public Combo Combo { get; set; }
+        public ICollection<Inventory> Inventory { get; set; }
+
     }
 }
