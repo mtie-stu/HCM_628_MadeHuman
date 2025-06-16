@@ -28,10 +28,30 @@ namespace MadeHuman_User.Controllers
         {
             return View();
         }
-        public IActionResult Packer()
-        {
-            return View();
-        }
+        //public IActionResult Packer()
+        //{
+        //    var model = new PackingViewModel
+        //    {
+        //        BasketId = "BASKET123",
+        //        CurrentPage = 1,
+        //        TotalPages = 1,
+        //        TaskItems = new List<PackingViewModel.TaskItem>
+        //    {
+        //        new PackingViewModel.TaskItem
+        //        {
+        //            TaskId = "ST001",
+        //            ProductItemId = "PI001",
+        //            ProductName = "Sản phẩm A",
+        //            Quantity = 3,
+        //            LocationStorage = "Kho A1",
+        //            Status = "Done"
+        //        }
+        //    }
+        //    };
+
+        //    return View("Packer", model); // hoặc chỉ View(model) nếu file trùng tên action
+        //}
+
         public IActionResult Dispatch()
         {
             return View();
