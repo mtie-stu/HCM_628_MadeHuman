@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -21,11 +21,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Madehuman_Share\Madehuman_Share.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Model\WareHouse\" />
-    <Folder Include="Model\Outbound\" />
   </ItemGroup>
 
 </Project>
