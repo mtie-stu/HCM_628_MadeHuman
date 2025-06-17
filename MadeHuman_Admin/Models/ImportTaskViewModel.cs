@@ -14,7 +14,9 @@
         public string ProductItemId { get; set; } // Mã sản phẩm
         public string ProductName { get; set; }
         public string LocationStorage { get; set; }
-        public int Quantity { get; set; }
+        public int Quantity { get; set; } // Số lượng cần nhập
+        public int ImportedQuantity { get; set; } // Số lượng đã nhập
         public string ImageUrl { get; set; }
     }
+
 }

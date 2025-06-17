@@ -32,6 +32,7 @@ namespace MadeHuman_Admin.Controllers
                 ProductItemId = "SP001",
                 ProductName = "Sản phẩm A",
                 Quantity = 100,
+                ImportedQuantity = 0,
                 LocationStorage = "Kệ A1",
                 ImageUrl = "https://via.placeholder.com/300x180.png?text=SanPham+A"
             },
@@ -41,17 +42,22 @@ namespace MadeHuman_Admin.Controllers
                 ProductItemId = "SP002",
                 ProductName = "Sản phẩm B",
                 Quantity = 50,
+                ImportedQuantity = 0,
                 LocationStorage = "Kệ A2",
                 ImageUrl = "https://via.placeholder.com/300x180.png?text=SanPham+B"
             }
         };
 
+
+
         // Trang nhập mã để quét task export
         [HttpGet]
         public IActionResult Export()
         {
-            return View(new ExportTaskViewModel());
+            var model = new ExportTaskViewModel();
+            return View(model); // View này phải đặt trong Views/Export/Export.cshtml hoặc Views/YourController/Export.cshtml
         }
+
 
         [HttpPost]
         public IActionResult Export(ExportTaskViewModel model)
@@ -102,13 +108,14 @@ namespace MadeHuman_Admin.Controllers
         [HttpGet]
         public IActionResult Import()
         {
-            return View(new ImportTaskViewModel());
+            var model = new ImportTaskViewModel();
+            return View(model);
         }
 
         [HttpPost]
         public IActionResult Import(ImportTaskViewModel model)
         {
-            // Tìm danh sách sản phẩm thuộc nhiệm vụ được quét
+            // Bước 1: Lấy danh sách sản phẩm theo mã nhiệm vụ
             model.Products = taskProducts
                 .Where(p => p.TaskCode == model.TaskCode)
                 .ToList();
@@ -119,35 +126,42 @@ namespace MadeHuman_Admin.Controllers
                 return View(model);
             }
 
-            // Nếu người dùng quét mã sản phẩm
+            // Bước 2: Nếu người dùng quét mã sản phẩm
             if (!string.IsNullOrWhiteSpace(model.ScannedProductCode))
             {
-                var matched = model.Products
-                    .FirstOrDefault(p => p.ProductItemId == model.ScannedProductCode);
+                var product = model.Products.FirstOrDefault(p => p.ProductItemId == model.ScannedProductCode);
 
-                if (matched == null)
+                if (product == null)
                 {
-                    ModelState.AddModelError("", "Không tìm thấy sản phẩm trong nhiệm vụ.");
+                    ModelState.AddModelError("", "Không tìm thấy sản phẩm trong nhiệm vụ này.");
                     return View(model);
                 }
 
-                model.SelectedProduct = matched;
+                model.SelectedProduct = product;
 
-                // Nếu có nhập số lượng
+                // Bước 3: Nếu người dùng nhập số lượng
                 if (model.ScannedQuantity.HasValue)
                 {
-                    if (model.ScannedQuantity <= 0 || model.ScannedQuantity > matched.Quantity)
+                    var remaining = product.Quantity - product.ImportedQuantity;
+
+                    if (remaining <= 0)
                     {
-                        ModelState.AddModelError("", $"Số lượng không hợp lệ. Tối đa: {matched.Quantity}");
+                        ModelState.AddModelError("", "Sản phẩm này đã được nhập đủ.");
                         return View(model);
                     }
 
-                    // Trừ số lượng (giả lập)
-                    matched.Quantity -= model.ScannedQuantity.Value;
+                    if (model.ScannedQuantity <= 0 || model.ScannedQuantity > remaining)
+                    {
+                        ModelState.AddModelError("", $"Số lượng không hợp lệ. Còn lại: {remaining}");
+                        return View(model);
+                    }
 
-                    ViewBag.Success = $"✅ Nhập thành công {model.ScannedQuantity.Value} sản phẩm: {matched.ProductName}";
+                    // ✅ Nhập hàng thành công (giả lập)
+                    product.ImportedQuantity += model.ScannedQuantity.Value;
 
-                    // Reset form cho lượt tiếp theo
+                    ViewBag.Success = $"✅ Nhập thành công {model.ScannedQuantity.Value} sản phẩm: {product.ProductName}";
+
+                    // Reset để tiếp tục nhập
                     model.ScannedProductCode = "";
                     model.ScannedQuantity = null;
                     model.SelectedProduct = null;
@@ -156,5 +170,7 @@ namespace MadeHuman_Admin.Controllers
 
             return View(model);
         }
+
+
     }
 }

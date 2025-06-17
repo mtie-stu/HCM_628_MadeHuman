@@ -2,48 +2,61 @@
 {
     public static class PaginationHelper
     {
-        public static string GeneratePagination(int currentPage, int totalPages, string baseUrl)
+        public static string GeneratePagination(int currentPage, int totalPages, string baseUrl, string selectedZone = "", string searchTerm = "")
         {
             if (totalPages <= 1) return string.Empty;
 
             var builder = new System.Text.StringBuilder();
-            builder.Append("<nav class=\"flex items-center justify-start space-x-3 mt-10 text-xs text-gray-400 select-none\" aria-label=\"Pagination\">");
+            builder.Append("<nav class=\"mt-4\" aria-label=\"Page navigation\">");
+            builder.Append("<ul class=\"pagination justify-content-center\">");
 
-            // Previous
+            // Previous button
             if (currentPage > 1)
             {
-                builder.Append($"<a href=\"{baseUrl}?page={currentPage - 1}\" class=\"flex items-center space-x-1 text-orange-500 font-semibold cursor-pointer\"><i class=\"fas fa-arrow-left\"></i><span>Previous</span></a>");
+                builder.AppendFormat(
+                    "<li class=\"page-item\"><a class=\"page-link\" href=\"{0}?page={1}&zone={2}&searchTerm={3}\">Previous</a></li>",
+                    baseUrl, currentPage - 1, selectedZone, searchTerm
+                );
             }
             else
             {
-                builder.Append("<span class=\"flex items-center space-x-1 text-gray-300 cursor-default\"><i class=\"fas fa-arrow-left\"></i><span>Previous</span></span>");
+                builder.Append("<li class=\"page-item disabled\"><span class=\"page-link\">Previous</span></li>");
             }
 
-            // Page numbers (chỉ hiển thị 1,2,3,... logic tùy chỉnh)
+            // Page numbers (simple range, can expand logic later)
             for (int i = 1; i <= totalPages; i++)
             {
                 if (i == currentPage)
                 {
-                    builder.Append($"<span class=\"bg-orange-500 text-white rounded px-3 py-1 font-semibold cursor-pointer\">{i}</span>");
+                    builder.AppendFormat(
+                        "<li class=\"page-item active\"><span class=\"page-link\">{0}</span></li>", i
+                    );
                 }
                 else
                 {
-                    builder.Append($"<a href=\"{baseUrl}?page={i}\" class=\"cursor-pointer hover:underline\">{i}</a>");
+                    builder.AppendFormat(
+                        "<li class=\"page-item\"><a class=\"page-link\" href=\"{0}?page={1}&zone={2}&searchTerm={3}\">{1}</a></li>",
+                        baseUrl, i, selectedZone, searchTerm
+                    );
                 }
             }
 
-            // Next
+            // Next button
             if (currentPage < totalPages)
             {
-                builder.Append($"<a href=\"{baseUrl}?page={currentPage + 1}\" class=\"flex items-center space-x-1 text-orange-500 font-semibold cursor-pointer\"><span>Next</span><i class=\"fas fa-arrow-right\"></i></a>");
+                builder.AppendFormat(
+                    "<li class=\"page-item\"><a class=\"page-link\" href=\"{0}?page={1}&zone={2}&searchTerm={3}\">Next</a></li>",
+                    baseUrl, currentPage + 1, selectedZone, searchTerm
+                );
             }
             else
             {
-                builder.Append("<span class=\"flex items-center space-x-1 text-gray-300 cursor-default\"><span>Next</span><i class=\"fas fa-arrow-right\"></i></span>");
+                builder.Append("<li class=\"page-item disabled\"><span class=\"page-link\">Next</span></li>");
             }
 
-            builder.Append("</nav>");
+            builder.Append("</ul></nav>");
             return builder.ToString();
         }
+
     }
 }
