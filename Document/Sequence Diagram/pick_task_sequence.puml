@@ -1,0 +1,36 @@
+
+@startuml
+actor Picker
+participant "Hệ thống" as System
+
+Picker -> System : Nhận nhiệm vụ Pick
+System -> System : Kiểm tra nhiệm vụ có tồn tại?
+alt Không có nhiệm vụ
+    System -> Picker : Thông báo: không có nhiệm vụ, liên hệ Staff gần nhất
+else Có nhiệm vụ
+    Picker -> System : Quét mã rổ để gán nhiệm vụ
+    System -> System : Kiểm tra mã rổ khả dụng?
+    alt Mã rổ không khả dụng
+        System -> Picker : Thông báo: mã rổ này hiện tại không khả dụng
+    else Mã rổ hợp lệ
+        System -> Picker : Di chuyển đến vị trí lấy hàng
+        Picker -> System : Quét vị trí
+        alt Sai vị trí
+            System -> Picker : Thông báo: sai vị trí
+        else Đúng vị trí
+            Picker -> System : Quét mã sản phẩm
+            alt Sai mã sản phẩm
+                System -> Picker : Thông báo: sai mã sản phẩm
+            else Mã sản phẩm đúng
+                System -> System : Cập nhật +1 số lượng đã lấy
+                System -> System : Kiểm tra còn sản phẩm trong nhiệm vụ?
+                alt Còn sản phẩm
+                    System -> Picker : Tiếp tục: Di chuyển → Quét mã vị trí
+                else Hoàn tất
+                    System -> Picker : Kết thúc nhiệm vụ Pick
+                end
+            end
+        end
+    end
+end
+@enduml

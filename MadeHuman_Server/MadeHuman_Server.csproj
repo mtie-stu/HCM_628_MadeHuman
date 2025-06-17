@@ -23,4 +23,10 @@
     <ProjectReference Include="..\Madehuman_Share\Madehuman_Share.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Model\Outbound\" />
+    <Folder Include="Service\Inbound\" />
+    <Folder Include="Uploads\" />
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,32 @@
+
+@startuml
+actor Checker
+participant "Hệ thống" as System
+
+Checker -> System : Quét mã rổ
+System -> System : Kiểm tra mã rổ
+alt Mã rổ không khả dụng
+    System -> Checker : Thông báo: mã nhiệm vụ/mã rổ không khả dụng\nLiên hệ staff gần nhất
+else Mã rổ hợp lệ
+    System -> Checker : Hiển thị giao diện nhiệm vụ
+    Checker -> System : Quét mã sản phẩm trong rổ
+    System -> System : Kiểm tra sản phẩm trong nhiệm vụ
+    alt Không có
+        System -> Checker : Sản phẩm không có trong nhiệm vụ → Liên hệ staff
+    else Có sản phẩm
+        System -> Checker : Hiện mã đơn đến (tính thứ tự)
+        Checker -> System : Quét mã STT đơn hàng trong nhiệm vụ
+        alt Checker quét sai STT
+            System -> Checker : Thông báo lỗi STT
+        else STT đúng
+            System -> Checker : Quét mã thứ tự đơn hàng theo task (#n)
+            System -> System : Kiểm tra còn sản phẩm trong rổ?
+            alt Còn
+                System -> Checker : Tiếp tục quét mã sản phẩm
+            else Hết sản phẩm trong rổ
+                System -> Checker : Hệ thống thông báo hoàn thành nhiệm vụ Check
+            end
+        end
+    end
+end
+@enduml
