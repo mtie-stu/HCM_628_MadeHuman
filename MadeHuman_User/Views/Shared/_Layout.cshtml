@@ -1,15 +1,15 @@
 ﻿@{
-    Layout = null;
+	Layout = null;
 
-    string currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
-    string currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+	string currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+	string currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
 
-    string IsActive(string controller, string action)
-    {
-        return (currentController == controller && currentAction == action)
-            ? "bg-orange-100 text-orange-600 font-semibold"
-            : "text-gray-600 hover:bg-gray-100";
-    }
+	string IsActive(string controller, string action)
+	{
+		return (currentController == controller && currentAction == action)
+			? "bg-orange-100 text-orange-600 font-semibold"
+			: "text-gray-600 hover:bg-gray-100";
+	}
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -17,12 +17,13 @@
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>@ViewData["Title"] - MadeHuman_User</title>
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" />
 	<link rel="stylesheet" asp-href="~/css/site.css" asp-append-version="true" />
 	<link rel="stylesheet" asp-href="~/MadeHuman_User.styles.css" asp-append-version="true" />
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
 </head>
 <body class="bg-light min-vh-100 d-flex flex-column font-sans text-dark">
+
 	<!-- Top bar -->
 	<header class="d-flex align-items-center justify-content-between bg-white px-4 py-3 shadow-sm">
 		<div class="d-flex align-items-center gap-3">
@@ -43,58 +44,60 @@
 		<!-- Sidebar -->
 		<aside class="d-flex flex-column justify-content-between bg-white rounded w-100" style="max-width: 260px; padding: 2rem 1.5rem; box-shadow: 0 0 10px rgba(0,0,0,0.05);">
 			<nav class="d-flex flex-column gap-3 fs-6 fw-medium">
-				<!-- InBound Dropdown -->
-				<div class="position-relative">
-					<button type="button" class="d-flex align-items-center gap-2 px-3 py-2 w-100 rounded border-0 bg-light text-secondary">
-						<i class="fas fa-download"></i> <span>InBound</span>
+
+				<!-- InBound -->
+				<div class="dropdown position-relative">
+					<button type="button" class="dropdown-toggle-btn bg-light">
+						<i class="fas fa-download"></i> InBound
 						<i class="fas fa-chevron-down ms-auto text-muted small"></i>
 					</button>
+					<div class="dropdown-content ps-3">
+						<a href="#" class="dropdown-item">Nhập kho 1</a>
+						<a href="#" class="dropdown-item">Nhập kho 2</a>
+					</div>
 				</div>
 
-				<!-- OutBound Dropdown -->
-				<div class="position-relative">
-					<button type="button" class="d-flex align-items-center gap-2 px-3 py-2 w-100 rounded border-0 bg-light text-secondary">
-						<i class="fas fa-upload"></i> <span>OutBound</span>
+				<!-- OutBound -->
+				<div class="dropdown position-relative">
+					<button type="button" class="dropdown-toggle-btn bg-light">
+						<i class="fas fa-upload"></i> OutBound
 						<i class="fas fa-chevron-down ms-auto text-muted small"></i>
 					</button>
+					<div class="dropdown-content ps-3">
+						<a asp-controller="Outbound" asp-action="Picker" class="dropdown-item "><i class="fas fa-hand-pointer"></i> Picker</a>
 
-					<div class="ps-3 mt-2 d-flex flex-column gap-2 small">
-						<a asp-controller="Outbound" asp-action="Picker" class="text-decoration-none text-secondary"> <i class="fas fa-hand-pointer"></i> Picker </a>
-
-						<div class="position-relative">
-							<button type="button" class="d-flex align-items-center w-100 gap-2 px-2 py-1 rounded border-0 bg-light text-secondary">
+						<!-- Checker -->
+						<div class="dropdown">
+							<button type="button" class="dropdown-toggle-btn d-flex align-items-center gap-2 px-3 py-2 w-100 rounded border-0 text-secondary">
 								<i class="fas fa-clipboard-check"></i> Checker
 								<i class="fas fa-chevron-down ms-auto text-muted small"></i>
 							</button>
-							<div class="ps-3 mt-1 d-flex flex-column gap-1">
-								<a asp-controller="Outbound" asp-action="CheckerTaskMix" class="text-decoration-none text-secondary small">
-									<i class="fas fa-tasks"></i> Checker Task Mix
-								</a>
-								<a asp-controller="Outbound" asp-action="CheckerTaskSingle" class="text-decoration-none text-secondary small">
-									<i class="fas fa-check-circle"></i> Checker Task Single
-								</a>
+							<div class="dropdown-content ps-3">
+								<a asp-controller="Outbound" asp-action="CheckerTaskMix" class="text-decoration-none text-secondary"><i class="fas fa-tasks"></i> Task Mix</a>
+								<a asp-controller="Outbound" asp-action="CheckerTaskSingle" class="text-decoration-none text-secondary"><i class="fas fa-check-circle"></i> Task Single</a>
 							</div>
 						</div>
 
-						<a asp-controller="Outbound" asp-action="Packer" class="text-decoration-none text-secondary"> <i class="fas fa-box-open"></i> Packer </a>
-						<a asp-controller="Outbound" asp-action="Dispatch" class="text-decoration-none text-secondary"> <i class="fas fa-truck"></i> Dispatch </a>
+
+						<a asp-controller="Outbound" asp-action="Packer" class="dropdown-item"><i class="fas fa-box-open"></i> Packer</a>
+						<a asp-controller="Outbound" asp-action="Dispatch" class="dropdown-item"><i class="fas fa-truck"></i> Dispatch</a>
 					</div>
 				</div>
 
 				<a asp-controller="Training" asp-action="Index" class="d-flex align-items-center gap-2 px-3 py-2 rounded text-secondary text-decoration-none bg-light">
-					<i class="fas fa-tv"></i> <span>Training</span>
+					<i class="fas fa-tv"></i> Training
 				</a>
 
 				<a asp-controller="Attendance" asp-action="CheckInOut" class="d-flex align-items-center gap-2 px-3 py-2 rounded text-secondary text-decoration-none bg-light">
-					<i class="fas fa-hourglass-half"></i> <span>Check In/Out</span>
+					<i class="fas fa-hourglass-half"></i> Check In/Out
 				</a>
 
 				<a asp-controller="Report" asp-action="Index" class="d-flex align-items-center gap-2 px-3 py-2 rounded text-secondary text-decoration-none bg-light">
-					<i class="fas fa-comment-alt"></i> <span>Reports</span>
+					<i class="fas fa-comment-alt"></i> Reports
 				</a>
 
 				<a asp-controller="Support" asp-action="Help" class="d-flex align-items-center gap-2 px-3 py-2 rounded text-muted text-decoration-none bg-light">
-					<i class="fas fa-question"></i> <span>Help</span>
+					<i class="fas fa-question"></i> Help
 				</a>
 			</nav>
 
@@ -109,13 +112,106 @@
 
 	<footer class="border-top text-center text-muted py-3">
 		<div class="container">
-			&copy; 2025 - MadeHuman_User - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+			&copy; 2025 - MadeHuman_User - <a asp-controller="Home" asp-action="Privacy">Privacy</a>
 		</div>
 	</footer>
 
 	<script asp-src="~/lib/jquery/dist/jquery.min.js" asp-append-version="true"></script>
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
 	<script asp-src="~/js/site.js" asp-append-version="true"></script>
 	@await RenderSectionAsync("Scripts", required: false)
+
+	<script>
+		document.addEventListener("DOMContentLoaded", function () {
+			document.querySelectorAll(".dropdown-toggle-btn").forEach(function (btn) {
+				btn.addEventListener("click", function (e) {
+					e.stopPropagation();
+					const parentDropdown = btn.closest(".dropdown");
+					const dropdownContent = btn.nextElementSibling;
+
+					const isOpen = parentDropdown.classList.contains("show");
+
+					// Close others
+					document.querySelectorAll(".dropdown.show").forEach(function (d) {
+						if (d !== parentDropdown) d.classList.remove("show");
+					});
+
+					// Toggle this
+					if (isOpen) {
+						parentDropdown.classList.remove("show");
+					} else {
+						parentDropdown.classList.add("show");
+					}
+				});
+			});
+		});
+	</script>
+
+	<style>
+		.dropdown .dropdown {
+			position: relative;
+		}
+
+		.dropdown-content {
+			display: none;
+			flex-direction: column;
+			margin-top: 0.25rem;
+			padding-left: 1rem;
+		}
+
+		.dropdown.show > .dropdown-content {
+			display: flex;
+		}
+
+		.dropdown-toggle-btn {
+			background: transparent;
+			border: none;
+			width: 100%;
+			text-align: left;
+			padding: 0.5rem 0.75rem;
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+			color: #6c757d;
+			font-weight: 500;
+			border-radius: 0.375rem;
+			transition: background 0.2s;
+			cursor: pointer;
+		}
+
+			.dropdown-toggle-btn:hover,
+			.dropdown-item:hover,
+			a:hover {
+				background-color: #f1f1f1;
+				color: #495057;
+			}
+
+		.dropdown-item {
+			text-decoration: none;
+			padding: 0.35rem 0;
+			color: #6c757d;
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+		}
+
+		.dropdown .dropdown .dropdown-toggle-btn {
+			padding: 0.4rem 0.5rem;
+			font-size: 0.95rem;
+		}
+
+		.dropdown .dropdown .dropdown-content {
+			padding-left: 1rem;
+		}
+
+		.small {
+			font-size: 0.875rem;
+		}
+		/* Áp dụng hover chỉ cho dropdown con trong Checker */
+		.dropdown:hover > .dropdown-content {
+			display: flex;
+		}
+
+	</style>
 </body>
 </html>
