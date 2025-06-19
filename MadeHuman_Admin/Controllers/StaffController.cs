@@ -30,7 +30,7 @@ namespace MadeHuman_Admin.Controllers
         {
             return _products;
         }
-
+                                                                                                                                                                                                                                                                                                                                            
         [HttpGet]
         public IActionResult ZoneManagement(int page = 1, string zone = "", string searchTerm = "")
         {
@@ -91,7 +91,7 @@ namespace MadeHuman_Admin.Controllers
 
             return View(model);
         }
-        [HttpGet]
+        [HttpGet]                                                                             
         public IActionResult SetId()
         {
             return View(new SetPartTimeRoleViewModel
