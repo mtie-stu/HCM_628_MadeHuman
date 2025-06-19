@@ -1,7 +1,14 @@
+using MadeHuman_User.Services.IServices;
+using MadeHuman_User.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+
+builder.Services.AddScoped<ILoginService, LoginService>();
+
 
 var app = builder.Build();
 
