@@ -119,5 +119,39 @@ namespace MadeHuman_Admin.Controllers
 
             return RedirectToAction("SetId");
         }
+        public IActionResult InboundTask()
+        {
+            var model = new InboundTaskViewModel
+            {
+                InboundReceiptsID = "RECEIPT123",
+                InboundReceiptsItemsID = "ITEM456",
+                ProductItemId = "PI-789",
+                Quantity = "100",
+                LocationStorage = "N/A",
+                Zone = "",
+                WarehouseLocationsCode = "",
+                ProductImageUrl = "https://storage.googleapis.com/a1aa/image/bb8a5ce5-952e-4ad3-b719-429c2ebb7a23.jpg"
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public IActionResult InboundTask(InboundTaskViewModel model)
+        {
+            // 🟡 Dữ liệu mẫu: chỉ in ra console/log
+            Console.WriteLine("========= NHẬN DỮ LIỆU TỪ FORM =========");
+            Console.WriteLine($"InboundReceiptsID: {model.InboundReceiptsID}");
+            Console.WriteLine($"InboundReceiptsItemsID: {model.InboundReceiptsItemsID}");
+            Console.WriteLine($"ProductItemId: {model.ProductItemId}");
+            Console.WriteLine($"Quantity: {model.Quantity}");
+            Console.WriteLine($"Zone: {model.Zone}");
+            Console.WriteLine($"WarehouseLocationsCode: {model.WarehouseLocationsCode}");
+
+            // 🟢 Trả lại view kèm thông báo
+            ViewBag.Message = "✅ Tạo nhiệm vụ nhập kho thành công (dữ liệu tĩnh)";
+            return View(model);
+        }
+
     }
 }
