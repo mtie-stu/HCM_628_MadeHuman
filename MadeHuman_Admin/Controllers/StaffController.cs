@@ -5,6 +5,7 @@ namespace MadeHuman_Admin.Controllers
 {
     public class StaffController : Controller
     {
+        private static List<UserActivityViewModel> history = new();
         private static List<ZoneProduct> _products = new List<ZoneProduct>
         {
             new ZoneProduct { Zone = "Inbound", WarehouseLocationsCode = "12345678", InventoryID = "INV001", SKUID = "SKU001", Quantity = 14 },
@@ -152,6 +153,60 @@ namespace MadeHuman_Admin.Controllers
             ViewBag.Message = "✅ Tạo nhiệm vụ nhập kho thành công (dữ liệu tĩnh)";
             return View(model);
         }
+        [HttpGet]
+        public IActionResult CheckInOut()
+        {
+            ViewBag.History = history.OrderByDescending(x => x.Date).ToList();
+            return View();
+        }
+        [HttpPost]
+        public IActionResult CheckInOut(UserActivityViewModel model)
+        {
+            var today = DateTime.Today;
+            var timenow = DateTime.Now;
 
+            if (model.Activity == "CheckIn")
+            {
+                history.Add(new UserActivityViewModel
+                {
+                    UserId = model.UserId,
+                    Activity = "CheckIn",
+                    CheckIn = timenow,
+                    Date = today,
+                    Role = "PartTime", // hoặc lấy từ database
+                    Comment = "Chưa Check Out"
+                });
+            }
+            else if (model.Activity == "CheckOut")
+            {
+                var record = history
+                    .Where(h => h.UserId == model.UserId && h.Comment == "Chưa Check Out" && h.Date == today)
+                    .OrderByDescending(h => h.CheckIn)
+                    .FirstOrDefault();
+
+                if (record != null && record.CheckIn.HasValue)
+                {
+                    record.TotalHours = Math.Round((timenow - record.CheckIn.Value).TotalHours, 2);
+                    record.Comment = $"Checkout at {timenow:HH:mm}";
+                }
+                else
+                {
+                    // Chưa check in trong ngày → tạo dòng mới với comment chưa check in
+                    history.Add(new UserActivityViewModel
+                    {
+                        UserId = model.UserId,
+                        Activity = "CheckOut",
+                        Date = today,
+                        Role = "PartTime",
+                        CheckIn = null,
+                        TotalHours = null,
+                        Comment = "Chưa Check In"
+                    });
+                }
+            }
+
+
+            return RedirectToAction("CheckInOut");
+        }
     }
 }
