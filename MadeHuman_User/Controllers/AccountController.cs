@@ -1,52 +1,40 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MadeHuman_User.Models;
+using MadeHuman_Share.ViewModel;
+using MadeHuman_User.Services;
+using MadeHuman_User.Services.IServices;
 
 namespace MadeHuman_User.Controllers
 {
     public class AccountController : Controller
     {
+        private readonly ILoginService _loginService;
+
+        public AccountController(ILoginService loginService)
+        {
+            _loginService = loginService;
+        }
+
         [HttpGet]
         public IActionResult Login()
         {
-            // Bỏ layout
             ViewData["Title"] = "Login";
             return View();
         }
 
         [HttpPost]
-        public IActionResult Login(LoginViewModel model)
+        public IActionResult Login(LoginModel model)
         {
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
 
-            if (!model.IsValidPasswordFormat)
-            {
-                ModelState.AddModelError("Password", "Password must be at least 8 characters and include 1 uppercase letter, 1 number, and 1 special character.");
-                return View(model);
-            }
-
-            // Dữ liệu tĩnh
-            var staticUsers = new List<LoginViewModel>
-            {
-                new LoginViewModel { EmailOrID = "admin01", Password = "Admin@123" },
-                new LoginViewModel { EmailOrID = "admin@example.com", Password = "Admin@123" },
-                new LoginViewModel { EmailOrID = "user01", Password = "User@123" },
-                new LoginViewModel { EmailOrID = "user@example.com", Password = "User@123" }
-            };
-
-            var user = staticUsers.FirstOrDefault(u =>
-                u.EmailOrID.Equals(model.EmailOrID, StringComparison.OrdinalIgnoreCase) &&
-                u.Password == model.Password
-            );
-
-            if (user != null)
+            if (_loginService.ValidateUser(model.EmailOrID, model.Password))
             {
                 return RedirectToAction("Index", "Home");
             }
 
-            ModelState.AddModelError(string.Empty, "Invalid login credentials");
+            ModelState.AddModelError(string.Empty, "Thông tin đăng nhập không hợp lệ");
             return View(model);
         }
     }
