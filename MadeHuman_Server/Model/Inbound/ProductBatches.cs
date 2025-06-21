@@ -21,7 +21,10 @@ namespace MadeHuman_Server.Model.Inbound
         public int Quantity { get; set; }
 
         public StatusProductBatches StatusProductBatches { get; set; }
-        
+        [ForeignKey(nameof(ProductSKUs))]
+        public Guid ProductSKUId { get; set; }
+        public string ProductSKU { get; set; }
+
         public ProductSKU ProductSKUs{ get; set; }
 
         [ForeignKey(nameof(InboundTasks))]

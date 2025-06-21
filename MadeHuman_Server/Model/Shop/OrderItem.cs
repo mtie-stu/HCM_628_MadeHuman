@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace MadeHuman_Server.Model.Shop
 {
@@ -14,11 +15,19 @@ namespace MadeHuman_Server.Model.Shop
         public decimal UnitPrice { get; set; }
 
         // Foreign keys
+        public Guid ProductSKUsId { get; set; }       // Nullable vì có thể thuộc ProductItem
+
         public Guid ShopOrderId { get; set; }
-        public Guid ProductItemId { get; set; }
+        public string ProductSKU { get; set; }
+        //public Guid? ProductSKUId { get; set; }
+
 
         // Navigation properties
+        [JsonIgnore]
         public ShopOrder ShopOrder { get; set; }
-        public ProductItem ProductItem { get; set; }
+        [ForeignKey("ProductSKUsId")]
+        public ProductSKU ProductSKUs { get; set; }
+       
+
     }
 }

@@ -1,6 +1,7 @@
 ﻿using MadeHuman_Server.Data;
 using MadeHuman_Server.Model;
 using MadeHuman_Server.Service;
+using MadeHuman_Server.Service.Shop;
 using MadeHuman_Server.Service.WareHouse;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -15,55 +16,20 @@ var builder = WebApplication.CreateBuilder(args);
 // Đăng ký DbContext cho Identity (User, Role, Token...)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// ⚙️ Logging hỗ trợ debug
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
-// Đăng ký DbContext cho các bảng nghiệp vụ (Category, Product, Combo...)
+// 🗄️ Đăng ký DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Đăng ký Identity
+// 👤 Identity
 builder.Services.AddIdentity<AppUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-// JWT Service
-builder.Services.AddTransient<ITokenService, TokenService>();
-builder.Services.AddScoped<IWarehouseService, WareHouseSvc>();
-builder.Services.AddScoped<IWarehouseZoneService, WareHouseZoneSvc>();
-builder.Services.AddScoped<IWarehouseLocationService, WareHouseLocationSvc>();
-
-
-builder.Services.AddControllers();
-
-// Swagger + JWT hỗ trợ trên Swagger UI
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(opt =>
-{
-    opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        In = ParameterLocation.Header,
-        Description = "Please enter token",
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        BearerFormat = "JWT",
-        Scheme = "bearer"
-    });
-    opt.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type=ReferenceType.SecurityScheme,
-                    Id="Bearer"
-                }
-            },
-            new string[]{}
-        }
-    });
-});
-
-// Cấu hình xác thực bằng JWT
+// 🔐 JWT Auth
 builder.Services.AddAuthentication(auth =>
 {
     auth.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -84,24 +50,76 @@ builder.Services.AddAuthentication(auth =>
     };
 });
 
+// 🧩 Services
+builder.Services.AddTransient<ITokenService, TokenService>();
+builder.Services.AddScoped<IWarehouseService, WareHouseSvc>();
+builder.Services.AddScoped<IWarehouseZoneService, WareHouseZoneSvc>();
+builder.Services.AddScoped<IWarehouseLocationService, WareHouseLocationSvc>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IShopOrderService, ShopOrderService>();
+builder.Services.AddScoped<IUserRegistrationService, UserRegistrationSvc>();
+builder.Services.AddScoped<IComboService, ComboService>();
+builder.Services.AddScoped<ISkuGeneratorService, SkuGeneratorService>();
+builder.Services.AddScoped<ISKUServices, SKUSvc>();
+
+// 📦 Controller & Swagger
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSwaggerGen(opt =>
+{
+    opt.SwaggerDoc("v1", new OpenApiInfo { Title = "MadeHuman API", Version = "v1" });
+
+    // 🛠️ Tránh lỗi trùng schemaId giữa 2 class cùng tên khác namespace
+    opt.CustomSchemaIds(type => type.FullName);
+
+    opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Nhập token JWT",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    opt.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+
 var app = builder.Build();
 
-// Middleware pipeline
+// Configure the HTTP request pipeline.
+// 🧪 Hiển thị lỗi chi tiết khi dev
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
-
-    app.UseSwagger();
-    app.UseSwaggerUI();
 }
-app.UseStaticFiles();
 
+// 🌐 Swagger cho mọi môi trường
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "MadeHuman API v1");
+});
+
+app.UseStaticFiles();
 app.UseHttpsRedirection();
 
-// Bắt buộc xác thực trước khi cho phép truy cập tài nguyên
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();

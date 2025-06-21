@@ -10,10 +10,19 @@ namespace MadeHuman_Server.Model
             Warehouse,
             Customer
         }
+        public enum UserStatus
+        {
+            InActive,
+            Active,
+            Banned
+          
+        }
+
         public string? Name { get; set; }
         public string? Image { get; set; }
         public ICollection<ShopOrder> ShopOrders { get; set; }
         public  UserType UserTypes { get; set; }
+        public UserStatus Status { get; set; }
 
 
     }
