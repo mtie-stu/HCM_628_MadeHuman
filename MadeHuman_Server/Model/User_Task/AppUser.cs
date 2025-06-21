@@ -1,7 +1,7 @@
 ﻿using MadeHuman_Server.Model.Shop;
 using Microsoft.AspNetCore.Identity;
 
-namespace MadeHuman_Server.Model.User_Task
+namespace MadeHuman_Server.Model
 {
     public class AppUser : IdentityUser
     {
@@ -15,13 +15,13 @@ namespace MadeHuman_Server.Model.User_Task
             InActive,
             Active,
             Banned
-
+          
         }
 
         public string? Name { get; set; }
         public string? Image { get; set; }
         public ICollection<ShopOrder> ShopOrders { get; set; }
-        public UserType UserTypes { get; set; }
+        public  UserType UserTypes { get; set; }
         public UserStatus Status { get; set; }
 
 
