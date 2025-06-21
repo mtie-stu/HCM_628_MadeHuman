@@ -1,5 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace MadeHuman_Server.Model.Shop
 {
@@ -16,12 +19,16 @@ namespace MadeHuman_Server.Model.Shop
         public string Description { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal Discount { get; set; }
+        public decimal Price { get; set; }
 
-        // Navigation property
-        public ICollection<ProductSKU> ProductSKUs { get; set; } // Thêm quan hệ mới
-
+        // Navigation properties
+        [JsonIgnore]
         public ICollection<ComboItem> ComboItems { get; set; }
-    }
 
+        [JsonIgnore]
+        public virtual ICollection<Product_Combo_Img> Product_Combo_Img { get; set; } = new List<Product_Combo_Img>();
+
+        // 1-1 với ProductSKU
+        public ProductSKU ProductSKU { get; set; }
+    }
 }

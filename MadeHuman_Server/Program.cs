@@ -1,6 +1,7 @@
-using MadeHuman_Server.Data;
+﻿using MadeHuman_Server.Data;
 using MadeHuman_Server.Model;
 using MadeHuman_Server.Service;
+using MadeHuman_Server.Service.Shop;
 using MadeHuman_Server.Service.WareHouse;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -14,31 +15,74 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// ⚙️ Logging hỗ trợ debug
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
+// 🗄️ Đăng ký DbContext
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// 👤 Identity
 builder.Services.AddIdentity<AppUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+// 🔐 JWT Auth
+builder.Services.AddAuthentication(auth =>
+{
+    auth.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    auth.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidAudience = builder.Configuration["AuthSettings:Audience"],
+        ValidIssuer = builder.Configuration["AuthSettings:Issuer"],
+        RequireExpirationTime = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+            builder.Configuration["AuthSettings:Key"]!)),
+        ValidateIssuerSigningKey = true
+    };
+});
+
+// 🧩 Services
 builder.Services.AddTransient<ITokenService, TokenService>();
 builder.Services.AddScoped<IWarehouseService, WareHouseSvc>();
 builder.Services.AddScoped<IWarehouseZoneService, WareHouseZoneSvc>();
 builder.Services.AddScoped<IWarehouseLocationService, WareHouseLocationSvc>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IShopOrderService, ShopOrderService>();
+builder.Services.AddScoped<IUserRegistrationService, UserRegistrationSvc>();
+builder.Services.AddScoped<IComboService, ComboService>();
+builder.Services.AddScoped<ISkuGeneratorService, SkuGeneratorService>();
+builder.Services.AddScoped<ISKUServices, SKUSvc>();
 
-
+// 📦 Controller & Swagger
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(opt =>
 {
+    opt.SwaggerDoc("v1", new OpenApiInfo { Title = "MadeHuman API", Version = "v1" });
+
+    // 🛠️ Tránh lỗi trùng schemaId giữa 2 class cùng tên khác namespace
+    opt.CustomSchemaIds(type => type.FullName);
+
     opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
-        Description = "Please enter token",
+        Description = "Nhập token JWT",
         Name = "Authorization",
         Type = SecuritySchemeType.Http,
-        BearerFormat = "JWT",
-        Scheme = "bearer"
+        Scheme = "bearer",
+        BearerFormat = "JWT"
     });
+
     opt.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -46,51 +90,35 @@ builder.Services.AddSwaggerGen(opt =>
             {
                 Reference = new OpenApiReference
                 {
-                    Type=ReferenceType.SecurityScheme,
-                    Id="Bearer"
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
                 }
             },
-            new string[]{}
+            Array.Empty<string>()
         }
     });
-});
-
-builder.Services.AddAuthentication(auth =>
-{
-    auth.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    auth.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(options =>
-{
-    options.TokenValidationParameters =
-    new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidAudience = builder.Configuration["AuthSettings:Audience"],
-        ValidIssuer = builder.Configuration["AuthSettings:Issuer"],
-        RequireExpirationTime = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.
-        GetBytes(builder.Configuration["AuthSettings:Key"]!)),
-        ValidateIssuerSigningKey = true
-    };
 });
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+// 🧪 Hiển thị lỗi chi tiết khi dev
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
-
-    app.UseSwagger();
-    app.UseSwaggerUI();
 }
-app.UseStaticFiles();
 
+// 🌐 Swagger cho mọi môi trường
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "MadeHuman API v1");
+});
+
+app.UseStaticFiles();
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();

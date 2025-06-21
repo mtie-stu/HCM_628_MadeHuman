@@ -31,6 +31,10 @@ namespace MadeHuman_Server.Migrations
                     b.Property<Guid>("InboundReceiptId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("ProductSKU")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("ProductSKUId")
                         .HasColumnType("uniqueidentifier");
 
@@ -156,7 +160,11 @@ namespace MadeHuman_Server.Migrations
                     b.Property<Guid>("InboundTaskId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ProductSKUsId")
+                    b.Property<string>("ProductSKU")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ProductSKUId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Quantity")
@@ -170,7 +178,7 @@ namespace MadeHuman_Server.Migrations
                     b.HasIndex("InboundTaskId")
                         .IsUnique();
 
-                    b.HasIndex("ProductSKUsId");
+                    b.HasIndex("ProductSKUId");
 
                     b.ToTable("ProductBatches");
                 });
@@ -207,13 +215,13 @@ namespace MadeHuman_Server.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<decimal>("Discount")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("ComboId");
 
@@ -250,7 +258,14 @@ namespace MadeHuman_Server.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ProductItemId")
+                    b.Property<Guid?>("ProductItemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ProductSKU")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ProductSKUsId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Quantity")
@@ -266,6 +281,8 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("ProductItemId");
 
+                    b.HasIndex("ProductSKUsId");
+
                     b.HasIndex("ShopOrderId");
 
                     b.ToTable("OrderItems");
@@ -277,10 +294,7 @@ namespace MadeHuman_Server.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("CategoryId1")
+                    b.Property<Guid>("CategoryId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
@@ -298,7 +312,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasKey("ProductId");
 
-                    b.HasIndex("CategoryId1");
+                    b.HasIndex("CategoryId");
 
                     b.ToTable("Products");
                 });
@@ -336,10 +350,7 @@ namespace MadeHuman_Server.Migrations
                     b.Property<Guid?>("ComboId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("ProductItemId")
+                    b.Property<Guid?>("ProductId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("SKU")
@@ -349,14 +360,44 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ComboId")
+                        .IsUnique()
+                        .HasFilter("[ComboId] IS NOT NULL");
+
+                    b.HasIndex("ProductId")
+                        .IsUnique()
+                        .HasFilter("[ProductId] IS NOT NULL");
+
+                    b.ToTable("ProductSKUs", t =>
+                        {
+                            t.HasCheckConstraint("CK_ProductSKU_Owner", "([ProductId] IS NOT NULL AND [ComboId] IS NULL) OR ([ProductId] IS NULL AND [ComboId] IS NOT NULL)");
+                        });
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.Shop.Product_Combo_Img", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ComboId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<Guid?>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
                     b.HasIndex("ComboId");
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductSKUs", t =>
-                        {
-                            t.HasCheckConstraint("CK_ProductSKU_Owner", "([ProductItemId] IS NOT NULL AND [ComboId] IS NULL) OR ([ProductItemId] IS NULL AND [ComboId] IS NOT NULL)");
-                        });
+                    b.ToTable("product_Combo_Imgs");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.ShopOrder", b =>
@@ -372,10 +413,8 @@ namespace MadeHuman_Server.Migrations
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
@@ -669,6 +708,9 @@ namespace MadeHuman_Server.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<int>("UserTypes")
                         .HasColumnType("int");
 
@@ -743,7 +785,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasOne("MadeHuman_Server.Model.Shop.ProductSKU", "ProductSKUs")
                         .WithMany()
-                        .HasForeignKey("ProductSKUsId")
+                        .HasForeignKey("ProductSKUId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -773,9 +815,13 @@ namespace MadeHuman_Server.Migrations
 
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.OrderItem", b =>
                 {
-                    b.HasOne("MadeHuman_Server.Model.Shop.ProductItem", "ProductItem")
+                    b.HasOne("MadeHuman_Server.Model.Shop.ProductItem", null)
                         .WithMany("OrderItems")
-                        .HasForeignKey("ProductItemId")
+                        .HasForeignKey("ProductItemId");
+
+                    b.HasOne("MadeHuman_Server.Model.Shop.ProductSKU", "ProductSKUs")
+                        .WithMany()
+                        .HasForeignKey("ProductSKUsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -785,7 +831,7 @@ namespace MadeHuman_Server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("ProductItem");
+                    b.Navigation("ProductSKUs");
 
                     b.Navigation("ShopOrder");
                 });
@@ -794,7 +840,7 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.HasOne("MadeHuman_Server.Model.Shop.Category", "Category")
                         .WithMany("Products")
-                        .HasForeignKey("CategoryId1")
+                        .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -815,14 +861,29 @@ namespace MadeHuman_Server.Migrations
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.ProductSKU", b =>
                 {
                     b.HasOne("MadeHuman_Server.Model.Shop.Combo", "Combo")
-                        .WithMany("ProductSKUs")
+                        .WithOne("ProductSKU")
+                        .HasForeignKey("MadeHuman_Server.Model.Shop.ProductSKU", "ComboId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("MadeHuman_Server.Model.Shop.Product", "Product")
+                        .WithOne("ProductSKU")
+                        .HasForeignKey("MadeHuman_Server.Model.Shop.ProductSKU", "ProductId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Combo");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.Shop.Product_Combo_Img", b =>
+                {
+                    b.HasOne("MadeHuman_Server.Model.Shop.Combo", "Combo")
+                        .WithMany("Product_Combo_Img")
                         .HasForeignKey("ComboId");
 
                     b.HasOne("MadeHuman_Server.Model.Shop.Product", "Product")
-                        .WithMany("ProductSKUs")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany("Product_Combo_Img")
+                        .HasForeignKey("ProductId");
 
                     b.Navigation("Combo");
 
@@ -939,7 +1000,10 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.Navigation("ComboItems");
 
-                    b.Navigation("ProductSKUs");
+                    b.Navigation("ProductSKU")
+                        .IsRequired();
+
+                    b.Navigation("Product_Combo_Img");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.Product", b =>
@@ -948,7 +1012,10 @@ namespace MadeHuman_Server.Migrations
 
                     b.Navigation("ProductItems");
 
-                    b.Navigation("ProductSKUs");
+                    b.Navigation("ProductSKU")
+                        .IsRequired();
+
+                    b.Navigation("Product_Combo_Img");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.ProductItem", b =>
