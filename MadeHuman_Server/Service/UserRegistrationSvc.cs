@@ -1,4 +1,4 @@
-﻿using MadeHuman_Server.Model.User_Task;
+﻿using MadeHuman_Server.Model;
 using Madehuman_Share.ViewModel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
