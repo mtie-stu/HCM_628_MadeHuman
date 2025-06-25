@@ -300,7 +300,7 @@ namespace MadeHuman_Server.Migrations
                 name: "PartTime",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    PartTimeId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     CCCD = table.Column<string>(type: "text", nullable: false),
                     PhoneNumber = table.Column<string>(type: "text", nullable: false),
@@ -309,7 +309,7 @@ namespace MadeHuman_Server.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PartTime", x => x.Id);
+                    table.PrimaryKey("PK_PartTime", x => x.PartTimeId);
                     table.ForeignKey(
                         name: "FK_PartTime_Part_Time_Company_CompanyId",
                         column: x => x.CompanyId,
@@ -463,7 +463,7 @@ namespace MadeHuman_Server.Migrations
                         name: "FK_UsersTasks_PartTime_PartTimeId",
                         column: x => x.PartTimeId,
                         principalTable: "PartTime",
-                        principalColumn: "Id");
+                        principalColumn: "PartTimeId");
                 });
 
             migrationBuilder.CreateTable(
@@ -590,7 +590,8 @@ namespace MadeHuman_Server.Migrations
                     Note = table.Column<string>(type: "text", nullable: true),
                     UserId = table.Column<string>(type: "text", nullable: true),
                     UsersTasksId = table.Column<Guid>(type: "uuid", nullable: true),
-                    CompanyId = table.Column<Guid>(type: "uuid", nullable: true)
+                    CompanyId = table.Column<Guid>(type: "uuid", nullable: true),
+                    PartTimeId1 = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -604,7 +605,13 @@ namespace MadeHuman_Server.Migrations
                         name: "FK_PartTimeAssignment_PartTime_PartTimeId",
                         column: x => x.PartTimeId,
                         principalTable: "PartTime",
-                        principalColumn: "Id");
+                        principalColumn: "PartTimeId",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_PartTimeAssignment_PartTime_PartTimeId1",
+                        column: x => x.PartTimeId1,
+                        principalTable: "PartTime",
+                        principalColumn: "PartTimeId");
                     table.ForeignKey(
                         name: "FK_PartTimeAssignment_Part_Time_Company_CompanyId",
                         column: x => x.CompanyId,
@@ -819,6 +826,11 @@ namespace MadeHuman_Server.Migrations
                 name: "IX_PartTimeAssignment_PartTimeId",
                 table: "PartTimeAssignment",
                 column: "PartTimeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PartTimeAssignment_PartTimeId1",
+                table: "PartTimeAssignment",
+                column: "PartTimeId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PartTimeAssignment_UserId",
