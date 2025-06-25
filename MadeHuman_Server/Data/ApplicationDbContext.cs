@@ -101,6 +101,12 @@ namespace MadeHuman_Server.Data
       .HasCheckConstraint("CK_ProductSKU_Owner",
           "(\"ProductId\" IS NOT NULL AND \"ComboId\" IS NULL) OR (\"ProductId\" IS NULL AND \"ComboId\" IS NOT NULL)");
 
+            modelBuilder.Entity<PartTimeAssignment>()
+    .HasOne(p => p.PartTime)
+    .WithMany()
+    .HasForeignKey(p => p.PartTimeId)
+    .OnDelete(DeleteBehavior.SetNull);
+
             /* // Đảm bảo mỗi ProductSKU phải thuộc về ProductItem HOẶC Combo
              modelBuilder.Entity<ProductSKU>()
                  .HasCheckConstraint("CK_ProductSKU_Owner",
