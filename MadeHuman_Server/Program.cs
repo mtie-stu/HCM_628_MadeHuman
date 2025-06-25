@@ -69,8 +69,8 @@ builder.Services.AddScoped<ISKUServices, SKUSvc>();
 builder.Services.AddScoped<IInboundReciptService, InboundReciptSvc>();
 builder.Services.AddHostedService<ReceiptStatusUpdaterService>();
 builder.Services.AddScoped<GoogleSheetService>();
-builder.Services.AddScoped<IPartTimeCompanyService, PartTimeCompanySvc>();
-builder.Services.AddScoped<IPartTimeService, PartTimeService>();
+//builder.Services.AddScoped<IPartTimeCompanyService, PartTimeCompanySvc>();
+//builder.Services.AddScoped<IPartTimeService, PartTimeService>();
 
 
 // 📦 Controller & Swagger
