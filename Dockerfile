@@ -1,22 +1,25 @@
-# ----- Build -----
+# ----- STAGE 1: Build -----
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /app
+WORKDIR /src
 
-# Copy solution and restore as distinct layers
-COPY *.sln ./
-COPY MadeHuman_Server/*.csproj ./MadeHuman_Server/
-COPY Madehuman_Share/*.csproj ./Madehuman_Share/
-COPY MadeHuman_Admin/*.csproj ./MadeHuman_Admin/
-COPY MadeHuman_User/*.csproj ./MadeHuman_User/
-RUN dotnet restore
+# Copy csproj and restore dependencies
+COPY ["MadeHuman_Server/MadeHuman_Server.csproj", "MadeHuman_Server/"]
+COPY ["Madehuman_Share/Madehuman_Share.csproj", "Madehuman_Share/"]
+RUN dotnet restore "MadeHuman_Server/MadeHuman_Server.csproj"
 
-# Copy everything else and build
+# Copy full source code
 COPY . .
-WORKDIR /app/MadeHuman_Server
-RUN dotnet publish -c Release -o /out
+WORKDIR "/src/MadeHuman_Server"
 
-# ----- Runtime -----
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+# Build and publish
+RUN dotnet publish "MadeHuman_Server.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+# ----- STAGE 2: Runtime -----
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-COPY --from=build /out .
+EXPOSE 80
+EXPOSE 443
+COPY --from=build /app/publish .
+
+# Start the app
 ENTRYPOINT ["dotnet", "MadeHuman_Server.dll"]
