@@ -1,4 +1,4 @@
-﻿using MadeHuman_Server.Data;
+﻿/*using MadeHuman_Server.Data;
 using MadeHuman_Server.Model.User_Task;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -19,7 +19,7 @@ namespace MadeHuman_Server.Service.UserTask
             _context = context;
         }
 
-        public async Task<Part_Time_Company> AddCompanyAsync(string name, string? address)
+       public async Task<Part_Time_Company> AddCompanyAsync(string name, string? address)
         {
             var company = new Part_Time_Company
             {
@@ -46,4 +46,4 @@ namespace MadeHuman_Server.Service.UserTask
             return true;
         }
     }
-}
+}*/
