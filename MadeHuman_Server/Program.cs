@@ -1,7 +1,9 @@
 ﻿using MadeHuman_Server.Data;
-using MadeHuman_Server.Model;
+using MadeHuman_Server.Model.User_Task;
 using MadeHuman_Server.Service;
+using MadeHuman_Server.Service.Inbound;
 using MadeHuman_Server.Service.Shop;
+using MadeHuman_Server.Service.UserTask;
 using MadeHuman_Server.Service.WareHouse;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -13,16 +15,18 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Đăng ký DbContext cho Identity (User, Role, Token...)
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Add services to the container.
 // ⚙️ Logging hỗ trợ debug
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
 // 🗄️ Đăng ký DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
+        npgsqlOptions => npgsqlOptions.CommandTimeout(180) // ⏰ tăng timeout lên 3 phút
+    ));
+/*builder.Services.AddDbContext<ApplicationDbContext>(options =>
+   options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection1")));*/
 
 // 👤 Identity
 builder.Services.AddIdentity<AppUser, IdentityRole>()
@@ -62,6 +66,12 @@ builder.Services.AddScoped<IUserRegistrationService, UserRegistrationSvc>();
 builder.Services.AddScoped<IComboService, ComboService>();
 builder.Services.AddScoped<ISkuGeneratorService, SkuGeneratorService>();
 builder.Services.AddScoped<ISKUServices, SKUSvc>();
+builder.Services.AddScoped<IInboundReciptService, InboundReciptSvc>();
+builder.Services.AddHostedService<ReceiptStatusUpdaterService>();
+builder.Services.AddScoped<GoogleSheetService>();
+builder.Services.AddScoped<IPartTimeCompanyService, PartTimeCompanySvc>();
+builder.Services.AddScoped<IPartTimeService, PartTimeService>();
+
 
 // 📦 Controller & Swagger
 builder.Services.AddControllers();
@@ -101,6 +111,12 @@ builder.Services.AddSwaggerGen(opt =>
 });
 
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await ApplicationDbContext.SeedPartTimeAssignmentAsync(db);
+}
+
 
 // Configure the HTTP request pipeline.
 // 🧪 Hiển thị lỗi chi tiết khi dev
