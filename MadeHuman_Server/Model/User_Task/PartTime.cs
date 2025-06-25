@@ -14,7 +14,6 @@ namespace MadeHuman_Server.Model.User_Task
         [Key]
         public Guid Id { get; set; }
 
-        public string PartTimeId { get; set; }
         public string Name { get; set; }
         public string CCCD { get; set; }
         public string PhoneNumber { get; set; }
