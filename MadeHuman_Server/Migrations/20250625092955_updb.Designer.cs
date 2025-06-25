@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MadeHuman_Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250624203740_Updb1")]
-    partial class Updb1
+    [Migration("20250625092955_updb")]
+    partial class updb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -498,6 +498,9 @@ namespace MadeHuman_Server.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("StatusPartTimes")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CompanyId");
@@ -510,6 +513,15 @@ namespace MadeHuman_Server.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<TimeSpan?>("BreakDuration")
+                        .HasColumnType("interval");
+
+                    b.Property<DateTime?>("CheckInTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("CheckOutTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid?>("CompanyId")
                         .IsRequired()
@@ -582,11 +594,11 @@ namespace MadeHuman_Server.Migrations
                     b.Property<TimeSpan?>("BreakDuration")
                         .HasColumnType("interval");
 
-                    b.Property<TimeSpan?>("CheckInTime")
-                        .HasColumnType("interval");
+                    b.Property<DateTime?>("CheckInTime")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<TimeSpan?>("CheckOutTime")
-                        .HasColumnType("interval");
+                    b.Property<DateTime?>("CheckOutTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("boolean");

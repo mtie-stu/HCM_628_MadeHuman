@@ -12,13 +12,13 @@ COPY . .
 WORKDIR "/src/MadeHuman_Server"
 
 # Build and publish
-RUN dotnet publish "MadeHuman_Server.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "MadeHuman_Server.csproj" -c Release -o /app/publish 
 
 # ----- STAGE 2: Runtime -----
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 EXPOSE 80
-EXPOSE 443
+
 COPY --from=build /app/publish .
 
 # Start the app
