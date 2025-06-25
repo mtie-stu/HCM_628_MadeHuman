@@ -26,7 +26,7 @@ namespace MadeHuman_Server.Service.UserTask
 
             var partTime = new PartTime
             {
-                Id = Guid.NewGuid(),
+                PartTimeId = Guid.NewGuid(),
                 Name = name,
                 CCCD = cccd,
                 PhoneNumber = phone,

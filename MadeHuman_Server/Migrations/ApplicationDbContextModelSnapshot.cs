@@ -472,7 +472,7 @@ namespace MadeHuman_Server.Migrations
 
             modelBuilder.Entity("MadeHuman_Server.Model.User_Task.PartTime", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("PartTimeId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
@@ -494,7 +494,7 @@ namespace MadeHuman_Server.Migrations
                     b.Property<int>("StatusPartTimes")
                         .HasColumnType("integer");
 
-                    b.HasKey("Id");
+                    b.HasKey("PartTimeId");
 
                     b.HasIndex("CompanyId");
 
@@ -528,6 +528,9 @@ namespace MadeHuman_Server.Migrations
                     b.Property<Guid?>("PartTimeId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("PartTimeId1")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("ShiftCode")
                         .HasColumnType("text");
 
@@ -548,6 +551,8 @@ namespace MadeHuman_Server.Migrations
                     b.HasIndex("CompanyId");
 
                     b.HasIndex("PartTimeId");
+
+                    b.HasIndex("PartTimeId1");
 
                     b.HasIndex("UserId");
 
@@ -1142,8 +1147,13 @@ namespace MadeHuman_Server.Migrations
                         .HasForeignKey("CompanyId");
 
                     b.HasOne("MadeHuman_Server.Model.User_Task.PartTime", "PartTime")
+                        .WithMany()
+                        .HasForeignKey("PartTimeId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MadeHuman_Server.Model.User_Task.PartTime", null)
                         .WithMany("Assignments")
-                        .HasForeignKey("PartTimeId");
+                        .HasForeignKey("PartTimeId1");
 
                     b.HasOne("MadeHuman_Server.Model.User_Task.AppUser", "User")
                         .WithMany()
