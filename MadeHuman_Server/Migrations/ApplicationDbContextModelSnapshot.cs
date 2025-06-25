@@ -472,7 +472,7 @@ namespace MadeHuman_Server.Migrations
 
             modelBuilder.Entity("MadeHuman_Server.Model.User_Task.PartTime", b =>
                 {
-                    b.Property<Guid>("PartTimeId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
@@ -487,18 +487,19 @@ namespace MadeHuman_Server.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("PartTimeId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("StatusPartTimes")
-                        .HasColumnType("integer");
-
-                    b.HasKey("PartTimeId");
+                    b.HasKey("Id");
 
                     b.HasIndex("CompanyId");
 
-                    b.ToTable("PartTimes");
+                    b.ToTable("PartTime");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.User_Task.PartTimeAssignment", b =>
@@ -507,16 +508,8 @@ namespace MadeHuman_Server.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<TimeSpan?>("BreakDuration")
-                        .HasColumnType("interval");
-
-                    b.Property<DateTime?>("CheckInTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("CheckOutTime")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<Guid?>("CompanyId")
+                        .IsRequired()
                         .HasColumnType("uuid");
 
                     b.Property<bool>("IsConfirmed")
@@ -525,10 +518,7 @@ namespace MadeHuman_Server.Migrations
                     b.Property<string>("Note")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("PartTimeId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("PartTimeId1")
+                    b.Property<Guid>("PartTimeId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("ShiftCode")
@@ -551,8 +541,6 @@ namespace MadeHuman_Server.Migrations
                     b.HasIndex("CompanyId");
 
                     b.HasIndex("PartTimeId");
-
-                    b.HasIndex("PartTimeId1");
 
                     b.HasIndex("UserId");
 
@@ -579,7 +567,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PartTimeCompanies");
+                    b.ToTable("Part_Time_Company");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.User_Task.UsersTasks", b =>
@@ -591,11 +579,11 @@ namespace MadeHuman_Server.Migrations
                     b.Property<TimeSpan?>("BreakDuration")
                         .HasColumnType("interval");
 
-                    b.Property<DateTime?>("CheckInTime")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<TimeSpan?>("CheckInTime")
+                        .HasColumnType("interval");
 
-                    b.Property<DateTime?>("CheckOutTime")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<TimeSpan?>("CheckOutTime")
+                        .HasColumnType("interval");
 
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("boolean");
@@ -606,7 +594,7 @@ namespace MadeHuman_Server.Migrations
                     b.Property<TimeSpan?>("OvertimeDuration")
                         .HasColumnType("interval");
 
-                    b.Property<Guid?>("PartTimeId")
+                    b.Property<Guid>("PartTimeId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("TaskType")
@@ -1144,16 +1132,15 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.HasOne("MadeHuman_Server.Model.User_Task.Part_Time_Company", "part_Time_Company")
                         .WithMany("Assignments")
-                        .HasForeignKey("CompanyId");
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("MadeHuman_Server.Model.User_Task.PartTime", "PartTime")
-                        .WithMany()
-                        .HasForeignKey("PartTimeId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("MadeHuman_Server.Model.User_Task.PartTime", null)
                         .WithMany("Assignments")
-                        .HasForeignKey("PartTimeId1");
+                        .HasForeignKey("PartTimeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("MadeHuman_Server.Model.User_Task.AppUser", "User")
                         .WithMany()
@@ -1176,7 +1163,9 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.HasOne("MadeHuman_Server.Model.User_Task.PartTime", "PartTimes")
                         .WithMany()
-                        .HasForeignKey("PartTimeId");
+                        .HasForeignKey("PartTimeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("MadeHuman_Server.Model.User_Task.AppUser", "User")
                         .WithMany()

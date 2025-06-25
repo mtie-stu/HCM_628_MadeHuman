@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -71,7 +70,6 @@ builder.Services.AddHostedService<ReceiptStatusUpdaterService>();
 builder.Services.AddScoped<GoogleSheetService>();
 builder.Services.AddScoped<IPartTimeCompanyService, PartTimeCompanySvc>();
 builder.Services.AddScoped<IPartTimeService, PartTimeService>();
-builder.Services.AddScoped<IPartTimeAssignmentService, PartTimeAssignmentService>();
 
 
 // 📦 Controller & Swagger
@@ -115,11 +113,6 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-    // ✅ Seed dữ liệu gốc trước
-    await ApplicationDbContext.SeedPartTimeAsync(db);
-
-    // ✅ Sau đó mới seed Assignment
     await ApplicationDbContext.SeedPartTimeAssignmentAsync(db);
 }
 

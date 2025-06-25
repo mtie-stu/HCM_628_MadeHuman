@@ -21,6 +21,5 @@ namespace MadeHuman_Server.Model.Inbound
         public Guid ProductSKUId { get; set; }
         [ForeignKey(nameof(ProductSKUId))]
         public ProductSKU ProductSKUs { get; set; }
-        public string ProductSKU { get; set; }   
     }
 }

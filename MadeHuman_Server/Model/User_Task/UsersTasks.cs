@@ -37,7 +37,7 @@ namespace MadeHuman_Server.Model.User_Task
         public bool IsCompleted { get; set; } = false;
 
         public string? Note { get; set; }
-        public Guid? PartTimeId { get; set; }
+        public Guid PartTimeId { get; set; }
         [ForeignKey(nameof(PartTimeId))]
         public PartTime PartTimes { get; set; }
     }

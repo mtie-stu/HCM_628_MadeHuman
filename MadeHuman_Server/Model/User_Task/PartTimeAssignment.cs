@@ -18,7 +18,7 @@ namespace MadeHuman_Server.Model.User_Task
         [Key]
         public Guid Id { get; set; }
 
-        public Guid? PartTimeId { get; set; }         // Mã nhân sự part-time (mã từ công ty nhân lực)
+        public Guid PartTimeId { get; set; }         // Mã nhân sự part-time (mã từ công ty nhân lực)
         [ForeignKey(nameof(PartTimeId))]
         public PartTime PartTime { get; set; }
         public DateTime WorkDate { get; set; }         // Ngày phân công
@@ -46,6 +46,7 @@ namespace MadeHuman_Server.Model.User_Task
         [ForeignKey(nameof(UsersTasksId))]
         public UsersTasks? UsersTasks { get; set; }
         // ✅ Thêm FK đến Company
+        [Required]
         public Guid? CompanyId { get; set; }
 
         [ForeignKey(nameof(CompanyId))]
