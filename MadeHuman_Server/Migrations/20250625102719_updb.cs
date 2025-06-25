@@ -301,7 +301,6 @@ namespace MadeHuman_Server.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    PartTimeId = table.Column<string>(type: "text", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     CCCD = table.Column<string>(type: "text", nullable: false),
                     PhoneNumber = table.Column<string>(type: "text", nullable: false),
@@ -449,7 +448,7 @@ namespace MadeHuman_Server.Migrations
                     OvertimeDuration = table.Column<TimeSpan>(type: "interval", nullable: true),
                     IsCompleted = table.Column<bool>(type: "boolean", nullable: false),
                     Note = table.Column<string>(type: "text", nullable: true),
-                    PartTimeId = table.Column<Guid>(type: "uuid", nullable: false)
+                    PartTimeId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -464,8 +463,7 @@ namespace MadeHuman_Server.Migrations
                         name: "FK_UsersTasks_PartTime_PartTimeId",
                         column: x => x.PartTimeId,
                         principalTable: "PartTime",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -581,7 +579,7 @@ namespace MadeHuman_Server.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    PartTimeId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PartTimeId = table.Column<Guid>(type: "uuid", nullable: true),
                     WorkDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     TaskType = table.Column<int>(type: "integer", nullable: false),
                     ShiftCode = table.Column<string>(type: "text", nullable: true),
@@ -592,7 +590,7 @@ namespace MadeHuman_Server.Migrations
                     Note = table.Column<string>(type: "text", nullable: true),
                     UserId = table.Column<string>(type: "text", nullable: true),
                     UsersTasksId = table.Column<Guid>(type: "uuid", nullable: true),
-                    CompanyId = table.Column<Guid>(type: "uuid", nullable: false)
+                    CompanyId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -606,14 +604,12 @@ namespace MadeHuman_Server.Migrations
                         name: "FK_PartTimeAssignment_PartTime_PartTimeId",
                         column: x => x.PartTimeId,
                         principalTable: "PartTime",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_PartTimeAssignment_Part_Time_Company_CompanyId",
                         column: x => x.CompanyId,
                         principalTable: "Part_Time_Company",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_PartTimeAssignment_UsersTasks_UsersTasksId",
                         column: x => x.UsersTasksId,
