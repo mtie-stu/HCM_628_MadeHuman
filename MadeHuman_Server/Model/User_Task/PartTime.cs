@@ -12,7 +12,7 @@ namespace MadeHuman_Server.Model.User_Task
     public class PartTime
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid PartTimeId { get; set; }
 
         public string Name { get; set; }
         public string CCCD { get; set; }
