@@ -487,10 +487,6 @@ namespace MadeHuman_Server.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("PartTimeId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasColumnType("text");
@@ -529,7 +525,7 @@ namespace MadeHuman_Server.Migrations
                     b.Property<string>("Note")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("PartTimeId")
+                    b.Property<Guid?>("PartTimeId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("ShiftCode")
@@ -605,7 +601,7 @@ namespace MadeHuman_Server.Migrations
                     b.Property<TimeSpan?>("OvertimeDuration")
                         .HasColumnType("interval");
 
-                    b.Property<Guid>("PartTimeId")
+                    b.Property<Guid?>("PartTimeId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("TaskType")
@@ -1147,9 +1143,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasOne("MadeHuman_Server.Model.User_Task.PartTime", "PartTime")
                         .WithMany("Assignments")
-                        .HasForeignKey("PartTimeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PartTimeId");
 
                     b.HasOne("MadeHuman_Server.Model.User_Task.AppUser", "User")
                         .WithMany()
@@ -1172,9 +1166,7 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.HasOne("MadeHuman_Server.Model.User_Task.PartTime", "PartTimes")
                         .WithMany()
-                        .HasForeignKey("PartTimeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PartTimeId");
 
                     b.HasOne("MadeHuman_Server.Model.User_Task.AppUser", "User")
                         .WithMany()

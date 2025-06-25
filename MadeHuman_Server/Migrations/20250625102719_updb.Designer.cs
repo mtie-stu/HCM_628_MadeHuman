@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MadeHuman_Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250625092955_updb")]
+    [Migration("20250625102719_updb")]
     partial class updb
     {
         /// <inheritdoc />
@@ -490,10 +490,6 @@ namespace MadeHuman_Server.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("PartTimeId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasColumnType("text");
@@ -524,7 +520,6 @@ namespace MadeHuman_Server.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid?>("CompanyId")
-                        .IsRequired()
                         .HasColumnType("uuid");
 
                     b.Property<bool>("IsConfirmed")
@@ -533,7 +528,7 @@ namespace MadeHuman_Server.Migrations
                     b.Property<string>("Note")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("PartTimeId")
+                    b.Property<Guid?>("PartTimeId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("ShiftCode")
@@ -609,7 +604,7 @@ namespace MadeHuman_Server.Migrations
                     b.Property<TimeSpan?>("OvertimeDuration")
                         .HasColumnType("interval");
 
-                    b.Property<Guid>("PartTimeId")
+                    b.Property<Guid?>("PartTimeId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("TaskType")
@@ -1147,15 +1142,11 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.HasOne("MadeHuman_Server.Model.User_Task.Part_Time_Company", "part_Time_Company")
                         .WithMany("Assignments")
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CompanyId");
 
                     b.HasOne("MadeHuman_Server.Model.User_Task.PartTime", "PartTime")
                         .WithMany("Assignments")
-                        .HasForeignKey("PartTimeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PartTimeId");
 
                     b.HasOne("MadeHuman_Server.Model.User_Task.AppUser", "User")
                         .WithMany()
@@ -1178,9 +1169,7 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.HasOne("MadeHuman_Server.Model.User_Task.PartTime", "PartTimes")
                         .WithMany()
-                        .HasForeignKey("PartTimeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PartTimeId");
 
                     b.HasOne("MadeHuman_Server.Model.User_Task.AppUser", "User")
                         .WithMany()
