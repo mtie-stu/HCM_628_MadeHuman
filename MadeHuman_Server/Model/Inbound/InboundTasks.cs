@@ -21,7 +21,7 @@ namespace MadeHuman_Server.Model.Inbound
         public string CreateBy { get; set; }
         public  DateTime CreateAt { get; set; }
         public Status Status { get; set; }
-
+        public Guid UserId { get; set; }    
         public Guid InboundReceiptId { get; set; }
         [ForeignKey(nameof(InboundReceiptId))]
         public InboundReceipts InboundReceipts { get; set; }

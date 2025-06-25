@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Collections.Generic;
 using MadeHuman_Server.Model.Shop;
+using System.Text.Json.Serialization;
 
 
 namespace MadeHuman_Server.Model.Inbound
@@ -15,10 +16,10 @@ namespace MadeHuman_Server.Model.Inbound
 
         public Guid InboundReceiptId { get; set; }
         [ForeignKey(nameof(InboundReceiptId))]
+        [JsonIgnore] // 👈 Thêm dòng này
         public InboundReceipts InboundReceipts { get; set; }
         public Guid ProductSKUId { get; set; }
         [ForeignKey(nameof(ProductSKUId))]
         public ProductSKU ProductSKUs { get; set; }
-        public string ProductSKU { get; set; }   
     }
 }

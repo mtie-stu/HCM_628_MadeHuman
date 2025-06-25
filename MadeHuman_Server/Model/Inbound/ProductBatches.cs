@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Collections.Generic;
 using MadeHuman_Server.Model.Shop;
+using MadeHuman_Server.Model.WareHouse;
 
 namespace MadeHuman_Server.Model.Inbound
 {
@@ -29,7 +30,10 @@ namespace MadeHuman_Server.Model.Inbound
 
         [ForeignKey(nameof(InboundTasks))]
         public Guid InboundTaskId { get; set; }
-
+        // Thêm liên kết 1-1 với WarehouseLocation
+        public Guid WarehouseLocationId { get; set; }
+        [ForeignKey(nameof(WarehouseLocationId))]
+        public WarehouseLocations WarehouseLocation { get; set; }
 
         public InboundTasks InboundTasks { get; set; }
 

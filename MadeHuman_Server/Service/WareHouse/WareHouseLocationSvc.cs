@@ -39,7 +39,8 @@ namespace MadeHuman_Server.Service.WareHouse
             {
                 Id = newId,
                 NameLocation = warehouse.NameLocation,
-                ZoneId = warehouse.ZoneId
+                ZoneId = warehouse.ZoneId,
+                StatusWareHouse= StatusWareHouse.Empty
             };
 
             _context.WarehouseLocations.Add(createwarehouselocation);
@@ -169,7 +170,9 @@ namespace MadeHuman_Server.Service.WareHouse
                         {
                             Id = Guid.NewGuid(),
                             NameLocation = name,
-                            ZoneId = zoneId
+                            ZoneId = zoneId,
+                            StatusWareHouse = StatusWareHouse.Empty
+
                         };
 
                         _context.WarehouseLocations.Add(location);

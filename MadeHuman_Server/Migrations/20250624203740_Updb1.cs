@@ -1,12 +1,13 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace MadeHuman_Server.Migrations
 {
     /// <inheritdoc />
-    public partial class updb1 : Migration
+    public partial class Updb1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,10 +16,10 @@ namespace MadeHuman_Server.Migrations
                 name: "AspNetRoles",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -29,26 +30,26 @@ namespace MadeHuman_Server.Migrations
                 name: "AspNetUsers",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Discriminator = table.Column<string>(type: "nvarchar(13)", maxLength: 13, nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Image = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserTypes = table.Column<int>(type: "int", nullable: true),
-                    Status = table.Column<int>(type: "int", nullable: true),
-                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Discriminator = table.Column<string>(type: "character varying(13)", maxLength: 13, nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: true),
+                    Image = table.Column<string>(type: "text", nullable: true),
+                    UserTypes = table.Column<int>(type: "integer", nullable: true),
+                    Status = table.Column<int>(type: "integer", nullable: true),
+                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -59,9 +60,9 @@ namespace MadeHuman_Server.Migrations
                 name: "Categories",
                 columns: table => new
                 {
-                    CategoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false)
+                    CategoryId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -72,10 +73,10 @@ namespace MadeHuman_Server.Migrations
                 name: "Combos",
                 columns: table => new
                 {
-                    ComboId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                    ComboId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Price = table.Column<decimal>(type: "numeric(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -86,8 +87,10 @@ namespace MadeHuman_Server.Migrations
                 name: "InboundReceipt",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ReceivedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ReceivedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreateAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -95,14 +98,28 @@ namespace MadeHuman_Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Part_Time_Company",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Address = table.Column<string>(type: "text", nullable: true),
+                    Status = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Part_Time_Company", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "WareHouses",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Location = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    WarehouseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Location = table.Column<string>(type: "text", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    WarehouseId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -113,11 +130,11 @@ namespace MadeHuman_Server.Migrations
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    RoleId = table.Column<string>(type: "text", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -134,11 +151,11 @@ namespace MadeHuman_Server.Migrations
                 name: "AspNetUserClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -155,10 +172,10 @@ namespace MadeHuman_Server.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    ProviderKey = table.Column<string>(type: "text", nullable: false),
+                    ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
+                    UserId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -175,8 +192,8 @@ namespace MadeHuman_Server.Migrations
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    RoleId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -199,10 +216,10 @@ namespace MadeHuman_Server.Migrations
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Value = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -219,11 +236,11 @@ namespace MadeHuman_Server.Migrations
                 name: "ShopOrders",
                 columns: table => new
                 {
-                    ShopOrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    OrderDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    AppUserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    ShopOrderId = table.Column<Guid>(type: "uuid", nullable: false),
+                    OrderDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    TotalAmount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    AppUserId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -240,11 +257,11 @@ namespace MadeHuman_Server.Migrations
                 name: "Products",
                 columns: table => new
                 {
-                    ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    CategoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    ProductId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Price = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    CategoryId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -261,11 +278,12 @@ namespace MadeHuman_Server.Migrations
                 name: "InboundTasks",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreateBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreateAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    InboundReceiptId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreateBy = table.Column<string>(type: "text", nullable: false),
+                    CreateAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    InboundReceiptId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -279,12 +297,34 @@ namespace MadeHuman_Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PartTime",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    PartTimeId = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    CCCD = table.Column<string>(type: "text", nullable: false),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: false),
+                    CompanyId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PartTime", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PartTime_Part_Time_Company_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "Part_Time_Company",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "WarehouseZones",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    WarehouseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    WarehouseId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -301,10 +341,10 @@ namespace MadeHuman_Server.Migrations
                 name: "ComboItems",
                 columns: table => new
                 {
-                    ComboItemId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    ComboId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    ComboItemId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    ComboId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -327,10 +367,10 @@ namespace MadeHuman_Server.Migrations
                 name: "product_Combo_Imgs",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    ComboId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    ImageUrl = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductId = table.Column<Guid>(type: "uuid", nullable: true),
+                    ComboId = table.Column<Guid>(type: "uuid", nullable: true),
+                    ImageUrl = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -351,10 +391,10 @@ namespace MadeHuman_Server.Migrations
                 name: "ProductItems",
                 columns: table => new
                 {
-                    ProductItemId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SKU = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    QuantityInStock = table.Column<int>(type: "int", nullable: false),
-                    ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    ProductItemId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SKU = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    QuantityInStock = table.Column<int>(type: "integer", nullable: false),
+                    ProductId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -371,15 +411,15 @@ namespace MadeHuman_Server.Migrations
                 name: "ProductSKUs",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SKU = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    ComboId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    SKU = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    ProductId = table.Column<Guid>(type: "uuid", nullable: true),
+                    ComboId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ProductSKUs", x => x.Id);
-                    table.CheckConstraint("CK_ProductSKU_Owner", "([ProductId] IS NOT NULL AND [ComboId] IS NULL) OR ([ProductId] IS NULL AND [ComboId] IS NOT NULL)");
+                    table.CheckConstraint("CK_ProductSKU_Owner", "(\"ProductId\" IS NOT NULL AND \"ComboId\" IS NULL) OR (\"ProductId\" IS NULL AND \"ComboId\" IS NOT NULL)");
                     table.ForeignKey(
                         name: "FK_ProductSKUs_Combos_ComboId",
                         column: x => x.ComboId,
@@ -395,12 +435,46 @@ namespace MadeHuman_Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UsersTasks",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TaskType = table.Column<int>(type: "integer", nullable: false),
+                    WorkDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    CheckInTime = table.Column<TimeSpan>(type: "interval", nullable: true),
+                    CheckOutTime = table.Column<TimeSpan>(type: "interval", nullable: true),
+                    BreakDuration = table.Column<TimeSpan>(type: "interval", nullable: true),
+                    OvertimeDuration = table.Column<TimeSpan>(type: "interval", nullable: true),
+                    IsCompleted = table.Column<bool>(type: "boolean", nullable: false),
+                    Note = table.Column<string>(type: "text", nullable: true),
+                    PartTimeId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UsersTasks", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UsersTasks_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UsersTasks_PartTime_PartTimeId",
+                        column: x => x.PartTimeId,
+                        principalTable: "PartTime",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "WarehouseLocations",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    NameLocation = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ZoneId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    NameLocation = table.Column<string>(type: "text", nullable: false),
+                    StatusWareHouse = table.Column<int>(type: "integer", nullable: false),
+                    ZoneId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -417,10 +491,10 @@ namespace MadeHuman_Server.Migrations
                 name: "InboundReceiptItems",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    InboundReceiptId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ProductSKUId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    InboundReceiptId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductSKUId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -443,13 +517,13 @@ namespace MadeHuman_Server.Migrations
                 name: "OrderItems",
                 columns: table => new
                 {
-                    OrderItemId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    ShopOrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ProductSKU = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ProductSKUsId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ProductItemId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    OrderItemId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
+                    ProductSKUsId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ShopOrderId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductSKU = table.Column<string>(type: "text", nullable: false),
+                    ProductItemId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -474,42 +548,85 @@ namespace MadeHuman_Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ProductBatches",
+                name: "CheckInCheckOutLog",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    StatusProductBatches = table.Column<int>(type: "int", nullable: false),
-                    ProductSKUsId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    InboundTaskId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    PartTimeId = table.Column<string>(type: "text", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    Timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    IsCheckIn = table.Column<bool>(type: "boolean", nullable: false),
+                    Note = table.Column<string>(type: "text", nullable: true),
+                    UsersTasksId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProductBatches", x => x.Id);
+                    table.PrimaryKey("PK_CheckInCheckOutLog", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ProductBatches_InboundTasks_InboundTaskId",
-                        column: x => x.InboundTaskId,
-                        principalTable: "InboundTasks",
+                        name: "FK_CheckInCheckOutLog_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ProductBatches_ProductSKUs_ProductSKUsId",
-                        column: x => x.ProductSKUsId,
-                        principalTable: "ProductSKUs",
+                        name: "FK_CheckInCheckOutLog_UsersTasks_UsersTasksId",
+                        column: x => x.UsersTasksId,
+                        principalTable: "UsersTasks",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PartTimeAssignment",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    PartTimeId = table.Column<Guid>(type: "uuid", nullable: false),
+                    WorkDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    TaskType = table.Column<int>(type: "integer", nullable: false),
+                    ShiftCode = table.Column<string>(type: "text", nullable: true),
+                    IsConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    Note = table.Column<string>(type: "text", nullable: true),
+                    UserId = table.Column<string>(type: "text", nullable: true),
+                    UsersTasksId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CompanyId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PartTimeAssignment", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PartTimeAssignment_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_PartTimeAssignment_PartTime_PartTimeId",
+                        column: x => x.PartTimeId,
+                        principalTable: "PartTime",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PartTimeAssignment_Part_Time_Company_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "Part_Time_Company",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PartTimeAssignment_UsersTasks_UsersTasksId",
+                        column: x => x.UsersTasksId,
+                        principalTable: "UsersTasks",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
                 name: "Inventory",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    StockQuantity = table.Column<int>(type: "int", nullable: true),
-                    QuantityBooked = table.Column<int>(type: "int", nullable: true),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ProductSKUId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    WarehouseLocationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    StockQuantity = table.Column<int>(type: "integer", nullable: true),
+                    QuantityBooked = table.Column<int>(type: "integer", nullable: true),
+                    LastUpdated = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ProductSKUId = table.Column<Guid>(type: "uuid", nullable: true),
+                    WarehouseLocationId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -528,15 +645,50 @@ namespace MadeHuman_Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ProductBatches",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    StatusProductBatches = table.Column<int>(type: "integer", nullable: false),
+                    ProductSKUId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductSKU = table.Column<string>(type: "text", nullable: false),
+                    InboundTaskId = table.Column<Guid>(type: "uuid", nullable: false),
+                    WarehouseLocationId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductBatches", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ProductBatches_InboundTasks_InboundTaskId",
+                        column: x => x.InboundTaskId,
+                        principalTable: "InboundTasks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProductBatches_ProductSKUs_ProductSKUId",
+                        column: x => x.ProductSKUId,
+                        principalTable: "ProductSKUs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProductBatches_WarehouseLocations_WarehouseLocationId",
+                        column: x => x.WarehouseLocationId,
+                        principalTable: "WarehouseLocations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "InventoryLogs",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    StockQuantity = table.Column<int>(type: "int", nullable: false),
-                    ChangeBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ActionInventoryLogs = table.Column<int>(type: "int", nullable: false),
-                    RemainingQuantity = table.Column<int>(type: "int", nullable: false),
-                    InventoryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    StockQuantity = table.Column<int>(type: "integer", nullable: false),
+                    ChangeBy = table.Column<string>(type: "text", nullable: false),
+                    ActionInventoryLogs = table.Column<int>(type: "integer", nullable: false),
+                    RemainingQuantity = table.Column<int>(type: "integer", nullable: false),
+                    InventoryId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -558,8 +710,7 @@ namespace MadeHuman_Server.Migrations
                 name: "RoleNameIndex",
                 table: "AspNetRoles",
                 column: "NormalizedName",
-                unique: true,
-                filter: "[NormalizedName] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
@@ -585,8 +736,17 @@ namespace MadeHuman_Server.Migrations
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
-                unique: true,
-                filter: "[NormalizedUserName] IS NOT NULL");
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CheckInCheckOutLog_UserId",
+                table: "CheckInCheckOutLog",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CheckInCheckOutLog_UsersTasksId",
+                table: "CheckInCheckOutLog",
+                column: "UsersTasksId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ComboItems_ComboId",
@@ -646,6 +806,31 @@ namespace MadeHuman_Server.Migrations
                 column: "ShopOrderId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PartTime_CompanyId",
+                table: "PartTime",
+                column: "CompanyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PartTimeAssignment_CompanyId",
+                table: "PartTimeAssignment",
+                column: "CompanyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PartTimeAssignment_PartTimeId",
+                table: "PartTimeAssignment",
+                column: "PartTimeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PartTimeAssignment_UserId",
+                table: "PartTimeAssignment",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PartTimeAssignment_UsersTasksId",
+                table: "PartTimeAssignment",
+                column: "UsersTasksId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_product_Combo_Imgs_ComboId",
                 table: "product_Combo_Imgs",
                 column: "ComboId");
@@ -662,9 +847,15 @@ namespace MadeHuman_Server.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductBatches_ProductSKUsId",
+                name: "IX_ProductBatches_ProductSKUId",
                 table: "ProductBatches",
-                column: "ProductSKUsId");
+                column: "ProductSKUId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProductBatches_WarehouseLocationId",
+                table: "ProductBatches",
+                column: "WarehouseLocationId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductItems_ProductId",
@@ -680,20 +871,28 @@ namespace MadeHuman_Server.Migrations
                 name: "IX_ProductSKUs_ComboId",
                 table: "ProductSKUs",
                 column: "ComboId",
-                unique: true,
-                filter: "[ComboId] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductSKUs_ProductId",
                 table: "ProductSKUs",
                 column: "ProductId",
-                unique: true,
-                filter: "[ProductId] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ShopOrders_AppUserId",
                 table: "ShopOrders",
                 column: "AppUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UsersTasks_PartTimeId",
+                table: "UsersTasks",
+                column: "PartTimeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UsersTasks_UserId",
+                table: "UsersTasks",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_WarehouseLocations_ZoneId",
@@ -725,6 +924,9 @@ namespace MadeHuman_Server.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "CheckInCheckOutLog");
+
+            migrationBuilder.DropTable(
                 name: "ComboItems");
 
             migrationBuilder.DropTable(
@@ -735,6 +937,9 @@ namespace MadeHuman_Server.Migrations
 
             migrationBuilder.DropTable(
                 name: "OrderItems");
+
+            migrationBuilder.DropTable(
+                name: "PartTimeAssignment");
 
             migrationBuilder.DropTable(
                 name: "product_Combo_Imgs");
@@ -755,6 +960,9 @@ namespace MadeHuman_Server.Migrations
                 name: "ShopOrders");
 
             migrationBuilder.DropTable(
+                name: "UsersTasks");
+
+            migrationBuilder.DropTable(
                 name: "InboundTasks");
 
             migrationBuilder.DropTable(
@@ -767,6 +975,9 @@ namespace MadeHuman_Server.Migrations
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
+                name: "PartTime");
+
+            migrationBuilder.DropTable(
                 name: "InboundReceipt");
 
             migrationBuilder.DropTable(
@@ -777,6 +988,9 @@ namespace MadeHuman_Server.Migrations
 
             migrationBuilder.DropTable(
                 name: "WarehouseZones");
+
+            migrationBuilder.DropTable(
+                name: "Part_Time_Company");
 
             migrationBuilder.DropTable(
                 name: "Categories");

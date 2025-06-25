@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using MadeHuman_Server.Model.User_Task;
 
 namespace MadeHuman_Server.Model.Shop
-{                                               
+{
     public enum StatusOrder
     {
         Created,
