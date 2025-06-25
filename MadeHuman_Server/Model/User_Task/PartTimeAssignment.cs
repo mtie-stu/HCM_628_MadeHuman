@@ -46,7 +46,6 @@ namespace MadeHuman_Server.Model.User_Task
         [ForeignKey(nameof(UsersTasksId))]
         public UsersTasks? UsersTasks { get; set; }
         // ✅ Thêm FK đến Company
-        [Required]
         public Guid? CompanyId { get; set; }
 
         [ForeignKey(nameof(CompanyId))]
