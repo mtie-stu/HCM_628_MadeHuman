@@ -22,7 +22,6 @@ namespace MadeHuman_Server.Model.User_Task
 
 
         // ✅ FK tới Company
-        [Required]
         public Guid CompanyId { get; set; }
 
         [ForeignKey(nameof(CompanyId))]
