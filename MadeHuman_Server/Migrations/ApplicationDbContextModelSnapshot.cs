@@ -498,7 +498,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("CompanyId");
 
-                    b.ToTable("PartTime");
+                    b.ToTable("PartTimes");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.User_Task.PartTimeAssignment", b =>
@@ -579,7 +579,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Part_Time_Company");
+                    b.ToTable("PartTimeCompanies");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.User_Task.UsersTasks", b =>
