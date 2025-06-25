@@ -113,6 +113,11 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+    // ✅ Seed dữ liệu gốc trước
+    await ApplicationDbContext.SeedPartTimeAsync(db);
+
+    // ✅ Sau đó mới seed Assignment
     await ApplicationDbContext.SeedPartTimeAssignmentAsync(db);
 }
 
