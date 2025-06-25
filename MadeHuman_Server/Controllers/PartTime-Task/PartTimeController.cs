@@ -9,31 +9,17 @@ namespace MadeHuman_Server.Controllers.PartTime_Task
     [Route("api/parttime")]
     public class PartTimeController : ControllerBase
     {
-        private readonly IPartTimeService _service;
+        private readonly IPartTimeService _partTimeService;
 
-        public PartTimeController(IPartTimeService service)
+        public PartTimeController(IPartTimeService partTimeService)
         {
-            _service = service;
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-        {
-            var result = await _service.GetAllAsync();
-            return Ok(result);
+            _partTimeService = partTimeService;
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(PartTimeViewModel model)
+        public async Task<IActionResult> Create([FromBody] CreatePartTimeViewModel dto)
         {
-            var result = await _service.CreateAsync(model);
-            return Ok(result);
-        }
-
-        [HttpPut]
-        public async Task<IActionResult> Update(PartTimeViewModel model)
-        {
-            var result = await _service.UpdateAsync(model);
+            var result = await _partTimeService.CreateAsync(dto.PartTimeId, dto.Name, dto.CCCD, dto.PhoneNumber, dto.CompanyId);
             return Ok(result);
         }
     }

@@ -26,7 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\Inbound\" />
     <Folder Include="Model\Outbound\" />
     <Folder Include="Uploads\" />
   </ItemGroup>

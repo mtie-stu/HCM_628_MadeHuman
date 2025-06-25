@@ -1,6 +1,6 @@
-﻿using MadeHuman_Server.Model;
-using MadeHuman_Server.Model.Inbound;
+﻿using MadeHuman_Server.Model.Inbound;
 using MadeHuman_Server.Model.Shop;
+using MadeHuman_Server.Model.User_Task;
 using MadeHuman_Server.Model.WareHouse;
 using Madehuman_Share.ViewModel.WareHouse;
 using Microsoft.AspNetCore.Identity;
@@ -34,6 +34,9 @@ namespace MadeHuman_Server.Data
         public DbSet<Inventory> Inventory { get; set; }
         public DbSet<InventoryLogs> InventoryLogs { get; set; }
         public DbSet<Product_Combo_Img> product_Combo_Imgs { get; set; }
+        public DbSet<CheckInCheckOutLog> CheckInCheckOutLog { get; set; }
+        public DbSet<UsersTasks> UsersTasks { get; set; }
+        public DbSet<PartTimeAssignment> PartTimeAssignment { get; set; }
 
 
 
@@ -69,11 +72,23 @@ namespace MadeHuman_Server.Data
         {
             base.OnModelCreating(modelBuilder); // Quan trọng: gọi base trước
 
+            // Tự động chuyển string => text (PostgreSQL)
+            foreach (var entity in modelBuilder.Model.GetEntityTypes())
+            {
+                foreach (var property in entity.GetProperties())
+                {
+                    if (property.ClrType == typeof(string) && property.GetColumnType() == "nvarchar(max)")
+                    {
+                        property.SetColumnType("text"); // ✅ tương thích PostgreSQL
+                    }
+                }
+            }
+
             modelBuilder.Entity<Product>()
-        .HasOne(p => p.ProductSKU)
-        .WithOne(sku => sku.Product)
-        .HasForeignKey<ProductSKU>(sku => sku.ProductId)
-        .OnDelete(DeleteBehavior.Restrict);
+    .HasOne(p => p.ProductSKU)
+    .WithOne(sku => sku.Product)
+    .HasForeignKey<ProductSKU>(sku => sku.ProductId)
+    .OnDelete(DeleteBehavior.Restrict);
 
 
             modelBuilder.Entity<Combo>()
@@ -82,16 +97,63 @@ namespace MadeHuman_Server.Data
           .HasForeignKey<ProductSKU>(sku => sku.ComboId)
           .OnDelete(DeleteBehavior.Restrict);
 
-
-            // Đảm bảo mỗi ProductSKU phải thuộc về ProductItem HOẶC Combo
             modelBuilder.Entity<ProductSKU>()
-                .HasCheckConstraint("CK_ProductSKU_Owner",
-                    "([ProductId] IS NOT NULL AND [ComboId] IS NULL) OR ([ProductId] IS NULL AND [ComboId] IS NOT NULL)");
+      .HasCheckConstraint("CK_ProductSKU_Owner",
+          "(\"ProductId\" IS NOT NULL AND \"ComboId\" IS NULL) OR (\"ProductId\" IS NULL AND \"ComboId\" IS NOT NULL)");
+
+            /* // Đảm bảo mỗi ProductSKU phải thuộc về ProductItem HOẶC Combo
+             modelBuilder.Entity<ProductSKU>()
+                 .HasCheckConstraint("CK_ProductSKU_Owner",
+                     "([ProductId] IS NOT NULL AND [ComboId] IS NULL) OR ([ProductId] IS NULL AND [ComboId] IS NOT NULL)");*/
         }
 
         internal async Task<WareHouseViewModel> FirstOrDefault(Func<object, bool> value)
         {
             throw new NotImplementedException();
         }
+        public static async Task SeedPartTimeAssignmentAsync(ApplicationDbContext context)
+        {
+            if (await context.PartTimeAssignment.AnyAsync()) return;
+
+            var today = DateTime.UtcNow.Date;
+
+            var data = new List<PartTimeAssignment>
+    {
+        new PartTimeAssignment
+        {
+            Id = Guid.NewGuid(),
+            PartTimeId = Guid.NewGuid(),
+            WorkDate = today,
+            TaskType = TaskType.Picker,
+            ShiftCode = "Sáng",
+            IsConfirmed = true,
+            Note = "Có mặt đúng giờ"
+        },
+        new PartTimeAssignment
+        {
+            Id = Guid.NewGuid(),
+            PartTimeId = Guid.NewGuid(),
+            WorkDate = today,
+            TaskType = TaskType.Packer,
+            ShiftCode = "Chiều",
+            IsConfirmed = false,
+            Note = "Chưa xác nhận"
+        },
+        new PartTimeAssignment
+        {
+            Id = Guid.NewGuid(),
+            PartTimeId = Guid.NewGuid(),
+            WorkDate = today.AddDays(1),
+            TaskType = TaskType.Dispatcher,
+            ShiftCode = "Tối",
+            IsConfirmed = true,
+            Note = "Ca tăng cường"
+        }
+    };
+
+            context.PartTimeAssignment.AddRange(data);
+            await context.SaveChangesAsync();
+        }
+
     }
 }

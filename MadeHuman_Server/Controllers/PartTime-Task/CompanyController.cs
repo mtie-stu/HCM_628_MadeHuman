@@ -1,5 +1,4 @@
 ﻿using MadeHuman_Server.Service.UserTask;
-using Madehuman_Share.ViewModel.PartTime_Task;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,30 +8,26 @@ namespace MadeHuman_Server.Controllers.PartTime_Task
     [Route("api/company")]
     public class CompanyController : ControllerBase
     {
-        private readonly IPartTimeCompanyService _service;
-        public CompanyController(IPartTimeCompanyService service)
+        private readonly IPartTimeCompanyService _companyService;
+
+        public CompanyController(IPartTimeCompanyService companyService)
         {
-            _service = service;                        
+            _companyService = companyService;
         }
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+
+        [HttpPost("add")]
+        public async Task<IActionResult> AddCompany(string name, string? address)
         {
-            var result = await _service.GetAllAsync();
+            var result = await _companyService.AddCompanyAsync(name, address);
             return Ok(result);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create(PartTimeCompanyViewModel model)
+        [HttpPut("{id}/inactive")]
+        public async Task<IActionResult> SetInactive(Guid id)
         {
-            var result = await _service.CreateAsync(model);
-            return Ok(result);
-        }
-
-        [HttpPut]
-        public async Task<IActionResult> Update(PartTimeCompanyViewModel model)
-        {
-            var result = await _service.UpdateAsync(model);
-            return Ok(result);
+            var success = await _companyService.SetActiveAsync(id);
+            if (!success) return NotFound();
+            return Ok("Cập nhật trạng thái thành công");
         }
     }
 

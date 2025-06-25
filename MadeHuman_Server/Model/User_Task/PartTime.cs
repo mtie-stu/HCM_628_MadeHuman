@@ -12,8 +12,9 @@ namespace MadeHuman_Server.Model.User_Task
     public class PartTime
     {
         [Key]
-        public Guid PartTimeId { get; set; }
+        public Guid Id { get; set; }
 
+        public string PartTimeId { get; set; }
         public string Name { get; set; }
         public string CCCD { get; set; }
         public string PhoneNumber { get; set; }
@@ -21,6 +22,7 @@ namespace MadeHuman_Server.Model.User_Task
 
 
         // ✅ FK tới Company
+        [Required]
         public Guid CompanyId { get; set; }
 
         [ForeignKey(nameof(CompanyId))]
