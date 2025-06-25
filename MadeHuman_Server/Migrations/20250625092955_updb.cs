@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MadeHuman_Server.Migrations
 {
     /// <inheritdoc />
-    public partial class Updb1 : Migration
+    public partial class updb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -305,6 +305,7 @@ namespace MadeHuman_Server.Migrations
                     Name = table.Column<string>(type: "text", nullable: false),
                     CCCD = table.Column<string>(type: "text", nullable: false),
                     PhoneNumber = table.Column<string>(type: "text", nullable: false),
+                    StatusPartTimes = table.Column<int>(type: "integer", nullable: false),
                     CompanyId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
@@ -442,8 +443,8 @@ namespace MadeHuman_Server.Migrations
                     TaskType = table.Column<int>(type: "integer", nullable: false),
                     WorkDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UserId = table.Column<string>(type: "text", nullable: false),
-                    CheckInTime = table.Column<TimeSpan>(type: "interval", nullable: true),
-                    CheckOutTime = table.Column<TimeSpan>(type: "interval", nullable: true),
+                    CheckInTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CheckOutTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     BreakDuration = table.Column<TimeSpan>(type: "interval", nullable: true),
                     OvertimeDuration = table.Column<TimeSpan>(type: "interval", nullable: true),
                     IsCompleted = table.Column<bool>(type: "boolean", nullable: false),
@@ -585,6 +586,9 @@ namespace MadeHuman_Server.Migrations
                     TaskType = table.Column<int>(type: "integer", nullable: false),
                     ShiftCode = table.Column<string>(type: "text", nullable: true),
                     IsConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    CheckInTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CheckOutTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    BreakDuration = table.Column<TimeSpan>(type: "interval", nullable: true),
                     Note = table.Column<string>(type: "text", nullable: true),
                     UserId = table.Column<string>(type: "text", nullable: true),
                     UsersTasksId = table.Column<Guid>(type: "uuid", nullable: true),
