@@ -1,12 +1,16 @@
-﻿/*using MadeHuman_Server.Data;
+﻿using MadeHuman_Server.Data;
 using MadeHuman_Server.Model.User_Task;
+using Madehuman_Share.ViewModel.PartTime_Task;
+using Microsoft.EntityFrameworkCore;
 using System;
 
 namespace MadeHuman_Server.Service.UserTask
 {
     public interface IPartTimeService
     {
-        Task<PartTime> CreateAsync(string partTimeId, string name, string cccd, string phone, Guid companyId);
+        Task<List<PartTimeViewModel>> GetAllAsync();
+        Task<PartTimeViewModel> CreateAsync(PartTimeViewModel model);
+        Task<PartTimeViewModel> UpdateAsync(PartTimeViewModel model);
     }
     public class PartTimeService : IPartTimeService
     {
@@ -17,29 +21,53 @@ namespace MadeHuman_Server.Service.UserTask
             _context = context;
         }
 
-        public async Task<PartTime> CreateAsync(string partTimeId, string name, string cccd, string phone, Guid companyId)
+        public async Task<List<PartTimeViewModel>> GetAllAsync()
         {
-            // Kiểm tra công ty có tồn tại không
-            var company = await _context.Set<Part_Time_Company>().FindAsync(companyId);
-            if (company == null)
-                throw new Exception("Company không tồn tại.");
+            return await _context.PartTimes
+                .Select(x => new PartTimeViewModel
+                {
+                    PartTimeId = x.PartTimeId,
+                    Name = x.Name,
+                    CCCD = x.CCCD,
+                    PhoneNumber = x.PhoneNumber,
+                    StatusPartTimes = (StatusPartTimevm)x.StatusPartTimes,
+                    CompanyId = x.CompanyId
+                })
+                .ToListAsync();
+        }
 
-            var partTime = new PartTime
+        public async Task<PartTimeViewModel> CreateAsync(PartTimeViewModel model)
+        {
+            var entity = new PartTime
             {
                 PartTimeId = Guid.NewGuid(),
-                Name = name,
-                CCCD = cccd,
-                PhoneNumber = phone,
-                CompanyId = companyId,
-                StatusPartTimes=StatusPartTime.PartTime
-               
+                Name = model.Name,
+                CCCD = model.CCCD,
+                PhoneNumber = model.PhoneNumber,
+                StatusPartTimes = (StatusPartTime)model.StatusPartTimes,
+                CompanyId = model.CompanyId
             };
 
-            _context.Set<PartTime>().Add(partTime);
+            _context.PartTimes.Add(entity);
             await _context.SaveChangesAsync();
 
-            return partTime;
+            model.PartTimeId = entity.PartTimeId;
+            return model;
+        }
+
+        public async Task<PartTimeViewModel> UpdateAsync(PartTimeViewModel model)
+        {
+            var entity = await _context.PartTimes.FindAsync(model.PartTimeId);
+            if (entity == null) throw new Exception("PartTime not found");
+
+            entity.Name = model.Name;
+            entity.CCCD = model.CCCD;
+            entity.PhoneNumber = model.PhoneNumber;
+            entity.StatusPartTimes = (StatusPartTime)model.StatusPartTimes;
+            entity.CompanyId = model.CompanyId;
+
+            await _context.SaveChangesAsync();
+            return model;
         }
     }
 }
-*/

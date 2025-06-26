@@ -6,12 +6,19 @@ using System.Threading.Tasks;
 
 namespace Madehuman_Share.ViewModel.PartTime_Task
 {
-    public class CreatePartTimeViewModel
+    public enum StatusPartTimevm
     {
-        public string PartTimeId { get; set; }
+        PartTime,
+        PTCD,
+        Banned
+    }
+    public class PartTimeViewModel
+    {
+        public Guid? PartTimeId { get; set; } // null nếu thêm
         public string Name { get; set; }
         public string CCCD { get; set; }
         public string PhoneNumber { get; set; }
+        public StatusPartTimevm StatusPartTimes { get; set; }
         public Guid CompanyId { get; set; }
     }
 }

@@ -1,5 +1,6 @@
-﻿/*using MadeHuman_Server.Data;
+﻿using MadeHuman_Server.Data;
 using MadeHuman_Server.Model.User_Task;
+using Madehuman_Share.ViewModel.PartTime_Task;
 using Microsoft.EntityFrameworkCore;
 using System;
 
@@ -7,8 +8,9 @@ namespace MadeHuman_Server.Service.UserTask
 {
     public interface IPartTimeCompanyService
     {
-        Task<Part_Time_Company> AddCompanyAsync(string name, string? address);
-        Task<bool> SetActiveAsync(Guid companyId);
+        Task<List<PartTimeCompanyViewModel>> GetAllAsync();
+        Task<PartTimeCompanyViewModel> CreateAsync(PartTimeCompanyViewModel model);
+        Task<PartTimeCompanyViewModel> UpdateAsync(PartTimeCompanyViewModel model);
     }
     public class PartTimeCompanySvc : IPartTimeCompanyService
     {
@@ -19,31 +21,47 @@ namespace MadeHuman_Server.Service.UserTask
             _context = context;
         }
 
-       public async Task<Part_Time_Company> AddCompanyAsync(string name, string? address)
+        public async Task<List<PartTimeCompanyViewModel>> GetAllAsync()
         {
-            var company = new Part_Time_Company
+            return await _context.PartTimeCompanies
+                .Select(x => new PartTimeCompanyViewModel
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Address = x.Address,
+                    Status = (StatusPart_Time_Companyvm)x.Status
+                })
+                .ToListAsync();
+        }
+
+        public async Task<PartTimeCompanyViewModel> CreateAsync(PartTimeCompanyViewModel model)
+        {
+            var entity = new Part_Time_Company
             {
                 Id = Guid.NewGuid(),
-                Name = name,
-                Address = address,
-                Status = StatusPart_Time_Company.Inactive
+                Name = model.Name,
+                Address = model.Address,
+                Status = (StatusPart_Time_Company)model.Status
             };
 
-            _context.Set<Part_Time_Company>().Add(company);
+            _context.PartTimeCompanies.Add(entity);
             await _context.SaveChangesAsync();
-            return company;
+
+            model.Id = entity.Id;
+            return model;
         }
 
-        public async Task<bool> SetActiveAsync(Guid companyId)
+        public async Task<PartTimeCompanyViewModel> UpdateAsync(PartTimeCompanyViewModel model)
         {
-            var company = await _context.Set<Part_Time_Company>()
-                .FirstOrDefaultAsync(c => c.Id == companyId);
+            var entity = await _context.PartTimeCompanies.FindAsync(model.Id);
+            if (entity == null) throw new Exception("Company not found");
 
-            if (company == null) return false;
+            entity.Name = model.Name;
+            entity.Address = model.Address;
+            entity.Status = (StatusPart_Time_Company)model.Status;
 
-            company.Status = StatusPart_Time_Company.Active;
             await _context.SaveChangesAsync();
-            return true;
+            return model;
         }
     }
-}*/
+}
