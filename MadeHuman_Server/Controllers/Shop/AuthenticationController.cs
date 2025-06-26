@@ -1,5 +1,6 @@
 ﻿using MadeHuman_Server.Model.User_Task;
 using MadeHuman_Server.Service;
+//using MadeHuman_Server.ViewModel;
 using MadeHuman_Share.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -91,7 +92,7 @@ namespace MadeHuman_Server.Controllers.Shop
                         .Select(e => e.ErrorMessage)
                 });
             }
-            var user = await _userManager.FindByEmailAsync(model.Email!);
+            var user = await _userManager.FindByEmailAsync(model.EmailOrID!);
             if (user == null)
             {
                 return Unauthorized(new { message = "Email hoặc mật khẩu không đúng!" });

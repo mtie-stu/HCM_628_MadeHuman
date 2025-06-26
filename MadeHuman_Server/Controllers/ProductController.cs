@@ -24,7 +24,7 @@ namespace MadeHuman_Server.Controllers
             return await _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.ProductItems)
-                .Include(p => p.ProductSKUs)
+                .Include(p => p.ProductSKU)
                 .Include(p => p.ComboItems)
                 .ToListAsync();
         }
@@ -36,7 +36,7 @@ namespace MadeHuman_Server.Controllers
             var product = await _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.ProductItems)
-                .Include(p => p.ProductSKUs)
+                .Include(p => p.ProductSKU)
                 .Include(p => p.ComboItems)
                 .FirstOrDefaultAsync(p => p.ProductId == id);
 

@@ -65,7 +65,7 @@ namespace MadeHuman_Server.Controllers
                 return NotFound();
 
             existing.SKU = updated.SKU;
-            existing.ProductItemId = updated.ProductItemId;
+            existing.ProductId = updated.ProductId;
             existing.ComboId = updated.ComboId;
 
             await _context.SaveChangesAsync();
