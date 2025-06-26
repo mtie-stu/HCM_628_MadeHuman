@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MadeHuman_Share.ViewModel
+namespace Madehuman_Share.ViewModel
 {
     public class RegisterModel
     {

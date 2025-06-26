@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MadeHuman_Share.ViewModel;
+using Madehuman_Share.ViewModel;
 using MadeHuman_User.Services;
 using MadeHuman_User.Services.IServices;
 
@@ -15,27 +15,26 @@ namespace MadeHuman_User.Controllers
         }
 
         [HttpGet]
-        public IActionResult Login()
-        {
-            ViewData["Title"] = "Login";
-            return View();
-        }
+        public IActionResult Login() => View();
 
         [HttpPost]
-        public IActionResult Login(LoginModel model)
+        public async Task<IActionResult> Login(LoginModel model)
         {
             if (!ModelState.IsValid)
+                return View(model);
+
+            var result = await _loginService.LoginAsync(model);
+            if (result == null)
             {
+                TempData["Error"] = "Email hoặc mật khẩu không đúng!";
                 return View(model);
             }
 
-            if (_loginService.ValidateUser(model.EmailOrID, model.Password))
-            {
-                return RedirectToAction("Index", "Home");
-            }
+            HttpContext.Session.SetString("Token", result.Token);
+            HttpContext.Session.SetString("UserId", result.UserId);
+            HttpContext.Session.SetString("Email", result.Email);
 
-            ModelState.AddModelError(string.Empty, "Thông tin đăng nhập không hợp lệ");
-            return View(model);
+            return RedirectToAction("Index", "Home");
         }
     }
 }
