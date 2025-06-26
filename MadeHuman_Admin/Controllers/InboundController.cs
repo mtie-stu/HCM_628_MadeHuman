@@ -1,4 +1,4 @@
-﻿using MadeHuman_Admin.Models;
+﻿using MadeHuman_Admin.Models.Inbound;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MadeHuman_Admin.Controllers

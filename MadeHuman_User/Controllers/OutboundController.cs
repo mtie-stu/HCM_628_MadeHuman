@@ -73,14 +73,14 @@ namespace MadeHuman_User.Controllers
             }
         public IActionResult Packer()
         {
-            var model = new PackingViewModel
+            var model = new PackerViewModel
             {
                 BasketId = "BASKET123",
                 CurrentPage = 1,
                 TotalPages = 1,
-                TaskItems = new List<PackingViewModel.TaskItem>
+                TaskItems = new List<PackerViewModel.TaskItem>
             {
-                new PackingViewModel.TaskItem
+                new PackerViewModel.TaskItem
                 {
                     TaskId = "ST001",
                     ProductItemId = "PI001",

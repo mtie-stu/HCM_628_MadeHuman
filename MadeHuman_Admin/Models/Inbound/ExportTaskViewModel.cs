@@ -1,4 +1,4 @@
-﻿namespace MadeHuman_Admin.Models
+﻿namespace MadeHuman_Admin.Models.Inbound
 {
     /// <summary>
     /// ViewModel tổng cho quy trình xuất kho theo task
