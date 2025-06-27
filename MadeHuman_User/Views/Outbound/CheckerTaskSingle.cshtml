@@ -1,0 +1,50 @@
+﻿@model MadeHuman_User.Models.CheckerTaskSingleViewModel
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+
+<div class="container mt-5 bg-white p-4 rounded shadow-sm">
+    <h2 class="h5 fw-bold mb-4">Checker Task Single</h2>
+
+    <div class="row g-4">
+        <!-- Left Side: Info -->
+        <div class="col-md-6">
+            <label class="form-label fw-bold fs-5">Mã Task</label>
+            <input type="text" class="form-control mb-3" value="@Model.TaskId" readonly />
+
+            <div class="border rounded p-3 shadow-sm">
+                <div class="d-flex justify-content-center align-items-center bg-light rounded mb-3" style="height: 200px;">
+                    <img src="@Model.ImageUrl" alt="Product Image" class="img-fluid" style="max-height: 180px;" />
+                </div>
+                <div class="fw-bold">@Model.ProductName</div>
+                <div class="text-muted small">@Model.ProductItemId</div>
+                <div class="text-muted small">Số lượng: @Model.Quantity</div>
+                <div class="text-muted small">Vị trí: @Model.LocationStorage</div>
+
+                <input type="text" class="form-control form-control-sm mt-3" placeholder="Product Code" readonly value="@Model.ProductItemId" />
+            </div>
+        </div>
+
+        <!-- Right Side: Input -->
+        <div class="col-md-6">
+            <form asp-action="CheckerTaskSingle" method="post">
+                <label class="form-label fw-bold fs-5">Mã Sản Phẩm</label>
+                <input type="text" name="InputProductCode" class="form-control mb-3" placeholder="Product Code" />
+
+                <label class="form-label fw-bold fs-5">Số lượng</label>
+                <input type="number" name="InputQuantity" class="form-control mb-4" placeholder="Quantity" />
+
+                <button type="submit" class="btn btn-warning text-white shadow">
+                    In Bill
+                </button>
+            </form>
+        </div>
+    </div>
+
+    @if (ViewBag.Message != null)
+    {
+        <div class="alert alert-success mt-4 fw-semibold">@ViewBag.Message</div>
+    }
+</div>
+
+
