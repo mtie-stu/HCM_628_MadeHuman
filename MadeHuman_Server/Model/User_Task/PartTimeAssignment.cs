@@ -21,7 +21,7 @@ namespace MadeHuman_Server.Model.User_Task
         public Guid? PartTimeId { get; set; }         // Mã nhân sự part-time (mã từ công ty nhân lực)
         [ForeignKey(nameof(PartTimeId))]
         public PartTime PartTime { get; set; }
-        public DateTime WorkDate { get; set; }         // Ngày phân công
+        public DateOnly WorkDate { get; set; }         // Ngày phân công
 
         public TaskType TaskType { get; set; }         // Loại nhiệm vụ (enum chuẩn hóa)
 

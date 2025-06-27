@@ -17,7 +17,7 @@ namespace Madehuman_Share.ViewModel.PartTime_Task
     {
         public Guid? Id { get; set; } // null nếu thêm mới
         public Guid? PartTimeId { get; set; }
-        public DateTime WorkDate { get; set; }
+        public DateOnly WorkDate { get; set; }
         public TaskTypevm TaskType { get; set; }
         public string? ShiftCode { get; set; }
         public bool IsConfirmed { get; set; }
