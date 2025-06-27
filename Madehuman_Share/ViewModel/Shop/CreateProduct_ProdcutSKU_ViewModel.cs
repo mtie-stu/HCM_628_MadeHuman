@@ -6,11 +6,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Madehuman_Share.ViewModel.Shop
 {
     public class CreateProduct_ProdcutSKU_ViewModel
     {
+        [BindNever]
         public Guid ProductId { get; set; }
         public string Name { get; set; }
 
@@ -26,9 +28,11 @@ namespace Madehuman_Share.ViewModel.Shop
         [Display(Name = "Chọn Hình")]
         public List<IFormFile>? ImageFiles { get; set; } // Cho phép upload nhiều ảnh
         // Foreign key
+        [BindNever]
         public Guid Id { get; set; }//ProductSKUId
 
         public Guid CategoryId { get; set; }
+        [BindNever]
         public Guid ProductItemId { get; set; }
 
     }

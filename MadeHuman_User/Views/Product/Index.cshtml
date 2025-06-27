@@ -1,0 +1,40 @@
+﻿@model List<Madehuman_Share.ViewModel.Shop.CreateProduct_ProdcutSKU_ViewModel>
+
+@{
+    ViewData["Title"] = "Danh sách sản phẩm";
+}
+
+<h2 class="mb-4">Danh sách sản phẩm</h2>
+
+<a asp-action="Create" class="btn btn-primary mb-3">+ Thêm sản phẩm</a>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-light">
+        <tr>
+            <th>Tên</th>
+            <th>Giá</th>
+            <th>SKU</th>
+            <th>Số lượng</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Name</td>
+                <td>@p.Price.ToString("N0") ₫</td>
+                <td>@p.SKU</td>
+                <td>@p.QuantityInStock</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@p.ProductId" class="btn btn-sm btn-info">Chi tiết</a>
+                    <a asp-action="Edit" asp-route-id="@p.ProductId" class="btn btn-sm btn-warning">Sửa</a>
+                    <form asp-action="Delete" asp-route-id="@p.ProductId" method="post" class="d-inline"
+                          onsubmit="return confirm('Bạn chắc chắn muốn xoá sản phẩm này?');">
+                        <button type="submit" class="btn btn-sm btn-danger">Xoá</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

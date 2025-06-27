@@ -1,5 +1,6 @@
-﻿using MadeHuman_User.Services.IServices;
+﻿
 using MadeHuman_User.ServicesTask.Services;
+using MadeHuman_User.ServicesTask.Services.ShopService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +9,10 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
 
 //cấu hình service
-builder.Services.AddScoped<ILoginService, LoginService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+
 
 
 builder.Services.AddHttpClient("API", client =>

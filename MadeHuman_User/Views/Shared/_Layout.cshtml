@@ -98,19 +98,58 @@
 <body class="bg-light min-vh-100 d-flex flex-column font-sans text-dark">
 
 	<!-- Top bar -->
-	<header class="d-flex align-items-center justify-content-between bg-white px-4 py-3 shadow-sm">
-		<div class="d-flex align-items-center gap-3">
-			<img src="https://storage.googleapis.com/a1aa/image/77806709-391a-489f-73cd-6465f3e28dfb.jpg"
-				 alt="Profile picture"
-				 class="rounded-circle shadow" style="width: 56px; height: 56px; object-fit: cover;" />
-			<span class="fs-5 fw-bold">Nguyễn Văn A</span>
-		</div>
-		<div>
-			<button aria-label="Notifications" class="position-relative text-warning fs-4 border-0 bg-transparent">
-				<i class="fas fa-bell"></i>
-			</button>
-		</div>
-	</header>
+
+    <header class="d-flex align-items-center justify-content-between bg-white px-4 py-3 shadow-sm">
+        <div class="d-flex align-items-center gap-3">
+            <img src="https://storage.googleapis.com/a1aa/image/77806709-391a-489f-73cd-6465f3e28dfb.jpg"
+                 alt="Profile picture"
+                 class="rounded-circle shadow"
+                 style="width: 56px; height: 56px; object-fit: cover;" />
+
+            <!-- Dropdown -->
+            <div class="dropdown">
+                <a class="dropdown-toggle text-dark text-decoration-none fs-5 fw-bold d-inline-flex align-items-center"
+                   href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Nguyễn Văn A
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2"
+                           asp-controller="Category" asp-action="Index">
+                            <i class="fas fa-list"></i> Category
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2"
+                           asp-controller="Product" asp-action="Index">
+                            <i class="fas fa-box-open"></i> Product
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2"
+                           asp-controller="Combo" asp-action="Index">
+                            <i class="fas fa-cubes"></i> Combo
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2"
+                           asp-controller="ShopOrder" asp-action="Index">
+                            <i class="fas fa-shopping-cart"></i> ShopOrder
+                        </a>
+                    </li>
+                </ul>
+
+            </div>
+        </div>
+
+        <div>
+            <button aria-label="Notifications" class="position-relative text-warning fs-4 border-0 bg-transparent">
+                <i class="fas fa-bell"></i>
+            </button>
+        </div>
+    </header>
+
+
 
 	<!-- Layout -->
 	<main class="d-flex flex-grow-1 px-4 py-3 gap-4">

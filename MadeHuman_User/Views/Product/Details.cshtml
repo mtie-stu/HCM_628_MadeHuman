@@ -1,0 +1,29 @@
+﻿@model Madehuman_Share.ViewModel.Shop.CreateProduct_ProdcutSKU_ViewModel
+
+@{
+    ViewData["Title"] = "Chi tiết sản phẩm";
+}
+
+<h2 class="mb-4">Chi tiết sản phẩm</h2>
+
+<dl class="row">
+    <dt class="col-sm-3">Tên:</dt>
+    <dd class="col-sm-9">@Model.Name</dd>
+
+    <dt class="col-sm-3">Mô tả:</dt>
+    <dd class="col-sm-9">@Model.Description</dd>
+
+    <dt class="col-sm-3">Giá:</dt>
+    <dd class="col-sm-9">@Model.Price.ToString("N0") ₫</dd>
+
+    <dt class="col-sm-3">SKU:</dt>
+    <dd class="col-sm-9">@Model.SKU</dd>
+
+    <dt class="col-sm-3">Số lượng tồn:</dt>
+    <dd class="col-sm-9">@Model.QuantityInStock</dd>
+
+    <dt class="col-sm-3">Danh mục:</dt>
+    <dd class="col-sm-9">@Model.CategoryId</dd>
+</dl>
+
+<a asp-action="Index" class="btn btn-secondary">Quay lại</a>

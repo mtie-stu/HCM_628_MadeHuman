@@ -108,12 +108,6 @@ namespace MadeHuman_Server.Service.Shop
 
 
 
-
-
-
-
-
-
         public async Task<bool> UpdateAsync(Guid id, Product updated)
         {
             if (id != updated.ProductId)

@@ -1,37 +1,56 @@
-﻿@model Madehuman_Share.ViewModel.LoginModel
+﻿@model Madehuman_Share.ViewModel.RegisterModel
 
 @{
     Layout = null;
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "Register";
 }
 
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Login</title>
+    <title>Register</title>
     <link rel="stylesheet" href="~/css/login.css" />
 </head>
 <body>
     <div class="login-container">
         <h1>MADEHUMAN</h1>
-        <h3>Welcome back!</h3>
+        <h3>Đăng ký tài khoản mới</h3>
 
-        <form asp-action="Login" method="post">
-            <input asp-for="EmailOrID" class="form-control" placeholder="Email or ID" />
-            <span asp-validation-for="EmailOrID" class="text-danger"></span>
+        @if (TempData["Error"] != null)
+        {
+            <div class="text-danger">@TempData["Error"]</div>
+        }
+        @if (TempData["Success"] != null)
+        {
+            <div class="text-success">@TempData["Success"]</div>
+        }
 
-            <input asp-for="Password" type="password" class="form-control" placeholder="Password" />
+        <form asp-action="Register" method="post">
+            <input asp-for="Name" class="form-control" placeholder="Họ tên" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+
+            <input asp-for="Email" class="form-control" placeholder="Email" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+
+            <input asp-for="SĐT" class="form-control" placeholder="Số điện thoại" />
+            <span asp-validation-for="SĐT" class="text-danger"></span>
+
+            <input asp-for="DiaChi" class="form-control" placeholder="Địa chỉ" />
+            <span asp-validation-for="DiaChi" class="text-danger"></span>
+
+            <input asp-for="Password" type="password" class="form-control" placeholder="Mật khẩu" />
             <span asp-validation-for="Password" class="text-danger"></span>
 
-            <span class="password-hint">Use at least 8 characters with 1 number and one special character.</span>
+            <input asp-for="PasswordConfirm" type="password" class="form-control" placeholder="Nhập lại mật khẩu" />
+            <span asp-validation-for="PasswordConfirm" class="text-danger"></span>
 
-            <button type="submit">LOG IN</button>
+            <span class="password-hint">Mật khẩu ít nhất 8 ký tự, gồm 1 số và 1 ký tự đặc biệt.</span>
+
+            <button type="submit">ĐĂNG KÝ</button>
         </form>
 
-        <a href="#">Forgot password?</a>
-        <a href="@Url.Action("Register", "Account")">Chưa có tài khoản? Đăng ký ngay</a>
-
+        <a href="@Url.Action("Login", "Account")">Đã có tài khoản? Đăng nhập</a>
     </div>
 
     @await Html.PartialAsync("_ValidationScriptsPartial")
@@ -74,7 +93,8 @@
     }
 
     input[type="text"],
-    input[type="password"] {
+    input[type="password"],
+    input[type="email"] {
         padding: 10px;
         border: 1px solid #ccc;
         border-radius: 4px;
@@ -105,6 +125,13 @@
         font-size: 12px;
         color: red;
         text-align: left;
+    }
+
+    .text-success {
+        font-size: 12px;
+        color: green;
+        text-align: center;
+        margin-bottom: 10px;
     }
 
     .password-hint {

@@ -1,17 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Madehuman_Share.ViewModel;
-using MadeHuman_User.Services;
-using MadeHuman_User.Services.IServices;
+using MadeHuman_User.ServicesTask.Services;
+
 
 namespace MadeHuman_User.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly ILoginService _loginService;
+        private readonly IAccountService _accountService;
 
-        public AccountController(ILoginService loginService)
+        public AccountController(IAccountService loginService)
         {
-            _loginService = loginService;
+            _accountService = loginService;
         }
 
         [HttpGet]
@@ -23,7 +23,7 @@ namespace MadeHuman_User.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var result = await _loginService.LoginAsync(model);
+            var result = await _accountService.LoginAsync(model);
             if (result == null)
             {
                 TempData["Error"] = "Email hoặc mật khẩu không đúng!";
@@ -35,6 +35,25 @@ namespace MadeHuman_User.Controllers
             HttpContext.Session.SetString("Email", result.Email);
 
             return RedirectToAction("Index", "Home");
+        }
+        [HttpGet]
+        public IActionResult Register() => View();
+        [HttpPost]
+        public async Task<IActionResult> Register(RegisterModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var success = await _accountService.RegisterAsync(model);
+
+            if (!success)
+            {
+                TempData["Error"] = "Đăng ký thất bại! Email có thể đã tồn tại.";
+                return View(model);
+            }
+
+            TempData["Success"] = "Đăng ký thành công! Hãy đăng nhập.";
+            return RedirectToAction("Login");
         }
     }
 }
