@@ -4,19 +4,19 @@ using MadeHuman_User.Services.IServices;
 namespace MadeHuman_User.ServicesTask.Services
 {
     public class LoginService : ILoginService
-    {
-        private readonly IHttpClientFactory _httpClientFactory;
+    { 
+
+        private readonly HttpClient _client;
 
         public LoginService(IHttpClientFactory httpClientFactory)
         {
-            _httpClientFactory = httpClientFactory;
+            _client = httpClientFactory.CreateClient("API");
         }
 
         public async Task<LoginResultDto?> LoginAsync(LoginModel model)
         {
-            var client = _httpClientFactory.CreateClient("API");
 
-            var response = await client.PostAsJsonAsync("api/Authentication/login", model);
+            var response = await _client.PostAsJsonAsync("api/Authentication/login", model);
 
             if (!response.IsSuccessStatusCode) return null;
 

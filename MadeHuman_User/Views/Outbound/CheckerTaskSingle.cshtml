@@ -1,44 +1,50 @@
 ﻿@model MadeHuman_User.Models.CheckerTaskSingleViewModel
 
-<div class="p-6 bg-white rounded-lg shadow">
-    <h2 class="text-lg font-semibold mb-4">Checker Task Single</h2>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
 
-    <div class="grid grid-cols-2 gap-6">
+<div class="container mt-5 bg-white p-4 rounded shadow-sm">
+    <h2 class="h5 fw-bold mb-4">Checker Task Single</h2>
+
+    <div class="row g-4">
         <!-- Left Side: Info -->
-        <div>
-            <label class="text-2xl font-bold block mb-2">Mã Task</label>
-            <input type="text" class="w-full p-2 border rounded mb-4" value="@Model.TaskId" readonly />
+        <div class="col-md-6">
+            <label class="form-label fw-bold fs-5">Mã Task</label>
+            <input type="text" class="form-control mb-3" value="@Model.TaskId" readonly />
 
-            <div class="border rounded-lg p-4">
-                <div class="w-full h-48 bg-gray-100 flex items-center justify-center mb-4">
-                    <img src="@Model.ImageUrl" alt="Product Image" class="max-h-full max-w-full" />
+            <div class="border rounded p-3 shadow-sm">
+                <div class="d-flex justify-content-center align-items-center bg-light rounded mb-3" style="height: 200px;">
+                    <img src="@Model.ImageUrl" alt="Product Image" class="img-fluid" style="max-height: 180px;" />
                 </div>
-                <div class="font-bold">@Model.ProductName</div>
-                <div class="text-sm text-gray-600">@Model.ProductItemId</div>
-                <div class="text-sm text-gray-600">Số lượng: @Model.Quantity</div>
-                <div class="text-sm text-gray-600">Vị trí: @Model.LocationStorage</div>
+                <div class="fw-bold">@Model.ProductName</div>
+                <div class="text-muted small">@Model.ProductItemId</div>
+                <div class="text-muted small">Số lượng: @Model.Quantity</div>
+                <div class="text-muted small">Vị trí: @Model.LocationStorage</div>
 
-                <input type="text" class="mt-3 w-full p-2 border rounded text-sm" placeholder="Product Code" readonly value="@Model.ProductItemId" />
+                <input type="text" class="form-control form-control-sm mt-3" placeholder="Product Code" readonly value="@Model.ProductItemId" />
             </div>
         </div>
 
         <!-- Right Side: Input -->
-        <form asp-action="CheckerTaskSingle" method="post">
-            <label class="text-2xl font-bold block mb-2">Mã Sản Phẩm</label>
-            <input type="text" name="InputProductCode" class="w-full p-2 border rounded mb-4" placeholder="Product Code" />
+        <div class="col-md-6">
+            <form asp-action="CheckerTaskSingle" method="post">
+                <label class="form-label fw-bold fs-5">Mã Sản Phẩm</label>
+                <input type="text" name="InputProductCode" class="form-control mb-3" placeholder="Product Code" />
 
-            <label class="text-2xl font-bold block mb-2">Số lượng</label>
-            <input type="number" name="InputQuantity" class="w-full p-2 border rounded mb-4" placeholder="Quantity" />
+                <label class="form-label fw-bold fs-5">Số lượng</label>
+                <input type="number" name="InputQuantity" class="form-control mb-4" placeholder="Quantity" />
 
-            <button type="submit"
-                    class="bg-orange-400 text-white px-6 py-2 rounded shadow hover:bg-orange-500 transition-all duration-200">
-                In Bill
-            </button>
-        </form>
+                <button type="submit" class="btn btn-warning text-white shadow">
+                    In Bill
+                </button>
+            </form>
+        </div>
     </div>
 
     @if (ViewBag.Message != null)
     {
-        <div class="mt-4 text-green-600 font-semibold">@ViewBag.Message</div>
+        <div class="alert alert-success mt-4 fw-semibold">@ViewBag.Message</div>
     }
 </div>
+
+
