@@ -1,4 +1,4 @@
-﻿@model List<Madehuman_Share.ViewModel.Shop.CreateProduct_ProdcutSKU_ViewModel>
+﻿@model List<Madehuman_Share.ViewModel.Shop.ProductListItemViewModel>
 
 @{
     ViewData["Title"] = "Danh sách sản phẩm";
@@ -6,35 +6,41 @@
 
 <h2 class="mb-4">Danh sách sản phẩm</h2>
 
-<a asp-action="Create" class="btn btn-primary mb-3">+ Thêm sản phẩm</a>
-
-<table class="table table-bordered table-striped">
+<table class="table table-striped table-hover table-bordered">
     <thead class="table-light">
         <tr>
-            <th>Tên</th>
+            <th>Tên sản phẩm</th>
             <th>Giá</th>
             <th>SKU</th>
-            <th>Số lượng</th>
-            <th></th>
+            <th>Danh mục</th>
+            <th>Thao tác</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var p in Model)
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>@item.Price.ToString("N0") ₫</td>
+                    <td>@item.SKU</td>
+                    <td>@item.CategoryName</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@item.ProductId" class="btn btn-sm btn-info">Chi tiết</a>
+                        <a asp-action="Edit" asp-route-id="@item.ProductId" class="btn btn-sm btn-warning">Sửa</a>
+                        <a asp-action="Delete" asp-route-id="@item.ProductId" class="btn btn-sm btn-danger">Xoá</a>
+                    </td>
+                </tr>
+            }
+        }
+        else
         {
             <tr>
-                <td>@p.Name</td>
-                <td>@p.Price.ToString("N0") ₫</td>
-                <td>@p.SKU</td>
-                <td>@p.QuantityInStock</td>
-                <td>
-                    <a asp-action="Details" asp-route-id="@p.ProductId" class="btn btn-sm btn-info">Chi tiết</a>
-                    <a asp-action="Edit" asp-route-id="@p.ProductId" class="btn btn-sm btn-warning">Sửa</a>
-                    <form asp-action="Delete" asp-route-id="@p.ProductId" method="post" class="d-inline"
-                          onsubmit="return confirm('Bạn chắc chắn muốn xoá sản phẩm này?');">
-                        <button type="submit" class="btn btn-sm btn-danger">Xoá</button>
-                    </form>
-                </td>
+                <td colspan="5" class="text-center text-muted">Không có sản phẩm nào.</td>
             </tr>
         }
     </tbody>
 </table>
+
+<a asp-action="Create" class="btn btn-primary">Tạo sản phẩm mới</a>

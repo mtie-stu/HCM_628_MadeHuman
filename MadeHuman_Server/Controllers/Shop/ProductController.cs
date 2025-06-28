@@ -21,7 +21,15 @@ namespace MadeHuman_Server.Controllers.Shop
         public async Task<IActionResult> GetAll()
         {
             var products = await _productService.GetAllAsync();
-            return Ok(products);
+            var result = products.Select(product => new ProductListItemViewModel
+            {
+                ProductId = product.ProductId,
+                Name = product.Name,
+                Price = product.Price,
+                SKU = product.ProductSKU?.SKU,
+                CategoryName = product.Category?.Name
+            });
+            return Ok(result);
         }
 
         // GET: api/product/{id}
@@ -32,8 +40,28 @@ namespace MadeHuman_Server.Controllers.Shop
             if (product == null)
                 return NotFound(new { message = "Không tìm thấy sản phẩm." });
 
-            return Ok(product);
+            var result = new ProductDetailViewModel
+            {
+                ProductId = product.ProductId,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                SKU = product.ProductSKU?.SKU,
+                QuantityInStock = product.ProductItems?.FirstOrDefault()?.QuantityInStock ?? 0,
+                CategoryName = product.Category?.Name,
+
+                // ✅ Mapping danh sách ProductItems
+                ProductItems = product.ProductItems?.Select(item => new ProductItemDto
+                {
+                    SKU = item.SKU,
+                    QuantityInStock = item.QuantityInStock
+                }).ToList() ?? new List<ProductItemDto>()
+            };
+
+            return Ok(result);
         }
+
+
 
         // POST: api/product
         [HttpPost]
@@ -48,15 +76,16 @@ namespace MadeHuman_Server.Controllers.Shop
 
         // PUT: api/product/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] Product updatedProduct)
+        public async Task<IActionResult> Update(Guid id, [FromBody] CreateProduct_ProdcutSKU_ViewModel updated)
         {
-            var result = await _productService.UpdateAsync(id, updatedProduct);
+            var result = await _productService.UpdateAsync(id, updated);
             if (!result)
                 return NotFound(new { message = "Không thể cập nhật sản phẩm." });
 
             return Ok(new { message = "Cập nhật thành công." });
         }
 
-       
+
+
     }
 }

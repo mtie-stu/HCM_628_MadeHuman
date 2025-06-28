@@ -1,52 +1,50 @@
 ﻿@model Madehuman_Share.ViewModel.Shop.CreateProduct_ProdcutSKU_ViewModel
 
 @{
-    ViewData["Title"] = "Chỉnh sửa sản phẩm";
+    ViewData["Title"] = "Cập nhật sản phẩm";
 }
 
-<h2 class="mb-4">Chỉnh sửa sản phẩm</h2>
+<h2 class="mb-4">Cập nhật sản phẩm</h2>
 
 <form asp-action="Edit" method="post">
     <input type="hidden" asp-for="ProductId" />
 
     <div class="mb-3">
-        <label asp-for="Name" class="form-label">Tên</label>
+        <label asp-for="Name" class="form-label"></label>
         <input asp-for="Name" class="form-control" />
-        <span asp-validation-for="Name" class="text-danger" />
+        <span asp-validation-for="Name" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
-        <label asp-for="Description" class="form-label">Mô tả</label>
-        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-        <span asp-validation-for="Description" class="text-danger" />
+        <label asp-for="Description" class="form-label"></label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
-        <label asp-for="Price" class="form-label">Giá</label>
+        <label asp-for="Price" class="form-label"></label>
         <input asp-for="Price" class="form-control" />
-        <span asp-validation-for="Price" class="text-danger" />
+        <span asp-validation-for="Price" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
-        <label asp-for="SKU" class="form-label">SKU</label>
+        <label asp-for="SKU" class="form-label"></label>
         <input asp-for="SKU" class="form-control" />
-        <span asp-validation-for="SKU" class="text-danger" />
+        <span asp-validation-for="SKU" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
-        <label asp-for="QuantityInStock" class="form-label">Số lượng tồn</label>
+        <label asp-for="QuantityInStock" class="form-label"></label>
         <input asp-for="QuantityInStock" class="form-control" />
-        <span asp-validation-for="QuantityInStock" class="text-danger" />
     </div>
 
     <div class="mb-3">
-        <label asp-for="CategoryId" class="form-label">Danh mục</label>
+        <label asp-for="CategoryId" class="form-label"></label>
         <input asp-for="CategoryId" class="form-control" />
-        <span asp-validation-for="CategoryId" class="text-danger" />
     </div>
 
-    <button type="submit" class="btn btn-primary">Cập nhật</button>
-    <a asp-action="Index" class="btn btn-secondary">Huỷ</a>
+    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
 </form>
 
 @section Scripts {

@@ -1,55 +1,52 @@
 ﻿@model Madehuman_Share.ViewModel.Shop.CreateProduct_ProdcutSKU_ViewModel
 
 @{
-    ViewData["Title"] = "Tạo sản phẩm";
+    ViewData["Title"] = "Tạo sản phẩm mới";
 }
 
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
+<h2 class="mb-4">Tạo sản phẩm mới</h2>
 
 <form asp-action="Create" method="post" enctype="multipart/form-data">
     <div class="mb-3">
-        <label asp-for="Name" class="form-label">Tên sản phẩm</label>
+        <label asp-for="Name" class="form-label"></label>
         <input asp-for="Name" class="form-control" />
-        <span asp-validation-for="Name" class="text-danger" />
+        <span asp-validation-for="Name" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
-        <label asp-for="Description" class="form-label">Mô tả</label>
-        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
-        <span asp-validation-for="Description" class="text-danger" />
+        <label asp-for="Description" class="form-label"></label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
-        <label asp-for="Price" class="form-label">Giá</label>
+        <label asp-for="Price" class="form-label"></label>
         <input asp-for="Price" class="form-control" />
-        <span asp-validation-for="Price" class="text-danger" />
+        <span asp-validation-for="Price" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
-        <label asp-for="SKU" class="form-label">Mã SKU</label>
+        <label asp-for="SKU" class="form-label"></label>
         <input asp-for="SKU" class="form-control" />
-        <span asp-validation-for="SKU" class="text-danger" />
+        <span asp-validation-for="SKU" class="text-danger"></span>
     </div>
 
-    <div class="mb-3">
-        <label asp-for="QuantityInStock" class="form-label">Số lượng tồn kho</label>
+@*     <div class="mb-3">
+        <label asp-for="QuantityInStock" class="form-label"></label>
         <input asp-for="QuantityInStock" class="form-control" />
-        <span asp-validation-for="QuantityInStock" class="text-danger" />
+        <span asp-validation-for="QuantityInStock" class="text-danger"></span>
     </div>
-
+ *@
     <div class="mb-3">
-        <label asp-for="CategoryId" class="form-label">Mã danh mục</label>
+        <label asp-for="CategoryId" class="form-label"></label>
         <input asp-for="CategoryId" class="form-control" />
-        <span asp-validation-for="CategoryId" class="text-danger" />
+        <span asp-validation-for="CategoryId" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
-        <label asp-for="ImageFiles" class="form-label">Hình ảnh (có thể chọn nhiều)</label>
-        <input asp-for="ImageFiles" class="form-control" type="file" multiple />
-        <span asp-validation-for="ImageFiles" class="text-danger" />
+        <label asp-for="ImageFiles" class="form-label">Hình ảnh</label>
+        <input asp-for="ImageFiles" type="file" multiple class="form-control" />
+        <span asp-validation-for="ImageFiles" class="text-danger"></span>
     </div>
 
     <button type="submit" class="btn btn-primary">Tạo sản phẩm</button>

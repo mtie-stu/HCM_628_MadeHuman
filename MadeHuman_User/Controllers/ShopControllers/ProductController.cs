@@ -13,31 +13,39 @@ namespace MadeHuman_User.Controllers.ShopControllers
             _productService = productService;
         }
 
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             var products = await _productService.GetAllAsync();
             return View(products);
         }
 
+
         public async Task<IActionResult> Details(Guid id)
         {
-            var product = await _productService.GetByIdAsync(id);
-            if (product == null) return NotFound();
-            return View(product);
+            var model = await _productService.GetProductDetailAsync(id);
+            if (model == null)
+                return NotFound();
+
+            return View(model);
         }
 
         [HttpGet]
-        public IActionResult Create() => View();
+        public IActionResult Create()
+        {
+            return View();
+        }
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateProduct_ProdcutSKU_ViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+                return View(model);
 
             var success = await _productService.CreateAsync(model);
             if (!success)
             {
-                TempData["Error"] = "Tạo sản phẩm thất bại!";
+                ModelState.AddModelError(string.Empty, "Tạo sản phẩm thất bại.");
                 return View(model);
             }
 
@@ -48,9 +56,9 @@ namespace MadeHuman_User.Controllers.ShopControllers
         [HttpGet]
         public async Task<IActionResult> Edit(Guid id)
         {
-            var product = await _productService.GetByIdAsync(id);
+            var product = await _productService.GetProductDetailAsync(id);
             if (product == null) return NotFound();
-            return View(product);
+            return View(product); // truyền sang View để hiển thị sẵn
         }
 
         [HttpPost]
@@ -67,5 +75,6 @@ namespace MadeHuman_User.Controllers.ShopControllers
 
             return RedirectToAction("Index");
         }
+
     }
 }

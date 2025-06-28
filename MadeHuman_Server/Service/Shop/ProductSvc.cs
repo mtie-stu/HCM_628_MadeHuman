@@ -11,7 +11,7 @@ namespace MadeHuman_Server.Service.Shop
         Task<IEnumerable<Product>> GetAllAsync();
         Task<Product?> GetByIdAsync(Guid id);
         Task<Product> CreateAsync(CreateProduct_ProdcutSKU_ViewModel createproduct);
-        Task<bool> UpdateAsync(Guid id, Product updatedProduct);
+        Task<bool> UpdateAsync(Guid id, CreateProduct_ProdcutSKU_ViewModel updated);
         Task<bool> DeleteAsync(Guid id);
     }
     public class ProductService : IProductService
@@ -66,14 +66,14 @@ namespace MadeHuman_Server.Service.Shop
                 },
 
                 ProductItems = new List<ProductItem>
-        {
-            new ProductItem
-            {
-                ProductItemId = Guid.NewGuid(),
-                ProductId = productId,
-                SKU = createproduct.SKU,
-            }
-        }
+                {
+                    new ProductItem
+                    {
+                        ProductItemId = Guid.NewGuid(),
+                        ProductId = productId,
+                        SKU = createproduct.SKU,
+                    }
+                }
             };
 
             _context.Products.Add(product);
@@ -108,7 +108,7 @@ namespace MadeHuman_Server.Service.Shop
 
 
 
-        public async Task<bool> UpdateAsync(Guid id, Product updated)
+        public async Task<bool> UpdateAsync(Guid id, CreateProduct_ProdcutSKU_ViewModel updated)
         {
             if (id != updated.ProductId)
                 return false;
