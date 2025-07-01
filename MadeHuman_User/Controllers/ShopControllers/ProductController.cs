@@ -1,16 +1,20 @@
 ﻿using Madehuman_Share.ViewModel.Shop;
 using MadeHuman_User.ServicesTask.Services.ShopService;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Newtonsoft.Json.Linq;
 
 namespace MadeHuman_User.Controllers.ShopControllers
 {
     public class ProductController : Controller
     {
         private readonly IProductService _productService;
+        private readonly ICategoryService _categoryService;
 
-        public ProductController(IProductService productService)
+        public ProductController(IProductService productService, ICategoryService categoryService)
         {
             _productService = productService;
+            _categoryService = categoryService;
         }
 
         [HttpGet]
@@ -56,10 +60,34 @@ namespace MadeHuman_User.Controllers.ShopControllers
         [HttpGet]
         public async Task<IActionResult> Edit(Guid id)
         {
-            var product = await _productService.GetProductDetailAsync(id);
-            if (product == null) return NotFound();
-            return View(product); // truyền sang View để hiển thị sẵn
+            var detail = await _productService.GetProductDetailAsync(id);
+            if (detail == null) return NotFound();
+
+            var editModel = new CreateProduct_ProdcutSKU_ViewModel
+            {
+                ProductId = detail.ProductId,
+                Name = detail.Name,
+                Description = detail.Description,
+                Price = detail.Price,
+                SKU = detail.SKU,
+                QuantityInStock = detail.QuantityInStock,
+                CategoryId = detail.CategoryId ?? Guid.Empty,
+                CategoryName = detail.CategoryName
+            };
+            var categories = await _categoryService.GetAllAsync() ?? new();
+
+            Guid? selectedCategoryId = categories.Any(c => c.CategoryId == editModel.CategoryId)
+                ? editModel.CategoryId
+                : (Guid?)null;
+
+            ViewBag.Categories = new SelectList(categories, "CategoryId", "Name", selectedCategoryId);
+            Console.WriteLine("CategoryId đang truyền vào: " + editModel.CategoryId);
+            Console.WriteLine("Danh sách category trả về: " + string.Join(", ", categories.Select(c => c.CategoryId)));
+
+            return View(editModel);
         }
+
+
 
         [HttpPost]
         public async Task<IActionResult> Edit(Guid id, CreateProduct_ProdcutSKU_ViewModel model)

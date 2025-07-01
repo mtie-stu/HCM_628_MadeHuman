@@ -32,6 +32,8 @@ namespace Madehuman_Share.ViewModel.Shop
         public Guid Id { get; set; }//ProductSKUId
 
         public Guid CategoryId { get; set; }
+        // ✅ Dùng để hiển thị tên danh mục
+        public string? CategoryName { get; set; }
         [BindNever]
         public Guid ProductItemId { get; set; }
 

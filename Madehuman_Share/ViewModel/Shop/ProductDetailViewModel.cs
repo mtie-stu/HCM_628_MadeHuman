@@ -16,6 +16,7 @@ namespace Madehuman_Share.ViewModel.Shop
         public string? SKU { get; set; } // Lấy từ Product.ProductSKU.SKU
 
         public int QuantityInStock { get; set; }
+        public Guid? CategoryId { get; set; }
         public string? CategoryName { get; set; }
 
         public List<ProductItemDto> ProductItems { get; set; } = new();

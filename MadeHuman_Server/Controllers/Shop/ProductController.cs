@@ -48,15 +48,16 @@ namespace MadeHuman_Server.Controllers.Shop
                 Price = product.Price,
                 SKU = product.ProductSKU?.SKU,
                 QuantityInStock = product.ProductItems?.FirstOrDefault()?.QuantityInStock ?? 0,
+                CategoryId = product.CategoryId, // ✅ thêm dòng này nếu bạn cần để sửa trên FE
                 CategoryName = product.Category?.Name,
 
-                // ✅ Mapping danh sách ProductItems
                 ProductItems = product.ProductItems?.Select(item => new ProductItemDto
                 {
                     SKU = item.SKU,
                     QuantityInStock = item.QuantityInStock
                 }).ToList() ?? new List<ProductItemDto>()
             };
+
 
             return Ok(result);
         }
