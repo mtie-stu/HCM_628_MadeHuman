@@ -13,6 +13,7 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IComboService, ComboService>();
+builder.Services.AddScoped<IShopOrderService, ShopOrderService>();
 
 
 

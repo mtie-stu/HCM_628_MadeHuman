@@ -19,9 +19,21 @@ namespace MadeHuman_Server.Controllers.Shop
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var result = await _orderService.GetAllAsync();
+            var orders = await _orderService.GetAllAsync();
+
+            var result = orders.Select(o => new ShopOrderListItemViewModel
+            {
+                ShopOrderId = o.ShopOrderId,
+                OrderDate = o.OrderDate,
+                TotalAmount = o.TotalAmount,
+                Status = o.Status.ToString(), // Enum → string
+                AppUserName = o.AppUser?.Name ?? "(Ẩn danh)",
+                ItemCount = o.OrderItems?.Count ?? 0
+            });
+
             return Ok(result);
         }
+
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
