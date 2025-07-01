@@ -9,6 +9,7 @@ namespace MadeHuman_User.ServicesTask.Services.ShopService
         Task<List<ComboListItemViewModel>> GetAllAsync();
         Task<object?> CreateComboAsync(CreateComboViewModel model); // object hoặc trả về ViewModel tùy ý
         Task<ComboDetailViewModel?> GetByIdAsync(Guid id);
+        Task<bool> AddComboItemsAsync(AddComboItemsRequest request);
     }
     public class ComboService : IComboService
     {
@@ -70,6 +71,10 @@ namespace MadeHuman_User.ServicesTask.Services.ShopService
             var combo = JsonSerializer.Deserialize<ComboDetailViewModel>(json, options);
             return combo;
         }
-
+        public async Task<bool> AddComboItemsAsync(AddComboItemsRequest request)
+        {
+            var response = await _client.PostAsJsonAsync("/api/Combo/add-items", request);
+            return response.IsSuccessStatusCode;
+        }
     }
 }

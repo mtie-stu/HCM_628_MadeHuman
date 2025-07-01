@@ -13,10 +13,10 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 // Cấu hình HttpClient để kết nối với API
-builder.Services.AddHttpClient("API", client =>
-{
-    client.BaseAddress = new Uri("https://localhost:7204/"); // Đảm bảo URL chính xác
-});
+//builder.Services.AddHttpClient("API", client =>
+//{
+//    client.BaseAddress = new Uri("https://localhost:7204/"); // Đảm bảo URL chính xác
+//});
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 

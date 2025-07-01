@@ -81,8 +81,6 @@ namespace MadeHuman_User.Controllers.ShopControllers
                 : (Guid?)null;
 
             ViewBag.Categories = new SelectList(categories, "CategoryId", "Name", selectedCategoryId);
-            Console.WriteLine("CategoryId đang truyền vào: " + editModel.CategoryId);
-            Console.WriteLine("Danh sách category trả về: " + string.Join(", ", categories.Select(c => c.CategoryId)));
 
             return View(editModel);
         }

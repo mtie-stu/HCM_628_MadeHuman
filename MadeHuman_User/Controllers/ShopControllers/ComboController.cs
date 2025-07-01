@@ -55,5 +55,37 @@ namespace MadeHuman_User.Controllers.ShopControllers
 
             return View(combo);
         }
+        [HttpGet]
+        public IActionResult AddItems(Guid comboId)
+        {
+            var model = new AddComboItemsRequest
+            {
+                ComboId = comboId,
+                Items = new List<ComboItemInputModel>
+                {
+                    new ComboItemInputModel()
+                }
+            };
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddItems(AddComboItemsRequest model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var success = await _comboService.AddComboItemsAsync(model);
+            if (success)
+            {
+                TempData["Success"] = "Thêm sản phẩm vào combo thành công!";
+                return RedirectToAction("Detail", new { id = model.ComboId });
+            }
+
+            ModelState.AddModelError("", "Thêm sản phẩm thất bại.");
+            return View(model);
+        }
     }
 }

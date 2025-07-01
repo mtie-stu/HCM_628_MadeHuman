@@ -98,7 +98,7 @@ namespace MadeHuman_Server.Controllers.Shop
         }
 
 
-        // PUT: api/combo/{id}
+        // PUT: api/combo/{id}  
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] CreateComboWithItemsViewModel combo)
         {
