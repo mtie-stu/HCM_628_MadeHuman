@@ -17,13 +17,31 @@ namespace MadeHuman_Server.Controllers.Shop
             _comboService = comboService;
         }
 
-        // GET: api/combo
-        [HttpGet]
+        [HttpGet("api/combo")]
         public async Task<IActionResult> GetAll()
         {
             var combos = await _comboService.GetAllAsync();
-            return Ok(combos);
+
+            var result = combos.Select(c => new ComboListItemViewModel
+            {
+                ComboId = c.ComboId,
+                Name = c.Name,
+                Description = c.Description,
+                Price = c.Price,
+                SKU = c.ProductSKU?.SKU,
+
+                // Nếu bạn chưa include Product trong ComboItems thì ProductName sẽ là null
+                ComboItems = c.ComboItems.Select(ci => new ComboItemDto
+                {
+                    ProductId = ci.ProductId,
+                    ProductName = ci.Product?.Name ?? "(Không có)",
+                    Quantity = ci.Quantity
+                }).ToList()
+            });
+
+            return Ok(result);
         }
+
 
         // GET: api/combo/{id}
         [HttpGet("{id}")]
@@ -33,7 +51,22 @@ namespace MadeHuman_Server.Controllers.Shop
             if (combo == null)
                 return NotFound(new { message = "Không tìm thấy combo." });
 
-            return Ok(combo);
+            var result = new ComboDetailViewModel
+            {
+                ComboId = combo.ComboId,
+                Name = combo.Name,
+                Description = combo.Description,
+                Price = combo.Price,
+                SKU = combo.ProductSKU?.SKU,
+                ComboItems = combo.ComboItems.Select(ci => new ComboItemDto
+                {
+                    ProductId = ci.ProductId,
+                    ProductName = ci.Product?.Name ?? "(Không có)",
+                    Quantity = ci.Quantity
+                }).ToList()
+            };
+
+            return Ok(result);
         }
 
         //POST: api/combo

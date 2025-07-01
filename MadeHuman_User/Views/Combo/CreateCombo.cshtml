@@ -1,0 +1,36 @@
+﻿@model Madehuman_Share.ViewModel.Shop.CreateComboViewModel
+
+@{
+    ViewBag.Title = "Tạo Combo";
+}
+
+<h2 class="mb-3">Tạo Combo Mới</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<form asp-action="CreateCombo" method="post" enctype="multipart/form-data">
+    <div class="form-group">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Description"></label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Price"></label>
+        <input asp-for="Price" type="number" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="ImageFiles">Ảnh Combo</label>
+        <input asp-for="ImageFiles" type="file" multiple class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Tạo Combo</button>
+</form>
