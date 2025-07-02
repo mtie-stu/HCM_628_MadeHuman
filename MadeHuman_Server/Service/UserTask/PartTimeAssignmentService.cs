@@ -8,6 +8,8 @@ namespace MadeHuman_Server.Service.UserTask
 {
     public interface IPartTimeAssignmentService
     {
+        List<PartTimeAssignment> GetByCompanyId(Guid companyId);
+
         Task<List<PartTimeAssignmentViewModel>> GetAllAsync();
         Task<PartTimeAssignmentViewModel> CreateAsync(PartTimeAssignmentViewModel model);
         Task<PartTimeAssignmentViewModel> UpdateAsync(PartTimeAssignmentViewModel model);
@@ -90,6 +92,12 @@ namespace MadeHuman_Server.Service.UserTask
 
             await _context.SaveChangesAsync();
             return model;
+        }
+        public List<PartTimeAssignment> GetByCompanyId(Guid companyId)
+        {
+            return _context.PartTimeAssignment
+                .Where(p => p.CompanyId == companyId)
+                .ToList();
         }
     }
 }

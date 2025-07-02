@@ -52,3 +52,4 @@ namespace MadeHuman_Server.Model.User_Task
         public Part_Time_Company part_Time_Company { get; set; }
     }
 }
+        
