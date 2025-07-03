@@ -46,8 +46,42 @@ namespace MadeHuman_Server.Service.UserTask
                 .ToListAsync();
         }
 
+        //public async Task<PartTimeAssignmentViewModel> CreateAsync(PartTimeAssignmentViewModel model)
+        //{
+        //    var entity = new PartTimeAssignment
+        //    {
+        //        Id = Guid.NewGuid(),
+        //        PartTimeId = model.PartTimeId,
+        //        WorkDate = model.WorkDate,
+        //        TaskType = (TaskType)model.TaskType,
+        //        ShiftCode = model.ShiftCode,
+        //        IsConfirmed = model .IsConfirmed,
+        //        CheckInTime = model.CheckInTime,
+        //        CheckOutTime = model.CheckOutTime,
+        //        BreakDuration = model.BreakDuration,
+        //        Note = model.Note,
+        //        UserId = model.UserId,
+        //        UsersTasksId = model.UsersTasksId,
+        //        CompanyId = model.CompanyId
+        //    };
+
+        //    _context.PartTimeAssignment.Add(entity);
+        //    await _context.SaveChangesAsync();
+
+        //    model.Id = entity.Id;
+        //    return model;
+        //}
         public async Task<PartTimeAssignmentViewModel> CreateAsync(PartTimeAssignmentViewModel model)
         {
+            // ✅ Tìm PartTime để lấy CompanyId
+            var partTime = await _context.PartTimes
+                .Where(pt => pt.PartTimeId == model.PartTimeId)
+                .Select(pt => new { pt.CompanyId })
+                .FirstOrDefaultAsync();
+
+            if (partTime == null)
+                throw new Exception("Không tìm thấy PartTime tương ứng với PartTimeId đã cung cấp.");
+
             var entity = new PartTimeAssignment
             {
                 Id = Guid.NewGuid(),
@@ -62,13 +96,15 @@ namespace MadeHuman_Server.Service.UserTask
                 Note = model.Note,
                 UserId = model.UserId,
                 UsersTasksId = model.UsersTasksId,
-                CompanyId = model.CompanyId
+                CompanyId = partTime.CompanyId // ✅ Gán tự động từ PartTime
             };
 
             _context.PartTimeAssignment.Add(entity);
             await _context.SaveChangesAsync();
 
             model.Id = entity.Id;
+            model.CompanyId = partTime.CompanyId; // Optional: trả về luôn CompanyId
+
             return model;
         }
 
