@@ -8,7 +8,7 @@ namespace Madehuman_Share.ViewModel.Shop
 {
     public class GenerateRandomOrdersSingleRequest
     {
-        public string ProductSKU { get; set; }
+        public Guid ProductSKUsId { get; set; }
         public decimal UnitPrice { get; set; }
         public Guid AppUserId { get; set; }
         public StatusOrder Status { get; set; }

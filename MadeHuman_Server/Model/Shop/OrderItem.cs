@@ -18,7 +18,7 @@ namespace MadeHuman_Server.Model.Shop
         public Guid ProductSKUsId { get; set; }       // Nullable vì có thể thuộc ProductItem
 
         public Guid ShopOrderId { get; set; }
-        public string ProductSKU { get; set; }
+
         //public Guid? ProductSKUId { get; set; }
 
 

@@ -51,11 +51,12 @@ namespace MadeHuman_Server.Service.Shop
             var orderItems = vm.Items.Select(item => new OrderItem
             {
                 OrderItemId = Guid.NewGuid(),
-                ProductSKU = item.ProductSKU,
+                ProductSKUsId = item.ProductSKUsId,
                 Quantity = item.Quantity,
                 UnitPrice = item.UnitPrice,
                 ShopOrderId = orderId
             }).ToList();
+
 
             var totalAmount = orderItems.Sum(x => x.Quantity * x.UnitPrice);
             // 🔥 Sửa ở đây: đảm bảo OrderDate có Kind = Utc
@@ -118,12 +119,12 @@ namespace MadeHuman_Server.Service.Shop
             if (request.MinQuantity <= 0 || request.MaxQuantity < request.MinQuantity)
                 throw new ArgumentException("Khoảng số lượng hàng hóa không hợp lệ.");
 
-            var productExists = await _context.ProductSKUs.AnyAsync(p => p.SKU == request.ProductSKU);
+            var productExists = await _context.ProductSKUs.AnyAsync(p => p.Id == request.ProductSKUsId);
             if (!productExists)
                 throw new ArgumentException("ProductSKU không tồn tại.");
 
             var random = new Random();
-            var productskuid= await _productSKUService.GetProductSkuIdBySkuAsync(request.ProductSKU);
+            var productskuid= await _productSKUService.GetProductSkuIdBySkuAsync(request.ProductSKUsId);
             var orders = new List<ShopOrder>();
             var appuserId = DefaultData.FakeUserId;
 
@@ -132,7 +133,7 @@ namespace MadeHuman_Server.Service.Shop
                 var quantity = random.Next(request.MinQuantity, request.MaxQuantity + 1);
                 var orderId = Guid.NewGuid();
 
-                var skuDetail = await _productSKUService.GetSKUDetailsAsync(request.ProductSKU);
+                var skuDetail = await _productSKUService.GetSKUDetailsAsync(request.ProductSKUsId);
                 if (skuDetail == null)
                     throw new ArgumentException("SKU không hợp lệ.");
 
@@ -153,11 +154,11 @@ namespace MadeHuman_Server.Service.Shop
                 var orderItem = new OrderItem
                 {
                     OrderItemId = Guid.NewGuid(),
-                    ProductSKU = request.ProductSKU,
+                    ProductSKUsId = request.ProductSKUsId,
                     Quantity = quantity,
                     UnitPrice = unitPrice,
                     ShopOrderId = orderId,
-                    ProductSKUsId=productskuid.Value
+                    //ProductSKUsId = productskuid.Value
                 };
 
                 var order = new ShopOrder
@@ -189,7 +190,7 @@ namespace MadeHuman_Server.Service.Shop
                 throw new ArgumentException("Khoảng số lượng hàng hóa không hợp lệ.");
 
             // Kiểm tra sản phẩm có tồn tại không
-            var productExists = await _context.ProductSKUs.AnyAsync(p => p.SKU == request.ProductSKU);
+            var productExists = await _context.ProductSKUs.AnyAsync(p => p.Id == request.ProductSKUsId);
             if (!productExists)
                 throw new ArgumentException("SKU không tồn tại.");
 
@@ -199,7 +200,7 @@ namespace MadeHuman_Server.Service.Shop
             var random = new Random();
             var orders = new List<ShopOrder>();
             var appuserId = DefaultData.FakeUserId;
-            var product = await _context.ProductSKUs.FindAsync(request.ProductSKU);
+            var product = await _context.ProductSKUs.FindAsync(request.ProductSKUsId);
             if (product == null)
                 throw new ArgumentException("Sản phẩm không tồn tại.");
             var unitPrice = product.Product.Price;
@@ -212,7 +213,7 @@ namespace MadeHuman_Server.Service.Shop
                 var orderItem = new OrderItem
                 {
                     OrderItemId = Guid.NewGuid(),
-                    ProductSKU = request.ProductSKU,
+                    ProductSKUsId = request.ProductSKUsId,
                     Quantity = quantity,
                     UnitPrice = request.UnitPrice,
                     ShopOrderId = orderId

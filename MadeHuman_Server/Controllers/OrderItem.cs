@@ -22,7 +22,7 @@ namespace MadeHuman_Server.Controllers
         public async Task<ActionResult<IEnumerable<OrderItem>>> GetAll()
         {
             return await _context.OrderItems
-                .Include(o => o.ProductSKU)
+                .Include(o => o.ProductSKUsId)
                 .Include(o => o.ShopOrder)
                 .ToListAsync();
         }
@@ -32,7 +32,7 @@ namespace MadeHuman_Server.Controllers
         public async Task<ActionResult<OrderItem>> GetById(Guid id)
         {
             var orderItem = await _context.OrderItems
-                .Include(o => o.ProductSKU)
+                .Include(o => o.ProductSKUsId)
                 .Include(o => o.ShopOrder)
                 .FirstOrDefaultAsync(o => o.OrderItemId == id);
 

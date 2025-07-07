@@ -22,36 +22,48 @@ namespace MadeHuman_User.Controllers.ShopControllers
         [HttpGet]
         public IActionResult Create()
         {
-            return View(new CreateShopOrderWithMultipleItems
+            var vm = new CreateShopOrderWithMultipleItems
             {
-                Items = new List<OrderItemInputModel>
-                {
-                    new OrderItemInputModel()
-                }
-                });
-            }
+                OrderDate = DateTime.UtcNow,
+                Items = new List<OrderItemInputModel> { new OrderItemInputModel() } // ít nhất 1 dòng để render
+            };
+            return View(vm);
+        }
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateShopOrderWithMultipleItems model)
         {
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = "Vui lòng điền đầy đủ thông tin hợp lệ.";
+                return View(model);
+            }
+
             try
             {
-                var success = await _orderService.CreateOrderAsync(model);
+                var response = await _orderService.CreateOrderAsync(model);
 
-                if (success)
-                    return RedirectToAction("Index");
+                if (response.IsSuccessStatusCode)
+                {
+                    TempData["Success"] = "✅ Tạo đơn hàng thành công!";
+                    return RedirectToAction("Index"); // hoặc trang danh sách đơn hàng
+                }
 
-                ModelState.AddModelError("", "Tạo đơn hàng thất bại.");
-                return View(model);
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("🔴 Lỗi API trả về:");
+                Console.WriteLine(errorContent);
+
+                TempData["Error"] = $"Tạo đơn hàng thất bại: {(int)response.StatusCode} - {response.ReasonPhrase}";
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Lỗi controller: " + ex.Message);
-                ModelState.AddModelError("", "Lỗi không xác định.");
-                return View(model);
+                TempData["Error"] = $"Lỗi hệ thống: {ex.Message}";
+                Console.WriteLine("🔴 Exception:");
+                Console.WriteLine(ex);
             }
-        }
 
+            return View(model);
+        }
 
     }
 }

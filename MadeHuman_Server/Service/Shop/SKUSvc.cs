@@ -7,8 +7,8 @@ namespace MadeHuman_Server.Service.Shop
 {
     public interface ISKUServices
     {
-        Task<SKUInfoViewModel?> GetSKUDetailsAsync(string sku);
-        Task<Guid?> GetProductSkuIdBySkuAsync(string sku);
+        Task<SKUInfoViewModel?> GetSKUDetailsAsync(Guid sku);
+        Task<Guid?> GetProductSkuIdBySkuAsync(Guid id);
     }
     public class SKUSvc  : ISKUServices
     {
@@ -19,14 +19,14 @@ namespace MadeHuman_Server.Service.Shop
             _context = context;
         }
 
-        public async Task<SKUInfoViewModel?> GetSKUDetailsAsync(string sku)
+        public async Task<SKUInfoViewModel?> GetSKUDetailsAsync(Guid sku)
         {
             var skuEntity = await _context.ProductSKUs
                 .Include(s => s.Product)
                 .Include(s => s.Combo)
                     .ThenInclude(c => c.ComboItems)
                         .ThenInclude(ci => ci.Product)
-                .FirstOrDefaultAsync(s => s.SKU == sku);
+                .FirstOrDefaultAsync(s => s.Id == sku);
 
             if (skuEntity == null) return null;
 
@@ -64,10 +64,10 @@ namespace MadeHuman_Server.Service.Shop
 
             return result;
         }
-        public async Task<Guid?> GetProductSkuIdBySkuAsync(string sku)
+        public async Task<Guid?> GetProductSkuIdBySkuAsync(Guid id)
         {
             var productSku = await _context.ProductSKUs
-                .Where(x => x.SKU == sku)
+                .Where(x => x.Id == id)
                 .FirstOrDefaultAsync();
 
             return productSku?.Id;

@@ -30,10 +30,11 @@ namespace Madehuman_Share.ViewModel.Shop
 
     public class OrderItemInputModel
     {
-        public string ProductSKU { get; set; } // sửa lại tên từ Producttd
+        /*public string ProductSKUs { get; set; } = null!;*/ // ✅ đảm bảo không null // sửa lại tên từ Producttd
         public int Quantity { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal UnitPrice { get; set; }
+        public Guid ProductSKUsId { get; set; }
     }
 }
