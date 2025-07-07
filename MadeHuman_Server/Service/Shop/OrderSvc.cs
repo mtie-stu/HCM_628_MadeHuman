@@ -58,13 +58,17 @@ namespace MadeHuman_Server.Service.Shop
             }).ToList();
 
             var totalAmount = orderItems.Sum(x => x.Quantity * x.UnitPrice);
+            // 🔥 Sửa ở đây: đảm bảo OrderDate có Kind = Utc
+            var orderDate = vm.OrderDate == default
+                ? DateTime.UtcNow
+                : DateTime.SpecifyKind(vm.OrderDate, DateTimeKind.Utc); // ✅ FIX
 
             var order = new ShopOrder
             {
                 ShopOrderId = orderId,
                 AppUserId = vm.AppUserId,
                 Status = (Model.Shop.StatusOrder)vm.Status,
-                OrderDate = vm.OrderDate == default ? DateTime.UtcNow : vm.OrderDate,
+                OrderDate = orderDate,
                 TotalAmount = totalAmount,
                 OrderItems = orderItems
             };
