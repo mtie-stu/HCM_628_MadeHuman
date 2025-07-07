@@ -36,6 +36,13 @@ namespace MadeHuman_Server.Controllers.PartTime_Task
             var result = await _service.UpdateAsync(model);
             return Ok(result);
         }
+
+        [HttpGet("{companyId}")]
+        public IActionResult GetByCompanyId(Guid companyId)
+        {
+            var result =_service.GetByCompanyId(companyId);
+            return Ok(result);
+        }
     }
 
 

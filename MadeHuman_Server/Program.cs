@@ -119,7 +119,7 @@ using (var scope = app.Services.CreateScope())
     await ApplicationDbContext.SeedPartTimeAsync(db);
 
     // ✅ Sau đó mới seed Assignment
-    await ApplicationDbContext.SeedPartTimeAssignmentAsync(db);
+    //await ApplicationDbContext.SeedPartTimeAssignmentAsync(db);
 }
 
 

@@ -92,7 +92,7 @@ namespace MadeHuman_Server.Controllers.Shop
                         .Select(e => e.ErrorMessage)
                 });
             }
-            var user = await _userManager.FindByEmailAsync(model.EmailOrID!);
+            var user = await _userManager.FindByEmailAsync(model.Email!);
             if (user == null)
             {
                 return Unauthorized(new { message = "Email hoặc mật khẩu không đúng!" });

@@ -127,7 +127,7 @@ namespace MadeHuman_Server.Data
             await context.SaveChangesAsync();
         }
 
-        public static async Task SeedPartTimeAssignmentAsync(ApplicationDbContext context)
+      /*  public static async Task SeedPartTimeAssignmentAsync(ApplicationDbContext context)
         {
             if (await context.PartTimeAssignment.AnyAsync()) return;
 
@@ -174,6 +174,6 @@ namespace MadeHuman_Server.Data
 
             context.PartTimeAssignment.AddRange(data);
             await context.SaveChangesAsync();
-        }
+        }*/
     }
 }
