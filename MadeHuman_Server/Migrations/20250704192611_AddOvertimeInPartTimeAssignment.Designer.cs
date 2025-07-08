@@ -3,6 +3,7 @@ using System;
 using MadeHuman_Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MadeHuman_Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250704192611_AddOvertimeInPartTimeAssignment")]
+    partial class AddOvertimeInPartTimeAssignment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -126,15 +129,10 @@ namespace MadeHuman_Server.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("UserTaskId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
                     b.HasIndex("InboundReceiptId")
                         .IsUnique();
-
-                    b.HasIndex("UserTaskId");
 
                     b.ToTable("InboundTasks");
                 });
@@ -183,9 +181,6 @@ namespace MadeHuman_Server.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("ChangeQuantity")
-                        .HasColumnType("integer");
-
                     b.Property<Guid>("InventoryId")
                         .HasColumnType("uuid");
 
@@ -194,9 +189,6 @@ namespace MadeHuman_Server.Migrations
 
                     b.Property<int>("StockQuantity")
                         .HasColumnType("integer");
-
-                    b.Property<DateTime>("Time")
-                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -214,6 +206,10 @@ namespace MadeHuman_Server.Migrations
                     b.Property<Guid>("InboundTaskId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("ProductSKU")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<Guid>("ProductSKUId")
                         .HasColumnType("uuid");
 
@@ -228,7 +224,8 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("InboundTaskId");
+                    b.HasIndex("InboundTaskId")
+                        .IsUnique();
 
                     b.HasIndex("ProductSKUId");
 
@@ -609,9 +606,6 @@ namespace MadeHuman_Server.Migrations
                     b.Property<DateTime?>("CheckOutTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("HourlyKPIs")
-                        .HasColumnType("integer");
-
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("boolean");
 
@@ -625,9 +619,6 @@ namespace MadeHuman_Server.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<int>("TaskType")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TotalKPI")
                         .HasColumnType("integer");
 
                     b.Property<string>("UserId")
@@ -982,13 +973,7 @@ namespace MadeHuman_Server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MadeHuman_Server.Model.User_Task.UsersTasks", "UsersTasks")
-                        .WithMany("InboundTasks")
-                        .HasForeignKey("UserTaskId");
-
                     b.Navigation("InboundReceipts");
-
-                    b.Navigation("UsersTasks");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Inbound.Inventory", b =>
@@ -1022,8 +1007,8 @@ namespace MadeHuman_Server.Migrations
             modelBuilder.Entity("MadeHuman_Server.Model.Inbound.ProductBatches", b =>
                 {
                     b.HasOne("MadeHuman_Server.Model.Inbound.InboundTasks", "InboundTasks")
-                        .WithMany("ProductBatches")
-                        .HasForeignKey("InboundTaskId")
+                        .WithOne("ProductBatches")
+                        .HasForeignKey("MadeHuman_Server.Model.Inbound.ProductBatches", "InboundTaskId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1296,7 +1281,8 @@ namespace MadeHuman_Server.Migrations
 
             modelBuilder.Entity("MadeHuman_Server.Model.Inbound.InboundTasks", b =>
                 {
-                    b.Navigation("ProductBatches");
+                    b.Navigation("ProductBatches")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Inbound.Inventory", b =>
@@ -1356,11 +1342,6 @@ namespace MadeHuman_Server.Migrations
                     b.Navigation("Assignments");
 
                     b.Navigation("PartTimes");
-                });
-
-            modelBuilder.Entity("MadeHuman_Server.Model.User_Task.UsersTasks", b =>
-                {
-                    b.Navigation("InboundTasks");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.WareHouse.WareHouse", b =>

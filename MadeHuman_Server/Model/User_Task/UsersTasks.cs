@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using MadeHuman_Server.Model.Inbound;
+using System.Text.Json.Serialization;
 
 namespace MadeHuman_Server.Model.User_Task
 {
@@ -14,10 +16,7 @@ namespace MadeHuman_Server.Model.User_Task
     {
         [Key]
         public Guid Id { get; set; }
-
-     
-
-        
+ 
         public TaskTypeUser TaskType { get; set; }
 
        
@@ -40,5 +39,12 @@ namespace MadeHuman_Server.Model.User_Task
         public Guid? PartTimeId { get; set; }
         [ForeignKey(nameof(PartTimeId))]
         public PartTime PartTimes { get; set; }
+
+
+        [JsonIgnore]
+        public ICollection<InboundTasks> InboundTasks { get; set; }
+
+        public int TotalKPI { get; set; }
+        public int HourlyKPIs { get; set; }
     }
 }

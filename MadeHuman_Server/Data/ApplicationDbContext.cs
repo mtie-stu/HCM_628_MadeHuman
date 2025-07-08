@@ -97,6 +97,8 @@ namespace MadeHuman_Server.Data
                 .WithMany()
                 .HasForeignKey(p => p.PartTimeId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+   
         }
 
         public static async Task SeedPartTimeAsync(ApplicationDbContext context)

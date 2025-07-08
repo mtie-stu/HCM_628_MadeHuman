@@ -71,6 +71,9 @@ builder.Services.AddScoped<GoogleSheetService>();
 builder.Services.AddScoped<IPartTimeCompanyService, PartTimeCompanySvc>();
 builder.Services.AddScoped<IPartTimeService, PartTimeService>();
 builder.Services.AddScoped<IPartTimeAssignmentService, PartTimeAssignmentService>();
+builder.Services.AddScoped<IUserTaskSvc, UserTaskSvc>();
+builder.Services.AddScoped<IInboundTaskSvc, InboundTaskSvc>();
+builder.Services.AddHostedService<ResetHourlyKPIsService>();
 
 
 // 📦 Controller & Swagger

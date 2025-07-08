@@ -18,13 +18,14 @@ namespace MadeHuman_Server.Model.Inbound
         public Guid Id { get; set; }
 
         public int StockQuantity { get; set; }
+        public int ChangeQuantity { get; set; }
 
         public string ChangeBy{ get; set; }
 
         public ActionInventoryLogs ActionInventoryLogs {  get; set; }
         public int RemainingQuantity { get; set; }
 
-
+        public DateTime Time {  get; set; } 
         public Guid InventoryId { get; set; }
 
         [ForeignKey(nameof(InventoryId))]

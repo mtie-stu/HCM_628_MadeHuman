@@ -1,7 +1,10 @@
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using MadeHuman_Server.Service.UserTask;
+using MadeHuman_Server.Model.User_Task;
 
 
 namespace MadeHuman_Server.Model.Inbound
@@ -24,8 +27,14 @@ namespace MadeHuman_Server.Model.Inbound
         public Guid UserId { get; set; }    
         public Guid InboundReceiptId { get; set; }
         [ForeignKey(nameof(InboundReceiptId))]
+        [JsonIgnore]  // 👈 bỏ serialize property này để tránh lặp vô hạn
         public InboundReceipts InboundReceipts { get; set; }
-        public ProductBatches ProductBatches { get; set; }
+        [JsonIgnore]
+        public ICollection<ProductBatches> ProductBatches { get; set; }
+        public Guid? UserTaskId { get; set; }
+
+        [ForeignKey("UserTaskId")]
+        public UsersTasks UsersTasks { get; set; }
 
 
     }
