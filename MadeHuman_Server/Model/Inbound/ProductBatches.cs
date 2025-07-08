@@ -18,26 +18,26 @@ namespace MadeHuman_Server.Model.Inbound
     public class ProductBatches
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = default!;
 
-        public int Quantity { get; set; }
+        public int Quantity { get; set; } = default!;
 
         public StatusProductBatches StatusProductBatches { get; set; }
 
         // Sửa lại chỗ này
-        public Guid ProductSKUId { get; set; }
+        public Guid ProductSKUId { get; set; } = default!;
 
 
         [ForeignKey("ProductSKUId")]
         [JsonIgnore]
         public ProductSKU ProductSKUs { get; set; }
 
-        public Guid InboundTaskId { get; set; }
+        public Guid InboundTaskId { get; set; } = default!;
 
         [ForeignKey("InboundTaskId")]
         public InboundTasks InboundTasks { get; set; }
 
-        public Guid WarehouseLocationId { get; set; }
+        public Guid WarehouseLocationId { get; set; } = default!;
 
         [ForeignKey("WarehouseLocationId")]
         public WarehouseLocations WarehouseLocation { get; set; }

@@ -8,9 +8,9 @@ namespace MadeHuman_Server.Model.WareHouse
     public class WarehouseZones
     {
         [Key]
-        public Guid Id { get; set; }       
-        public string Name { get; set; }    
-        public Guid WarehouseId { get; set; }
+        public Guid Id { get; set; } = default!;       
+        public string Name { get; set; } = string.Empty;    
+        public Guid WarehouseId { get; set; } = default!;
         [ForeignKey(nameof(WarehouseId))]
         public WareHouse WareHouse { get; set; }
         public ICollection<WarehouseLocations> WarehouseLocations { get; set; }

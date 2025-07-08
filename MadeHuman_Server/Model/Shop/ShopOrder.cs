@@ -16,18 +16,18 @@ namespace MadeHuman_Server.Model.Shop
     public class ShopOrder
     {
         [Key]
-        public Guid ShopOrderId { get; set; }
+        public Guid ShopOrderId { get; set; } = default!;
 
         [Required]
-        public DateTime OrderDate { get; set; }
+        public DateTime OrderDate { get; set; } = default!;
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal TotalAmount { get; set; }
+        public decimal TotalAmount { get; set; } = default!;
 
        
         public StatusOrder Status { get; set; }
         // Thêm khóa ngoại đến AppUser
-        public string AppUserId { get; set; } // Kiểu string vì IdentityUser.Id là string
+        public string AppUserId { get; set; } = string.Empty; // Kiểu string vì IdentityUser.Id là string
 
         // Navigation property
         [ForeignKey("AppUserId")]

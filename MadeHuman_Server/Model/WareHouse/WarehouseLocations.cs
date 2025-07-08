@@ -18,10 +18,10 @@ namespace MadeHuman_Server.Model.WareHouse
     public class WarehouseLocations
     {
         [Key]
-        public Guid Id { get; set; }
-        public string NameLocation { get; set; }
+        public Guid Id { get; set; } = default!;
+        public string NameLocation { get; set; } = string.Empty;
         public StatusWareHouse StatusWareHouse { get; set; }    
-        public Guid ZoneId { get; set; }
+        public Guid ZoneId { get; set; } = default!;
         [ForeignKey(nameof(ZoneId))]
         public WarehouseZones WarehouseZones { get; set; }
         public Inventory Inventory { get; set; }

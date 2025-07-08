@@ -20,12 +20,12 @@ namespace MadeHuman_Server.Model.Inbound
 
 
         [Key]
-        public Guid Id { get; set; }
-        public string CreateBy { get; set; }
-        public  DateTime CreateAt { get; set; }
+        public Guid Id { get; set; } = default!;
+        public string CreateBy { get; set; } = string.Empty;
+        public  DateTime CreateAt { get; set; } = default!;
         public Status Status { get; set; }
-        public Guid UserId { get; set; }    
-        public Guid InboundReceiptId { get; set; }
+        public Guid UserId { get; set; } = default!;    
+        public Guid InboundReceiptId { get; set; } = default!;
         [ForeignKey(nameof(InboundReceiptId))]
         [JsonIgnore]  // 👈 bỏ serialize property này để tránh lặp vô hạn
         public InboundReceipts InboundReceipts { get; set; }

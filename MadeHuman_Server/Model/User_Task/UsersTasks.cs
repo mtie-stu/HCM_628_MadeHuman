@@ -15,15 +15,15 @@ namespace MadeHuman_Server.Model.User_Task
     public class UsersTasks
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = default!;
  
         public TaskTypeUser TaskType { get; set; }
 
        
-        public DateTime WorkDate { get; set; }
+        public DateTime WorkDate { get; set; } = default!;
 
         [Required]
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
         [ForeignKey(nameof(UserId))]
         public AppUser User { get; set; }
 
@@ -44,7 +44,7 @@ namespace MadeHuman_Server.Model.User_Task
         [JsonIgnore]
         public ICollection<InboundTasks> InboundTasks { get; set; }
 
-        public int TotalKPI { get; set; }
-        public int HourlyKPIs { get; set; }
+        public int TotalKPI { get; set; } = default!;
+        public int HourlyKPIs { get; set; } = default!;
     }
 }

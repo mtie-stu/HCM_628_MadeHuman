@@ -7,7 +7,7 @@ namespace MadeHuman_Server.Model.Shop
     public class ProductSKU
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = default!;
 
         [Required]
         [StringLength(50)]

@@ -12,16 +12,16 @@ namespace MadeHuman_Server.Model.User_Task
     public class PartTime
     {
         [Key]
-        public Guid PartTimeId { get; set; }
+        public Guid PartTimeId { get; set; } = default!;
 
-        public string Name { get; set; }
-        public string CCCD { get; set; }
-        public string PhoneNumber { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string CCCD { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
         public StatusPartTime StatusPartTimes { get; set; }
 
 
         // ✅ FK tới Company
-        public Guid CompanyId { get; set; }
+        public Guid CompanyId { get; set; } = default!;
 
         [ForeignKey(nameof(CompanyId))]
         public Part_Time_Company Company { get; set; }

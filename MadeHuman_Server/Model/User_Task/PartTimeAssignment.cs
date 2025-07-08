@@ -16,7 +16,7 @@ namespace MadeHuman_Server.Model.User_Task
     public class PartTimeAssignment
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = default!;
 
         public Guid? PartTimeId { get; set; }         // Mã nhân sự part-time (mã từ công ty nhân lực)
         [ForeignKey(nameof(PartTimeId))]
