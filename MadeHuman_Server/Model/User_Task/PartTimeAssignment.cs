@@ -16,7 +16,7 @@ namespace MadeHuman_Server.Model.User_Task
     public class PartTimeAssignment
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = default!;
 
         public Guid? PartTimeId { get; set; }         // Mã nhân sự part-time (mã từ công ty nhân lực)
         [ForeignKey(nameof(PartTimeId))]
@@ -30,6 +30,7 @@ namespace MadeHuman_Server.Model.User_Task
         public bool IsConfirmed { get; set; } = false; // Đã xác nhận phân công từ đối tác
         public DateTime? CheckInTime { get; set; }
         public DateTime? CheckOutTime { get; set; }
+        public TimeSpan? OvertimeDuration { get; set; } // ✅ mới
 
         public TimeSpan? BreakDuration { get; set; }
         public string? Note { get; set; }              // Ghi chú

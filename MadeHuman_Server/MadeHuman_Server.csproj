@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MadeHuman_Admin\MadeHuman_Admin.csproj" />
     <ProjectReference Include="..\Madehuman_Share\Madehuman_Share.csproj" />
   </ItemGroup>
 

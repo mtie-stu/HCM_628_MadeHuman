@@ -5,16 +5,16 @@ namespace MadeHuman_Server.Model.Shop
     public class ProductItem
     {
         [Key]
-        public Guid ProductItemId { get; set; }
+        public Guid ProductItemId { get; set; } = default!;
 
         [Required]
         [StringLength(50)]
-        public string SKU { get; set; }
+        public string SKU { get; set; } = string.Empty;
 
-        public int QuantityInStock { get; set; }
+        public int QuantityInStock { get; set; } = default!;
 
         // Foreign key
-        public Guid ProductId { get; set; }
+        public Guid ProductId { get; set; } = default!;
 
         // Navigation properties
         public Product Product { get; set; }

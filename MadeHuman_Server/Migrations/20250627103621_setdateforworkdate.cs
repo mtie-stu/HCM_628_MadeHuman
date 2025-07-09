@@ -19,6 +19,7 @@ namespace MadeHuman_Server.Migrations
                 oldClrType: typeof(DateTime),
                 oldType: "timestamp with time zone");
         }
+                                                       
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)

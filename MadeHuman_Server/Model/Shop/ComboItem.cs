@@ -6,13 +6,13 @@ namespace MadeHuman_Server.Model.Shop
     public class ComboItem
     {
         [Key]
-        public Guid ComboItemId { get; set; }
+        public Guid ComboItemId { get; set; } = default!;
 
-        public int Quantity { get; set; }
+        public int Quantity { get; set; } = default!;
 
         // Foreign keys
-        public Guid ComboId { get; set; }
-        public Guid ProductId { get; set; }
+        public Guid ComboId { get; set; } = default!;
+        public Guid ProductId { get; set; } = default!;
 
         // Navigation properties
 

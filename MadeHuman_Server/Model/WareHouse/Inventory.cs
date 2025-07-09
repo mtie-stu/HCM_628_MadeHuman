@@ -10,18 +10,18 @@ namespace MadeHuman_Server.Model.Inbound
     public class Inventory
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = default!;
 
         public  int?  StockQuantity { get; set; }
         public int? QuantityBooked { get; set; }
-        public DateTime LastUpdated{  get; set; }   
+        public DateTime LastUpdated{  get; set; } = default!;   
 
         public Guid? ProductSKUId { get; set; }
         [ForeignKey(nameof(ProductSKUId))]
         public ProductSKU ProductSKUs { get; set; }
 
 
-        public Guid WarehouseLocationId { get; set; }
+        public Guid WarehouseLocationId { get; set; } = default!;
         [ForeignKey(nameof(WarehouseLocationId))]
         public WarehouseLocations WarehouseLocations { get; set; }
 

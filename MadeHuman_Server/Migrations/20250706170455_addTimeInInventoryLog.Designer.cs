@@ -3,6 +3,7 @@ using System;
 using MadeHuman_Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MadeHuman_Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250706170455_addTimeInInventoryLog")]
+    partial class addTimeInInventoryLog
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -126,7 +129,7 @@ namespace MadeHuman_Server.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("UserTaskId")
+                    b.Property<Guid>("UserTaskId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
@@ -182,9 +185,6 @@ namespace MadeHuman_Server.Migrations
                     b.Property<string>("ChangeBy")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("ChangeQuantity")
-                        .HasColumnType("integer");
 
                     b.Property<Guid>("InventoryId")
                         .HasColumnType("uuid");
@@ -315,6 +315,10 @@ namespace MadeHuman_Server.Migrations
 
                     b.Property<Guid?>("ProductItemId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("ProductSKU")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<Guid>("ProductSKUsId")
                         .HasColumnType("uuid");
@@ -980,7 +984,9 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasOne("MadeHuman_Server.Model.User_Task.UsersTasks", "UsersTasks")
                         .WithMany("InboundTasks")
-                        .HasForeignKey("UserTaskId");
+                        .HasForeignKey("UserTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("InboundReceipts");
 

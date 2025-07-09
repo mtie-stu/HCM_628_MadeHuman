@@ -9,17 +9,17 @@ namespace MadeHuman_Server.Model.Shop
     public class Combo
     {
         [Key]
-        public Guid ComboId { get; set; }
+        public Guid ComboId { get; set; } = default!;
 
         [Required]
         [StringLength(100)]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [StringLength(500)]
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         [Column(TypeName = "decimal(18,2)")]
-        public decimal Price { get; set; }
+        public decimal Price { get; set; } = default!;
 
         // Navigation properties
         [JsonIgnore]

@@ -184,7 +184,7 @@ namespace MadeHuman_Server.Service.WareHouse
                             ProductSKUId = null,
                             StockQuantity = null,
                             QuantityBooked = null,
-                            LastUpdated = DateTime.Now,
+                            LastUpdated = DateTime.UtcNow,
                             WarehouseLocationId = location.Id
                         };
 
