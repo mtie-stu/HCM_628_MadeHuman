@@ -24,7 +24,6 @@ namespace MadeHuman_Server.Model.Inbound
         public string CreateBy { get; set; } = string.Empty;
         public  DateTime CreateAt { get; set; } = default!;
         public Status Status { get; set; }
-        public Guid UserId { get; set; } = default!;    
         public Guid InboundReceiptId { get; set; } = default!;
         [ForeignKey(nameof(InboundReceiptId))]
         [JsonIgnore]  // 👈 bỏ serialize property này để tránh lặp vô hạn

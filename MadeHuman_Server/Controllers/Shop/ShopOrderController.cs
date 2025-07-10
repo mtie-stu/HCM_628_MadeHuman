@@ -2,6 +2,7 @@
 using MadeHuman_Server.Service.Shop;
 using Madehuman_Share.ViewModel.Shop;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace MadeHuman_Server.Controllers.Shop
 {
@@ -88,7 +89,8 @@ namespace MadeHuman_Server.Controllers.Shop
         [HttpPost("generate-single-product")]
         public async Task<IActionResult> GenerateRandomSingleProduct([FromBody] GenerateRandomOrdersSingleRequest model)
         {
-            var result = await _orderService.CreateRandomOrdersWithSingleProductAsync(model);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await _orderService.CreateRandomOrdersWithSingleProductAsync(model,userId);
             return Ok(new
             {
                 message = $"Tạo {result.Count} đơn hàng thành công.{result}",

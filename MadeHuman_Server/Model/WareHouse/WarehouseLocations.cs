@@ -27,6 +27,10 @@ namespace MadeHuman_Server.Model.WareHouse
         public Inventory Inventory { get; set; }
         [JsonIgnore] // Ngăn vòng lặp khi serialize
         public ProductBatches ProductBatch { get; set; }
+        public Guid? LowStockId { get; set; } = default!;
+
+        [ForeignKey("LowStockId")]
+        public LowStockAlerts LowStockAlerts { get; set; }
 
     }
 }

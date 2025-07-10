@@ -3,6 +3,7 @@ using System;
 using MadeHuman_Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MadeHuman_Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250709091525_Add_Table_Low_RefillTask_Details")]
+    partial class Add_Table_Low_RefillTask_Details
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -279,9 +282,6 @@ namespace MadeHuman_Server.Migrations
                     b.Property<Guid?>("LowStockId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("StatusRefillTasks")
-                        .HasColumnType("integer");
-
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
@@ -375,6 +375,10 @@ namespace MadeHuman_Server.Migrations
 
                     b.Property<Guid?>("ProductItemId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("ProductSKU")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<Guid>("ProductSKUsId")
                         .HasColumnType("uuid");
@@ -709,9 +713,6 @@ namespace MadeHuman_Server.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<int>("CurrentQuantity")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("StatusLowStockAlerts")
                         .HasColumnType("integer");
 
                     b.Property<Guid>("WarehouseLocationId")
