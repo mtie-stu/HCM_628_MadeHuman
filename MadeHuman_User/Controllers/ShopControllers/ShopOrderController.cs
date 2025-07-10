@@ -64,6 +64,14 @@ namespace MadeHuman_User.Controllers.ShopControllers
 
             return View(model);
         }
+        [HttpGet]
+        public async Task<IActionResult> Detail(Guid id)
+        {
+            var order = await _orderService.GetOrderByIdAsync(id);
+            if (order == null)
+                return NotFound("Không tìm thấy đơn hàng.");
 
+            return View(order);
+        }
     }
 }

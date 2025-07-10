@@ -1,5 +1,6 @@
 ﻿using Madehuman_Share.ViewModel.Shop;
 using Newtonsoft.Json;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 
@@ -10,6 +11,7 @@ namespace MadeHuman_User.ServicesTask.Services.ShopService
         Task<List<ShopOrderListItemViewModel>> GetAllAsync();
         //Task<ShopOrderViewModel?> GetByIdAsync(Guid id);
         Task<HttpResponseMessage> CreateOrderAsync(CreateShopOrderWithMultipleItems model);
+        Task<ShopOrderDetailViewModel?> GetOrderByIdAsync(Guid id);
     }
     public class ShopOrderService : IShopOrderService
     {
@@ -59,6 +61,19 @@ namespace MadeHuman_User.ServicesTask.Services.ShopService
             return response;
         }
 
+        public async Task<ShopOrderDetailViewModel?> GetOrderByIdAsync(Guid id)
+        {
+            var response = await _client.GetAsync($"/api/ShopOrder/{id}");
+            if (!response.IsSuccessStatusCode)
+                return null;
 
+            var json = await response.Content.ReadAsStringAsync();
+            var order = System.Text.Json.JsonSerializer.Deserialize<ShopOrderDetailViewModel>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return order;
+        }
     }
 }
