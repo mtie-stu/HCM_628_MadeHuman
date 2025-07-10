@@ -41,6 +41,7 @@ namespace MadeHuman_Server.Service.Shop
             return await _context.ShopOrders
                 .Include(o => o.AppUser)
                 .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.ProductSKUs) // nếu muốn lấy SKUCode
                 .FirstOrDefaultAsync(o => o.ShopOrderId == id);
         }
 

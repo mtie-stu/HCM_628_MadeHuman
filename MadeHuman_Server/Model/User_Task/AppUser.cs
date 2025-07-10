@@ -1,5 +1,6 @@
 ﻿using MadeHuman_Server.Model.Shop;
 using Microsoft.AspNetCore.Identity;
+using System.Text.Json.Serialization;
 
 namespace MadeHuman_Server.Model.User_Task
 {
@@ -20,6 +21,7 @@ namespace MadeHuman_Server.Model.User_Task
 
         public string? Name { get; set; }
         public string? Image { get; set; }
+        [JsonIgnore] // 👈 Rất quan trọng để tránh vòng lặp khi serialize
         public ICollection<ShopOrder> ShopOrders { get; set; }
         public UserType UserTypes { get; set; }
         public UserStatus Status { get; set; }

@@ -42,8 +42,26 @@ namespace MadeHuman_Server.Controllers.Shop
             if (order == null)
                 return NotFound(new { message = "Không tìm thấy đơn hàng." });
 
-            return Ok(order);
+            var viewModel = new ShopOrderDetailViewModel
+            {
+                ShopOrderId = order.ShopOrderId,
+                AppUserId = order.AppUserId,
+                AppUserEmail = order.AppUser?.Email,
+                OrderDate = order.OrderDate,
+                TotalAmount = order.TotalAmount,
+                Status = (Madehuman_Share.ViewModel.Shop.StatusOrder)order.Status,
+                Items = order.OrderItems.Select(item => new OrderItemViewModel
+                {
+                    ProductSKUsId = item.ProductSKUsId,
+                    ProductSKUCode = item.ProductSKUs?.SKU,
+                    Quantity = item.Quantity,
+                    UnitPrice = item.UnitPrice
+                }).ToList()
+            };
+
+            return Ok(viewModel);
         }
+
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateShopOrderWithMultipleItems model)
