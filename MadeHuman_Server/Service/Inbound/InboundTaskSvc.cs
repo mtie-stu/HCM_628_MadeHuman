@@ -346,6 +346,7 @@ namespace MadeHuman_Server.Service.Inbound
             return errors;
         }
 
+
         public async Task StoreProductBatchAsync(Guid inboundTaskId, Guid productBatchId, Guid userTaskId)
         {
             var task = await _context.InboundTasks
@@ -362,7 +363,16 @@ namespace MadeHuman_Server.Service.Inbound
             // 1. Đánh dấu batch đã lưu kho
             batch.StatusProductBatches = StatusProductBatches.Stored;
 
-            // 2. Tìm Inventory theo WarehouseLocationId
+            // 2. Cập nhật trạng thái vị trí kho thành Stored
+            var warehouseLocation = await _context.WarehouseLocations
+                .FirstOrDefaultAsync(w => w.Id == batch.WarehouseLocationId);
+
+            if (warehouseLocation != null)
+            {
+                warehouseLocation.StatusWareHouse = StatusWareHouse.Stored;
+            }
+
+            // 3. Tìm hoặc tạo Inventory theo WarehouseLocationId
             var inventory = await _context.Inventory
                 .FirstOrDefaultAsync(i => i.WarehouseLocationId == batch.WarehouseLocationId);
 
@@ -380,11 +390,44 @@ namespace MadeHuman_Server.Service.Inbound
             }
             else
             {
-                inventory.StockQuantity += batch.Quantity;
+                if (inventory.StockQuantity == null)
+                {
+                    inventory.StockQuantity = batch.Quantity;
+                }
+                else
+                {
+                    inventory.StockQuantity += batch.Quantity;
+                }
                 inventory.LastUpdated = DateTime.UtcNow;
             }
 
-            // 3. Lấy log gần nhất để tính tồn kho trước
+            // 3.5. Cập nhật LowStockAlert
+            var lowStock = await _context.LowStockAlerts
+                .FirstOrDefaultAsync(l => l.WarehouseLocationId == batch.WarehouseLocationId);
+
+            if (lowStock != null)
+            {
+                lowStock.CurrentQuantity += batch.Quantity;
+
+                if (lowStock.CurrentQuantity > 10 )
+                {
+                    lowStock.StatusLowStockAlerts = StatusLowStockAlerts.Normal;
+                }
+                if (lowStock.CurrentQuantity > 0 && lowStock.CurrentQuantity < 10)
+                {
+                    lowStock.StatusLowStockAlerts = StatusLowStockAlerts.Warning;
+
+                }
+                else
+                {
+                    lowStock.StatusLowStockAlerts = StatusLowStockAlerts.Empty;
+
+                }
+
+            }
+            
+
+            // 4. Lấy log gần nhất để tính tồn kho trước
             var latestLog = await _context.InventoryLogs
                 .Where(log => log.InventoryId == inventory.Id)
                 .OrderByDescending(log => log.Time)
@@ -392,7 +435,7 @@ namespace MadeHuman_Server.Service.Inbound
 
             var previousQuantity = latestLog?.RemainingQuantity ?? 0;
 
-            // 4. Tạo log mới
+            // 5. Tạo log mới
             var newLog = new InventoryLogs
             {
                 Id = Guid.NewGuid(),
@@ -407,19 +450,17 @@ namespace MadeHuman_Server.Service.Inbound
 
             _context.InventoryLogs.Add(newLog);
 
-            // 5. Nếu tất cả các batch đã Stored → hoàn thành task + cộng KPI
+            // 6. Nếu tất cả các batch đã Stored → hoàn thành task + cộng KPI
             var allStored = task.ProductBatches.All(b => b.StatusProductBatches == StatusProductBatches.Stored);
             if (allStored)
             {
                 task.Status = Status.Completed;
 
-                // 🔥 Tổng quantity của tất cả các batch thuộc task
                 var totalQuantity = task.ProductBatches.Sum(b => b.Quantity);
 
                 var userTask = await _context.UsersTasks.FirstOrDefaultAsync(ut => ut.Id == userTaskId);
                 if (userTask != null)
                 {
-                    // Nếu chưa có KPI thì khởi tạo = 0
                     userTask.TotalKPI += totalQuantity;
                     userTask.HourlyKPIs += totalQuantity;
                 }
@@ -427,7 +468,6 @@ namespace MadeHuman_Server.Service.Inbound
 
             await _context.SaveChangesAsync();
         }
-
 
     }
 }

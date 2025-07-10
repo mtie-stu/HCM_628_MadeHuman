@@ -14,7 +14,7 @@ namespace MadeHuman_Server.Service.Shop
         Task<ShopOrder?> GetByIdAsync(Guid id);
         Task<ShopOrder> CreateAsync(CreateShopOrderWithMultipleItems vm);
         Task<bool> UpdateAsync(Guid id, ShopOrder updated);
-        Task<List<ShopOrder>> CreateRandomOrdersWithSingleProductAsync(GenerateRandomOrdersSingleRequest request);
+        Task<List<ShopOrder>> CreateRandomOrdersWithSingleProductAsync(GenerateRandomOrdersSingleRequest request, string userId);
         Task<List<ShopOrder>> CreateRandomOrdersWithSingleComboAsync(GenerateRandomOrdersSingleRequest request);
     }
     public class ShopOrderService : IShopOrderService
@@ -107,7 +107,7 @@ namespace MadeHuman_Server.Service.Shop
 
 
 
-        public async Task<List<ShopOrder>> CreateRandomOrdersWithSingleProductAsync(GenerateRandomOrdersSingleRequest request)
+        public async Task<List<ShopOrder>> CreateRandomOrdersWithSingleProductAsync(GenerateRandomOrdersSingleRequest request, string userId)
         {
             if (request.NumberOfOrders <= 0)
                 throw new ArgumentException("Số lượng đơn hàng phải lớn hơn 0.");
@@ -121,7 +121,7 @@ namespace MadeHuman_Server.Service.Shop
             var random = new Random();
             var productskuid= await _productSKUService.GetProductSkuIdBySkuAsync(request.ProductSKU);
             var orders = new List<ShopOrder>();
-            var appuserId = DefaultData.FakeUserId;
+            var appuserId = userId;
 
             for (int i = 0; i < request.NumberOfOrders; i++)
             {

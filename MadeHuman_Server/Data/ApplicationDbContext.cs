@@ -37,6 +37,10 @@ namespace MadeHuman_Server.Data
         public DbSet<PartTimeAssignment> PartTimeAssignment { get; set; }
         public DbSet<PartTime> PartTimes { get; set; }
         public DbSet<Part_Time_Company> PartTimeCompanies { get; set; }
+        public DbSet<LowStockAlerts> LowStockAlerts { get; set; }
+        public DbSet<RefillTasks> RefillTasks { get; set; }
+        public DbSet<RefillTaskDetails> RefillTaskDetails { get; set; }
+
 
         public static class DefaultData
         {

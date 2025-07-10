@@ -3,6 +3,7 @@ using System;
 using MadeHuman_Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MadeHuman_Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250708203050_remove_UserId_FromInboundTask")]
+    partial class remove_UserId_FromInboundTask
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -233,69 +236,6 @@ namespace MadeHuman_Server.Migrations
                         .IsUnique();
 
                     b.ToTable("ProductBatches");
-                });
-
-            modelBuilder.Entity("MadeHuman_Server.Model.Inbound.RefillTaskDetails", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("FromLocation")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("RefillTaskId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("RefillTasksId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ToLocation")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RefillTasksId");
-
-                    b.ToTable("RefillTaskDetails");
-                });
-
-            modelBuilder.Entity("MadeHuman_Server.Model.Inbound.RefillTasks", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreateBy")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("LowStockId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("StatusRefillTasks")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("UserTaskId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LowStockId")
-                        .IsUnique();
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("RefillTasks");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.Category", b =>
@@ -706,28 +646,6 @@ namespace MadeHuman_Server.Migrations
                     b.ToTable("UsersTasks");
                 });
 
-            modelBuilder.Entity("MadeHuman_Server.Model.WareHouse.LowStockAlerts", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("CurrentQuantity")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("StatusLowStockAlerts")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("WarehouseLocationId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("WarehouseLocationId");
-
-                    b.ToTable("LowStockAlerts");
-                });
-
             modelBuilder.Entity("MadeHuman_Server.Model.WareHouse.WareHouse", b =>
                 {
                     b.Property<Guid>("Id")
@@ -759,9 +677,6 @@ namespace MadeHuman_Server.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("LowStockId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("NameLocation")
                         .IsRequired()
                         .HasColumnType("text");
@@ -773,8 +688,6 @@ namespace MadeHuman_Server.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("LowStockId");
 
                     b.HasIndex("ZoneId");
 
@@ -1133,34 +1046,6 @@ namespace MadeHuman_Server.Migrations
                     b.Navigation("WarehouseLocation");
                 });
 
-            modelBuilder.Entity("MadeHuman_Server.Model.Inbound.RefillTaskDetails", b =>
-                {
-                    b.HasOne("MadeHuman_Server.Model.Inbound.RefillTasks", "RefillTasks")
-                        .WithMany("RefillTaskDetails")
-                        .HasForeignKey("RefillTasksId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("RefillTasks");
-                });
-
-            modelBuilder.Entity("MadeHuman_Server.Model.Inbound.RefillTasks", b =>
-                {
-                    b.HasOne("MadeHuman_Server.Model.WareHouse.LowStockAlerts", "LowStockAlerts")
-                        .WithOne("RefillTasks")
-                        .HasForeignKey("MadeHuman_Server.Model.Inbound.RefillTasks", "LowStockId");
-
-                    b.HasOne("MadeHuman_Server.Model.User_Task.UsersTasks", "UsersTasks")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("LowStockAlerts");
-
-                    b.Navigation("UsersTasks");
-                });
-
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.ComboItem", b =>
                 {
                     b.HasOne("MadeHuman_Server.Model.Shop.Combo", "Combo")
@@ -1328,30 +1213,13 @@ namespace MadeHuman_Server.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("MadeHuman_Server.Model.WareHouse.LowStockAlerts", b =>
-                {
-                    b.HasOne("MadeHuman_Server.Model.WareHouse.WarehouseLocations", "WarehouseLocations")
-                        .WithMany()
-                        .HasForeignKey("WarehouseLocationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("WarehouseLocations");
-                });
-
             modelBuilder.Entity("MadeHuman_Server.Model.WareHouse.WarehouseLocations", b =>
                 {
-                    b.HasOne("MadeHuman_Server.Model.WareHouse.LowStockAlerts", "LowStockAlerts")
-                        .WithMany()
-                        .HasForeignKey("LowStockId");
-
                     b.HasOne("MadeHuman_Server.Model.WareHouse.WarehouseZones", "WarehouseZones")
                         .WithMany("WarehouseLocations")
                         .HasForeignKey("ZoneId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("LowStockAlerts");
 
                     b.Navigation("WarehouseZones");
                 });
@@ -1436,11 +1304,6 @@ namespace MadeHuman_Server.Migrations
                     b.Navigation("InventoryLogs");
                 });
 
-            modelBuilder.Entity("MadeHuman_Server.Model.Inbound.RefillTasks", b =>
-                {
-                    b.Navigation("RefillTaskDetails");
-                });
-
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.Category", b =>
                 {
                     b.Navigation("Products");
@@ -1498,12 +1361,6 @@ namespace MadeHuman_Server.Migrations
             modelBuilder.Entity("MadeHuman_Server.Model.User_Task.UsersTasks", b =>
                 {
                     b.Navigation("InboundTasks");
-                });
-
-            modelBuilder.Entity("MadeHuman_Server.Model.WareHouse.LowStockAlerts", b =>
-                {
-                    b.Navigation("RefillTasks")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.WareHouse.WareHouse", b =>
