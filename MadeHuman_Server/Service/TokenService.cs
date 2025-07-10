@@ -1,9 +1,10 @@
-﻿using MadeHuman_Server.Model;
+﻿using MadeHuman_Server.Model.User_Task;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using static MadeHuman_Server.Model.User_Task.AppUser;
 
 namespace MadeHuman_Server.Service
 {
@@ -24,6 +25,12 @@ namespace MadeHuman_Server.Service
 
         public async Task<string> GenerateJwtToken(AppUser user)
         {
+            // Check if user is active
+            if (user.Status != UserStatus.Active)
+            {
+                throw new UnauthorizedAccessException("Tài khoản không hoạt động hoặc đã bị khóa.");
+            }
+
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),

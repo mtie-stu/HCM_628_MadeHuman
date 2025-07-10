@@ -1,4 +1,5 @@
 ﻿using MadeHuman_Server.Model;
+using MadeHuman_Server.Model.User_Task;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

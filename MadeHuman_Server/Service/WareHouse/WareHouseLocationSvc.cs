@@ -33,26 +33,40 @@ namespace MadeHuman_Server.Service.WareHouse
         }
         public async Task<WarehouseLocationViewModel> CreateAsync(WarehouseLocationViewModel warehouse)
         {
+            var newId = Guid.NewGuid();
 
             var createwarehouselocation = new WarehouseLocations
             {
-                Id = Guid.NewGuid(),
+                Id = newId,
                 NameLocation = warehouse.NameLocation,
-                ZoneId = warehouse.ZoneId
+                ZoneId = warehouse.ZoneId,
+                StatusWareHouse= StatusWareHouse.Empty
             };
 
             _context.WarehouseLocations.Add(createwarehouselocation);
+
+            // Tạo inventory tương ứng
+            var inventory = new Inventory
+            {
+                Id = Guid.NewGuid(),
+                ProductSKUId = null,
+                StockQuantity = null,
+                QuantityBooked = null,
+                LastUpdated = DateTime.Now,
+                WarehouseLocationId = newId // sửa tại đây
+            };
+
+            _context.Inventory.Add(inventory);
             await _context.SaveChangesAsync();
 
-            // Trả lại ViewModel nếu cần
             return new WarehouseLocationViewModel
             {
-                Id = warehouse.Id,
+                Id = newId, // sửa tại đây để phản ánh ID thật sự đã lưu
                 NameLocation = warehouse.NameLocation,
-                ZoneId= warehouse.ZoneId,
-
+                ZoneId = warehouse.ZoneId,
             };
         }
+
 
         public async Task<List<WarehouseLocationViewModel>> GetAllAsync()
         {
@@ -94,14 +108,14 @@ namespace MadeHuman_Server.Service.WareHouse
         }
 
         public async Task<List<WarehouseLocationViewModel>> GenerateLocationsAsync(
-     Guid zoneId,
-     char startLetter,
-     char endLetter,
-     int startNumber,
-     int endNumber,
-     int startSub,
-     int endSub,
-     int quantity)
+            Guid zoneId,
+            char startLetter,
+            char endLetter,
+            int startNumber,
+            int endNumber,
+            int startSub,
+            int endSub,
+            int quantity)
         {
             if (quantity <= 0)
                 throw new ArgumentException("Số lượng phải lớn hơn 0.");
@@ -112,11 +126,15 @@ namespace MadeHuman_Server.Service.WareHouse
             if (startNumber > endNumber || startSub > endSub)
                 throw new ArgumentException("Khoảng Number hoặc Sub không hợp lệ.");
 
-            string prefix = zoneId switch
+            var zone = await _context.WarehouseZones
+                .FirstOrDefaultAsync(z => z.Id == zoneId)
+                ?? throw new ArgumentException("ZoneId không tồn tại.");
+
+            string prefix = zone.Name switch
             {
-                var id when id == Guid.Parse("7f0a5471-9dbd-4d08-98d9-9923894873f8") => "VNIS",
-                var id when id == Guid.Parse("B09A39D7-B64E-4A42-8663-E2802C6EEE93") => "VNOS",
-                _ => throw new ArgumentException("ZoneId không hợp lệ hoặc chưa được hỗ trợ.")
+                "Inbound" => "VNIS",
+                "Outbound" => "VNOS",
+                _ => "VNVS"
             };
 
             var createdLocations = new List<WarehouseLocationViewModel>();
@@ -145,7 +163,8 @@ namespace MadeHuman_Server.Service.WareHouse
                         {
                             Id = Guid.NewGuid(),
                             NameLocation = name,
-                            ZoneId = zoneId
+                            ZoneId = zoneId,
+                            StatusWareHouse = StatusWareHouse.Empty
                         };
 
                         _context.WarehouseLocations.Add(location);
@@ -157,11 +176,22 @@ namespace MadeHuman_Server.Service.WareHouse
                             ProductSKUId = null,
                             StockQuantity = null,
                             QuantityBooked = null,
-                            LastUpdated = DateTime.Now,
+                            LastUpdated = DateTime.UtcNow,
                             WarehouseLocationId = location.Id
                         };
 
                         _context.Inventory.Add(inventory);
+
+                        // ✅ Tạo LowStockAlert mặc định
+                        var lowStockAlert = new LowStockAlerts
+                        {
+                            Id = Guid.NewGuid(),
+                            WarehouseLocationId = location.Id,
+                            CurrentQuantity = 0,
+                            StatusLowStockAlerts = StatusLowStockAlerts.Empty
+                        };
+
+                        _context.LowStockAlerts.Add(lowStockAlert);
 
                         // Add vào kết quả trả về
                         createdLocations.Add(new WarehouseLocationViewModel
@@ -179,6 +209,7 @@ namespace MadeHuman_Server.Service.WareHouse
             await _context.SaveChangesAsync();
             return createdLocations;
         }
+
 
 
 

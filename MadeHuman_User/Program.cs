@@ -1,7 +1,26 @@
+﻿
+using MadeHuman_User.ServicesTask.Services;
+using MadeHuman_User.ServicesTask.Services.ShopService;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddSession();
+
+//cấu hình service
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IComboService, ComboService>();
+builder.Services.AddScoped<IShopOrderService, ShopOrderService>();
+
+
+
+builder.Services.AddHttpClient("API", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7204/"); // Đảm bảo URL chính xác
+});
 
 var app = builder.Build();
 
@@ -13,6 +32,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
@@ -20,8 +40,11 @@ app.UseRouting();
 
 app.UseAuthorization();
 
+app.UseSession();
+
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Account}/{action=Login}/{id?}");
+// pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

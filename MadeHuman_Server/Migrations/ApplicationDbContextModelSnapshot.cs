@@ -3,8 +3,8 @@ using System;
 using MadeHuman_Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -18,24 +18,62 @@ namespace MadeHuman_Server.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.16")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("CheckInCheckOutLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsCheckIn")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsOvertime")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PartTimeId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("UsersTasksId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UsersTasksId");
+
+                    b.ToTable("CheckInCheckOutLog");
+                });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Inbound.InboundReceiptItems", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("InboundReceiptId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("ProductSKUId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Quantity")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -50,10 +88,16 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreateAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("ReceivedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -64,25 +108,30 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreateAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CreateBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<Guid>("InboundReceiptId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Status")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("UserTaskId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
                     b.HasIndex("InboundReceiptId")
                         .IsUnique();
+
+                    b.HasIndex("UserTaskId");
 
                     b.ToTable("InboundTasks");
                 });
@@ -91,22 +140,22 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid?>("ProductSKUId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<int?>("QuantityBooked")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int?>("StockQuantity")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<Guid>("WarehouseLocationId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -122,23 +171,29 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<int>("ActionInventoryLogs")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("ChangeBy")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
+
+                    b.Property<int>("ChangeQuantity")
+                        .HasColumnType("integer");
 
                     b.Property<Guid>("InventoryId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<int>("RemainingQuantity")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("StockQuantity")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("Time")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -151,45 +206,113 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("InboundTaskId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
-                    b.Property<Guid>("ProductSKUsId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<Guid>("ProductSKUId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Quantity")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<int>("StatusProductBatches")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("WarehouseLocationId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("InboundTaskId")
+                    b.HasIndex("InboundTaskId");
+
+                    b.HasIndex("ProductSKUId");
+
+                    b.HasIndex("WarehouseLocationId")
                         .IsUnique();
 
-                    b.HasIndex("ProductSKUsId");
-
                     b.ToTable("ProductBatches");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.Inbound.RefillTaskDetails", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("FromLocation")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("RefillTaskId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RefillTasksId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ToLocation")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RefillTasksId");
+
+                    b.ToTable("RefillTaskDetails");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.Inbound.RefillTasks", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreateAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreateBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("LowStockId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("StatusRefillTasks")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("UserTaskId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LowStockId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefillTasks");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.Category", b =>
                 {
                     b.Property<Guid>("CategoryId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("CategoryId");
 
@@ -200,20 +323,20 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.Property<Guid>("ComboId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<decimal>("Discount")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("ComboId");
 
@@ -224,16 +347,16 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.Property<Guid>("ComboItemId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("ComboId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("ProductId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Quantity")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.HasKey("ComboItemId");
 
@@ -248,16 +371,19 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.Property<Guid>("OrderItemId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
-                    b.Property<Guid>("ProductItemId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<Guid?>("ProductItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProductSKUsId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Quantity")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<Guid>("ShopOrderId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
@@ -265,6 +391,8 @@ namespace MadeHuman_Server.Migrations
                     b.HasKey("OrderItemId");
 
                     b.HasIndex("ProductItemId");
+
+                    b.HasIndex("ProductSKUsId");
 
                     b.HasIndex("ShopOrderId");
 
@@ -275,30 +403,27 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.Property<Guid>("ProductId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("CategoryId1")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("ProductId");
 
-                    b.HasIndex("CategoryId1");
+                    b.HasIndex("CategoryId");
 
                     b.ToTable("Products");
                 });
@@ -307,18 +432,18 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.Property<Guid>("ProductItemId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("ProductId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<int>("QuantityInStock")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("SKU")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("character varying(50)");
 
                     b.HasKey("ProductItemId");
 
@@ -331,21 +456,49 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid?>("ComboId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
-                    b.Property<Guid>("ProductId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("ProductItemId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<Guid?>("ProductId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("SKU")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ComboId")
+                        .IsUnique();
+
+                    b.HasIndex("ProductId")
+                        .IsUnique();
+
+                    b.ToTable("ProductSKUs", t =>
+                        {
+                            t.HasCheckConstraint("CK_ProductSKU_Owner", "(\"ProductId\" IS NOT NULL AND \"ComboId\" IS NULL) OR (\"ProductId\" IS NULL AND \"ComboId\" IS NOT NULL)");
+                        });
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.Shop.Product_Combo_Img", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ComboId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<Guid?>("ProductId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -353,29 +506,24 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductSKUs", t =>
-                        {
-                            t.HasCheckConstraint("CK_ProductSKU_Owner", "([ProductItemId] IS NOT NULL AND [ComboId] IS NULL) OR ([ProductItemId] IS NULL AND [ComboId] IS NOT NULL)");
-                        });
+                    b.ToTable("product_Combo_Imgs");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.ShopOrder", b =>
                 {
                     b.Property<Guid>("ShopOrderId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("AppUserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("OrderDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
@@ -387,25 +535,214 @@ namespace MadeHuman_Server.Migrations
                     b.ToTable("ShopOrders");
                 });
 
+            modelBuilder.Entity("MadeHuman_Server.Model.User_Task.PartTime", b =>
+                {
+                    b.Property<Guid>("PartTimeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CCCD")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("StatusPartTimes")
+                        .HasColumnType("integer");
+
+                    b.HasKey("PartTimeId");
+
+                    b.HasIndex("CompanyId");
+
+                    b.ToTable("PartTimes");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.User_Task.PartTimeAssignment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<TimeSpan?>("BreakDuration")
+                        .HasColumnType("interval");
+
+                    b.Property<DateTime?>("CheckInTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("CheckOutTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsConfirmed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
+
+                    b.Property<TimeSpan?>("OvertimeDuration")
+                        .HasColumnType("interval");
+
+                    b.Property<Guid?>("PartTimeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("PartTimeId1")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ShiftCode")
+                        .HasColumnType("text");
+
+                    b.Property<int>("TaskType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("UsersTasksId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("WorkDate")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("PartTimeId");
+
+                    b.HasIndex("PartTimeId1");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UsersTasksId");
+
+                    b.ToTable("PartTimeAssignment");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.User_Task.Part_Time_Company", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Address")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PartTimeCompanies");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.User_Task.UsersTasks", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<TimeSpan?>("BreakDuration")
+                        .HasColumnType("interval");
+
+                    b.Property<DateTime?>("CheckInTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("CheckOutTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("HourlyKPIs")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
+
+                    b.Property<TimeSpan?>("OvertimeDuration")
+                        .HasColumnType("interval");
+
+                    b.Property<Guid?>("PartTimeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("TaskType")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalKPI")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("WorkDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PartTimeId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UsersTasks");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.WareHouse.LowStockAlerts", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("CurrentQuantity")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("StatusLowStockAlerts")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("WarehouseLocationId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WarehouseLocationId");
+
+                    b.ToTable("LowStockAlerts");
+                });
+
             modelBuilder.Entity("MadeHuman_Server.Model.WareHouse.WareHouse", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Location")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<Guid>("WarehouseId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -416,16 +753,24 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("LowStockId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("NameLocation")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
+
+                    b.Property<int>("StatusWareHouse")
+                        .HasColumnType("integer");
 
                     b.Property<Guid>("ZoneId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("LowStockId");
 
                     b.HasIndex("ZoneId");
 
@@ -436,14 +781,14 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<Guid>("WarehouseId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -455,26 +800,25 @@ namespace MadeHuman_Server.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.Property<string>("NormalizedName")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedName")
                         .IsUnique()
-                        .HasDatabaseName("RoleNameIndex")
-                        .HasFilter("[NormalizedName] IS NOT NULL");
+                        .HasDatabaseName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles", (string)null);
                 });
@@ -483,19 +827,19 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("RoleId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -507,59 +851,59 @@ namespace MadeHuman_Server.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUser", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<int>("AccessFailedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Discriminator")
                         .IsRequired()
                         .HasMaxLength(13)
-                        .HasColumnType("nvarchar(13)");
+                        .HasColumnType("character varying(13)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.Property<string>("NormalizedUserName")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.Property<string>("PasswordHash")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("SecurityStamp")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.HasKey("Id");
 
@@ -568,8 +912,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
-                        .HasDatabaseName("UserNameIndex")
-                        .HasFilter("[NormalizedUserName] IS NOT NULL");
+                        .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
 
@@ -582,19 +925,19 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -606,17 +949,17 @@ namespace MadeHuman_Server.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ProviderKey")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ProviderDisplayName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
@@ -628,10 +971,10 @@ namespace MadeHuman_Server.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("RoleId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.HasKey("UserId", "RoleId");
 
@@ -643,42 +986,62 @@ namespace MadeHuman_Server.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Value")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("MadeHuman_Server.Model.AppUser", b =>
+            modelBuilder.Entity("MadeHuman_Server.Model.User_Task.AppUser", b =>
                 {
                     b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
 
                     b.Property<string>("Image")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.Property<int>("UserTypes")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.HasDiscriminator().HasValue("AppUser");
+                });
+
+            modelBuilder.Entity("CheckInCheckOutLog", b =>
+                {
+                    b.HasOne("MadeHuman_Server.Model.User_Task.AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MadeHuman_Server.Model.User_Task.UsersTasks", "UsersTasks")
+                        .WithMany()
+                        .HasForeignKey("UsersTasksId");
+
+                    b.Navigation("User");
+
+                    b.Navigation("UsersTasks");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Inbound.InboundReceiptItems", b =>
                 {
                     b.HasOne("MadeHuman_Server.Model.Inbound.InboundReceipts", "InboundReceipts")
-                        .WithMany()
+                        .WithMany("InboundReceiptItems")
                         .HasForeignKey("InboundReceiptId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -702,7 +1065,13 @@ namespace MadeHuman_Server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("MadeHuman_Server.Model.User_Task.UsersTasks", "UsersTasks")
+                        .WithMany("InboundTasks")
+                        .HasForeignKey("UserTaskId");
+
                     b.Navigation("InboundReceipts");
+
+                    b.Navigation("UsersTasks");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Inbound.Inventory", b =>
@@ -736,20 +1105,56 @@ namespace MadeHuman_Server.Migrations
             modelBuilder.Entity("MadeHuman_Server.Model.Inbound.ProductBatches", b =>
                 {
                     b.HasOne("MadeHuman_Server.Model.Inbound.InboundTasks", "InboundTasks")
-                        .WithOne("ProductBatches")
-                        .HasForeignKey("MadeHuman_Server.Model.Inbound.ProductBatches", "InboundTaskId")
+                        .WithMany("ProductBatches")
+                        .HasForeignKey("InboundTaskId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("MadeHuman_Server.Model.Shop.ProductSKU", "ProductSKUs")
                         .WithMany()
-                        .HasForeignKey("ProductSKUsId")
+                        .HasForeignKey("ProductSKUId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MadeHuman_Server.Model.WareHouse.WarehouseLocations", "WarehouseLocation")
+                        .WithOne("ProductBatch")
+                        .HasForeignKey("MadeHuman_Server.Model.Inbound.ProductBatches", "WarehouseLocationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("InboundTasks");
 
                     b.Navigation("ProductSKUs");
+
+                    b.Navigation("WarehouseLocation");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.Inbound.RefillTaskDetails", b =>
+                {
+                    b.HasOne("MadeHuman_Server.Model.Inbound.RefillTasks", "RefillTasks")
+                        .WithMany("RefillTaskDetails")
+                        .HasForeignKey("RefillTasksId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("RefillTasks");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.Inbound.RefillTasks", b =>
+                {
+                    b.HasOne("MadeHuman_Server.Model.WareHouse.LowStockAlerts", "LowStockAlerts")
+                        .WithOne("RefillTasks")
+                        .HasForeignKey("MadeHuman_Server.Model.Inbound.RefillTasks", "LowStockId");
+
+                    b.HasOne("MadeHuman_Server.Model.User_Task.UsersTasks", "UsersTasks")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LowStockAlerts");
+
+                    b.Navigation("UsersTasks");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.ComboItem", b =>
@@ -773,9 +1178,13 @@ namespace MadeHuman_Server.Migrations
 
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.OrderItem", b =>
                 {
-                    b.HasOne("MadeHuman_Server.Model.Shop.ProductItem", "ProductItem")
+                    b.HasOne("MadeHuman_Server.Model.Shop.ProductItem", null)
                         .WithMany("OrderItems")
-                        .HasForeignKey("ProductItemId")
+                        .HasForeignKey("ProductItemId");
+
+                    b.HasOne("MadeHuman_Server.Model.Shop.ProductSKU", "ProductSKUs")
+                        .WithMany()
+                        .HasForeignKey("ProductSKUsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -785,7 +1194,7 @@ namespace MadeHuman_Server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("ProductItem");
+                    b.Navigation("ProductSKUs");
 
                     b.Navigation("ShopOrder");
                 });
@@ -794,7 +1203,7 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.HasOne("MadeHuman_Server.Model.Shop.Category", "Category")
                         .WithMany("Products")
-                        .HasForeignKey("CategoryId1")
+                        .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -815,14 +1224,29 @@ namespace MadeHuman_Server.Migrations
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.ProductSKU", b =>
                 {
                     b.HasOne("MadeHuman_Server.Model.Shop.Combo", "Combo")
-                        .WithMany("ProductSKUs")
+                        .WithOne("ProductSKU")
+                        .HasForeignKey("MadeHuman_Server.Model.Shop.ProductSKU", "ComboId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("MadeHuman_Server.Model.Shop.Product", "Product")
+                        .WithOne("ProductSKU")
+                        .HasForeignKey("MadeHuman_Server.Model.Shop.ProductSKU", "ProductId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Combo");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.Shop.Product_Combo_Img", b =>
+                {
+                    b.HasOne("MadeHuman_Server.Model.Shop.Combo", "Combo")
+                        .WithMany("Product_Combo_Img")
                         .HasForeignKey("ComboId");
 
                     b.HasOne("MadeHuman_Server.Model.Shop.Product", "Product")
-                        .WithMany("ProductSKUs")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany("Product_Combo_Img")
+                        .HasForeignKey("ProductId");
 
                     b.Navigation("Combo");
 
@@ -831,7 +1255,7 @@ namespace MadeHuman_Server.Migrations
 
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.ShopOrder", b =>
                 {
-                    b.HasOne("MadeHuman_Server.Model.AppUser", "AppUser")
+                    b.HasOne("MadeHuman_Server.Model.User_Task.AppUser", "AppUser")
                         .WithMany("ShopOrders")
                         .HasForeignKey("AppUserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -840,13 +1264,90 @@ namespace MadeHuman_Server.Migrations
                     b.Navigation("AppUser");
                 });
 
+            modelBuilder.Entity("MadeHuman_Server.Model.User_Task.PartTime", b =>
+                {
+                    b.HasOne("MadeHuman_Server.Model.User_Task.Part_Time_Company", "Company")
+                        .WithMany("PartTimes")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.User_Task.PartTimeAssignment", b =>
+                {
+                    b.HasOne("MadeHuman_Server.Model.User_Task.Part_Time_Company", "part_Time_Company")
+                        .WithMany("Assignments")
+                        .HasForeignKey("CompanyId");
+
+                    b.HasOne("MadeHuman_Server.Model.User_Task.PartTime", "PartTime")
+                        .WithMany()
+                        .HasForeignKey("PartTimeId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MadeHuman_Server.Model.User_Task.PartTime", null)
+                        .WithMany("Assignments")
+                        .HasForeignKey("PartTimeId1");
+
+                    b.HasOne("MadeHuman_Server.Model.User_Task.AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.HasOne("MadeHuman_Server.Model.User_Task.UsersTasks", "UsersTasks")
+                        .WithMany()
+                        .HasForeignKey("UsersTasksId");
+
+                    b.Navigation("PartTime");
+
+                    b.Navigation("User");
+
+                    b.Navigation("UsersTasks");
+
+                    b.Navigation("part_Time_Company");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.User_Task.UsersTasks", b =>
+                {
+                    b.HasOne("MadeHuman_Server.Model.User_Task.PartTime", "PartTimes")
+                        .WithMany()
+                        .HasForeignKey("PartTimeId");
+
+                    b.HasOne("MadeHuman_Server.Model.User_Task.AppUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PartTimes");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.WareHouse.LowStockAlerts", b =>
+                {
+                    b.HasOne("MadeHuman_Server.Model.WareHouse.WarehouseLocations", "WarehouseLocations")
+                        .WithMany()
+                        .HasForeignKey("WarehouseLocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("WarehouseLocations");
+                });
+
             modelBuilder.Entity("MadeHuman_Server.Model.WareHouse.WarehouseLocations", b =>
                 {
+                    b.HasOne("MadeHuman_Server.Model.WareHouse.LowStockAlerts", "LowStockAlerts")
+                        .WithMany()
+                        .HasForeignKey("LowStockId");
+
                     b.HasOne("MadeHuman_Server.Model.WareHouse.WarehouseZones", "WarehouseZones")
                         .WithMany("WarehouseLocations")
                         .HasForeignKey("ZoneId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("LowStockAlerts");
 
                     b.Navigation("WarehouseZones");
                 });
@@ -915,19 +1416,25 @@ namespace MadeHuman_Server.Migrations
 
             modelBuilder.Entity("MadeHuman_Server.Model.Inbound.InboundReceipts", b =>
                 {
+                    b.Navigation("InboundReceiptItems");
+
                     b.Navigation("InboundTasks")
                         .IsRequired();
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Inbound.InboundTasks", b =>
                 {
-                    b.Navigation("ProductBatches")
-                        .IsRequired();
+                    b.Navigation("ProductBatches");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Inbound.Inventory", b =>
                 {
                     b.Navigation("InventoryLogs");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.Inbound.RefillTasks", b =>
+                {
+                    b.Navigation("RefillTaskDetails");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.Category", b =>
@@ -939,7 +1446,10 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.Navigation("ComboItems");
 
-                    b.Navigation("ProductSKUs");
+                    b.Navigation("ProductSKU")
+                        .IsRequired();
+
+                    b.Navigation("Product_Combo_Img");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.Product", b =>
@@ -948,7 +1458,10 @@ namespace MadeHuman_Server.Migrations
 
                     b.Navigation("ProductItems");
 
-                    b.Navigation("ProductSKUs");
+                    b.Navigation("ProductSKU")
+                        .IsRequired();
+
+                    b.Navigation("Product_Combo_Img");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.ProductItem", b =>
@@ -966,6 +1479,29 @@ namespace MadeHuman_Server.Migrations
                     b.Navigation("OrderItems");
                 });
 
+            modelBuilder.Entity("MadeHuman_Server.Model.User_Task.PartTime", b =>
+                {
+                    b.Navigation("Assignments");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.User_Task.Part_Time_Company", b =>
+                {
+                    b.Navigation("Assignments");
+
+                    b.Navigation("PartTimes");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.User_Task.UsersTasks", b =>
+                {
+                    b.Navigation("InboundTasks");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.WareHouse.LowStockAlerts", b =>
+                {
+                    b.Navigation("RefillTasks")
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("MadeHuman_Server.Model.WareHouse.WareHouse", b =>
                 {
                     b.Navigation("WarehouseZones");
@@ -975,6 +1511,9 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.Navigation("Inventory")
                         .IsRequired();
+
+                    b.Navigation("ProductBatch")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.WareHouse.WarehouseZones", b =>
@@ -982,7 +1521,7 @@ namespace MadeHuman_Server.Migrations
                     b.Navigation("WarehouseLocations");
                 });
 
-            modelBuilder.Entity("MadeHuman_Server.Model.AppUser", b =>
+            modelBuilder.Entity("MadeHuman_Server.Model.User_Task.AppUser", b =>
                 {
                     b.Navigation("ShopOrders");
                 });

@@ -1,0 +1,57 @@
+﻿@model MadeHuman_User.Models.ImportTaskViewModel
+
+@{
+    ViewData["Title"] = "Nhập hàng";
+}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="Import" method="post" class="row g-4">
+                <!-- Mã nhiệm vụ nhập hàng -->
+                <div class="col-md-6">
+                    <label class="form-label" for="TaskCode">Mã nhiệm vụ nhập hàng</label>
+                    <div class="input-group">
+                        <input asp-for="TaskCode" class="form-control" placeholder="Nhập mã nhiệm vụ..." />
+                        <button type="submit" class="btn btn-outline-secondary" title="Quét mã nhiệm vụ">
+                            <i class="fas fa-qrcode"></i>
+                        </button>
+                    </div>
+
+                    @if (Model?.SelectedProduct != null)
+                    {
+                        <div class="card mt-4" style="max-width: 320px;">
+                            <img src="@Model.SelectedProduct.ImageUrl" alt="Ảnh sản phẩm" class="card-img-top" />
+                            <div class="card-body p-2">
+                                <p class="card-text mb-1"><strong>@Model.SelectedProduct.ProductName</strong></p>
+                                <p class="card-text mb-1"><small class="text-muted">Mã SP: @Model.SelectedProduct.ProductItemId</small></p>
+                                <p class="card-text mb-1"><small class="text-muted">Số lượng yêu cầu: @Model.SelectedProduct.Quantity</small></p>
+                                <p class="card-text"><small class="text-muted">Vị trí lưu: @Model.SelectedProduct.LocationStorage</small></p>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Quét mã sản phẩm và nhập số lượng -->
+                <div class="col-md-6">
+                    <label class="form-label" for="ScannedProductCode">Mã sản phẩm</label>
+                    <div class="input-group mb-3">
+                        <input asp-for="ScannedProductCode" class="form-control" placeholder="Nhập hoặc quét mã sản phẩm..." />
+                        <button type="submit" class="btn btn-outline-secondary" title="Quét mã sản phẩm">
+                            <i class="fas fa-qrcode"></i>
+                        </button>
+                    </div>
+
+                    <label class="form-label" for="ScannedQuantity">Số lượng nhập kho</label>
+                    <input asp-for="ScannedQuantity" class="form-control" placeholder="Số lượng nhập..." />
+                </div>
+
+                <!-- Nút xác nhận -->
+                <div class="col-12 text-end">
+                    <button type="submit" class="btn btn-dark mt-2">Xác nhận nhập kho</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

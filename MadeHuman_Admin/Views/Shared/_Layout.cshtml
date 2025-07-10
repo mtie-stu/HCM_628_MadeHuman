@@ -1,49 +1,224 @@
-﻿<!DOCTYPE html>
+﻿@{
+    Layout = null;
+
+    string currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+    string currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+
+    string IsActive(string controller, string action) =>
+        (currentController == controller && currentAction == action) ? "active" : "";
+
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@ViewData["Title"] - MadeHuman_Admin</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/MadeHuman_Admin.styles.css" asp-append-version="true" />
-</head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">MadeHuman_Admin</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <style>
+       .sidebar {
+          width: 14rem;
+          background: #fff;
+          border-radius: 1rem;
+          padding: 1rem;
+          box-shadow: 0 0 10px rgb(0 0 0 / 0.1);
+          font-family: system-ui, sans-serif;
+        }
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - MadeHuman_Admin - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        .sidebar a,
+        .sidebar button {
+          font-size: 1rem;
+          font-weight: 600;
+          color: #4b5563; /* gray-700 */
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-radius: 0.375rem;
+          padding: 0.5rem 1rem;
+          width: 100%;
+          text-align: left;
+          background: transparent;
+          border: none;
+          text-decoration: none; /* bỏ gạch chân */
+          transition: background 0.2s, color 0.2s;
+        }
+
+        .sidebar a span,
+        .sidebar button span {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem; /* khoảng cách icon-chữ */
+        }
+
+        .sidebar a i,
+        .sidebar button i {
+          font-size: 1.2rem; /* icon to hơn chút */
+        }
+
+        .sidebar a:hover,
+        .sidebar button:hover {
+          background-color: #fde68a; /* amber-200 */
+          color: #b45309; /* amber-600 */
+          text-decoration: none;
+        }
+
+        .sidebar a.active {
+          background-color: #fde68a; /* amber-200 */
+          color: #b45309; /* amber-600 */
+          font-weight: 700;
+          text-decoration: none;
+        }
+
+        .sidebar button .chevron {
+          font-size: 0.75rem;
+          transition: transform 0.3s ease;
+        }
+
+        .sidebar button[aria-expanded="true"] .chevron {
+          transform: rotate(180deg);
+        }
+
+        .sidebar .collapse a {
+          font-weight: 500;
+          font-size: 0.95rem;
+          padding-left: 2.5rem; /* thụt lề link con */
+          color: #4b5563; /* xám mặc định */
+        }
+
+        .sidebar .collapse a:hover {
+          background-color: #fde68a;
+          color: #b45309;
+          text-decoration: none;
+        }
+
+    </style>
+</head>
+<body class="bg-light min-vh-100 d-flex flex-column text-dark">
+
+    <!-- Top bar -->
+    <header class="d-flex align-items-center justify-content-between bg-white px-4 py-3 shadow-sm">
+        <div class="d-flex align-items-center gap-3">
+            <img src="https://storage.googleapis.com/a1aa/image/77806709-391a-489f-73cd-6465f3e28dfb.jpg"
+                 alt="Profile picture"
+                 class="rounded-circle shadow" style="width: 56px; height: 56px; object-fit: cover;" />
+            <span class="fs-5 fw-bold">Nguyễn Văn A</span>
         </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+        <div>
+            <button class="btn border-0 text-warning fs-4 position-relative">
+                <i class="fas fa-bell"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Layout -->
+    <main class="d-flex flex-grow-1 p-4 gap-4">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Dashboard -->
+            <a asp-controller="Home" asp-action="Index"
+               class="@IsActive("Home","Index")">
+                <span><i class="fas fa-th-large"></i> Dashboard</span>
+            </a>
+
+            <!-- InBound -->
+            <button type="button" data-bs-toggle="collapse" data-bs-target="#collapseInbound"
+                    aria-expanded="false" aria-controls="collapseInbound">
+                <span><i class="fas fa-anchor"></i> InBound</span>
+                <i class="fas fa-chevron-down chevron"></i>
+            </button>
+            <div id="collapseInbound" class="collapse">
+                <a asp-controller="Inbound" asp-action="Import"
+                   class="@IsActive("Inbound","Import")">
+                    <span><i class="fas fa-file-import"></i> Import</span>
+                </a>
+                <a asp-controller="Inbound" asp-action="Export"
+                   class="@IsActive("Inbound","Export")">
+                    <span><i class="fas fa-file-export"></i> Export</span>
+                </a>
+            </div>
+
+            <!-- OutBound -->
+            <button type="button" data-bs-toggle="collapse" data-bs-target="#collapseOutbound"
+                    aria-expanded="false" aria-controls="collapseOutbound">
+                <span><i class="fas fa-upload"></i> OutBound</span>
+                <i class="fas fa-chevron-down chevron"></i>
+            </button>
+            <div id="collapseOutbound" class="collapse">
+                <a asp-controller="Outbound" asp-action="Picker"
+                   class="@IsActive("Outbound","Picker")">
+                    <span><i class="fas fa-truck-loading"></i> Picker</span>
+                </a>
+                <a asp-controller="Outbound" asp-action="CheckerTaskMix"
+                   class="@IsActive("Outbound","CheckerTaskMix")">
+                    <span><i class="fas fa-tasks"></i> Checker Task Mix</span>
+                </a>
+                <a asp-controller="Outbound" asp-action="CheckerTaskSingle"
+                   class="@IsActive("Outbound","CheckerTaskSingle")">
+                    <span><i class="fas fa-tasks"></i> Checker Task Single</span>
+                </a>
+                <a asp-controller="Outbound" asp-action="Packer"
+                   class="@IsActive("Outbound","Packer")">
+                    <span><i class="fas fa-box"></i> Packer</span>
+                </a>
+                <a asp-controller="Outbound" asp-action="Dispatch"
+                   class="@IsActive("Outbound","Dispatch")">
+                    <span><i class="fas fa-shipping-fast"></i> Dispatch</span>
+                </a>
+            </div>
+
+            <!-- Manager Dropdown -->
+            <button type="button" data-bs-toggle="collapse" data-bs-target="#managerMenu" aria-expanded="false">
+              <span><i class="fas fa-building"></i> Manager</span>
+              <i class="fas fa-chevron-down chevron"></i>
+            </button>
+            <div class="collapse" id="managerMenu">
+                <a asp-controller="Staff" asp-action="ZoneManagement">Zone Management</a>
+              <a asp-controller="Staff" asp-action="InboundTask">Inbound Task Management</a>
+              <a asp-controller="Staff" asp-action="SetId">Set Part-Time ID</a>
+              <a asp-controller="Admin" asp-action="Permission">Account and Permission</a>
+            </div>
+
+
+            <a asp-controller="Staff" asp-action="CheckInOut"
+               class="@IsActive("Staff","CheckInOut")">
+                <span><i class="fas fa-hourglass-half"></i> Check In/Out</span>
+            </a>
+
+            <a asp-controller="Report" asp-action="Index"
+               class="@IsActive("Report","Index")">
+                <span><i class="fas fa-briefcase"></i> Reports</span>
+            </a>
+
+            <a asp-controller="Support" asp-action="Help"
+               class="@IsActive("Support","Help")">
+                <span><i class="fas fa-question-circle"></i> Help</span>
+            </a>
+        </aside>
+
+        <!-- Main content -->
+        <section class="flex-grow-1 bg-white rounded p-5 shadow overflow-auto">
+            <h1 class="fs-2 fw-bold mb-4">@ViewData["Title"]</h1>
+            @RenderBody()
+        </section>
+    </main>
+
     @await RenderSectionAsync("Scripts", required: false)
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function toggleDropdown(id) {
+            const el = document.getElementById(id);
+            el.classList.toggle('collapse');
+        }
+
+        window.addEventListener('click', function (e) {
+            if (!e.target.closest('button') && !e.target.closest('[data-dropdown-group]')) {
+                document.querySelectorAll('[data-dropdown-group]').forEach(el => el.classList.add('collapse'));
+            }
+        });
+    </script>
 </body>
 </html>

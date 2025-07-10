@@ -1,0 +1,81 @@
+﻿@model InboundTaskViewModel
+
+@{
+    ViewData["Title"] = "Inbound Task Management";
+}
+
+<div class="container py-4">
+    @if (ViewBag.Message != null)
+    {
+        <div class="alert alert-success mt-3">@ViewBag.Message</div>
+    }
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-body row g-4">
+            <div class="col-md-8">
+
+                <div class="mb-3">
+                    <label asp-for="InboundReceiptsID" class="form-label">InboundReceiptsID</label>
+                    <div class="input-group">
+                        <input asp-for="InboundReceiptsID" class="form-control" placeholder="ReceiptsID" />
+                        <button class="btn btn-outline-secondary" type="button">
+                            <i class="fas fa-qrcode"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="InboundReceiptsItemsID" class="form-label">InboundReceiptsItemsID</label>
+                    <div class="input-group">
+                        <input asp-for="InboundReceiptsItemsID" class="form-control" placeholder="ReceiptsItemID" />
+                        <button class="btn btn-outline-secondary" type="button">
+                            <i class="fas fa-qrcode"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card h-100" style="max-height: 320px;">
+                    <div class="text-center p-2 border-bottom">
+                        <img src="@Model.ProductImageUrl"
+                             alt="Product image"
+                             style="max-height: 150px; width: auto; object-fit: contain;" />
+                    </div>
+                    <div class="card-body py-2 px-3 text-muted small">
+                        <p class="mb-1">Product<br /><strong>@Model.ProductItemId</strong></p>
+                        <p class="mb-1">Quantity<br /><span>@Model.Quantity</span></p>
+                        <p class="mb-0">LocationStorage<br /><span>@Model.LocationStorage</span></p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <form method="post">
+        <div class="row g-4 align-items-end">
+            <div class="col-md-4">
+                <label asp-for="Zone" class="form-label">Zone</label>
+                <select asp-for="Zone" class="form-select">
+                    <option disabled selected>Select</option>
+                    <option value="Inbound">Inbound</option>
+                    <option value="Outbound">Outbound</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="WarehouseLocationsCode" class="form-label">WarehouseLocationsCode</label>
+                <select asp-for="WarehouseLocationsCode" class="form-select">
+                    <option disabled selected>Select</option>
+                    <option value="VNIS-A-001-1">VNIS-A-001-1</option>
+                    <option value="VNIS-A-002-1">VNIS-A-002-1</option>
+                </select>
+            </div>
+
+            <div class="col-md-4 d-grid">
+                <button type="submit" class="btn btn-warning btn-lg text-white">Create</button>
+            </div>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,57 @@
+﻿@model MadeHuman_Admin.Models.UserActivityViewModel
+@{
+    ViewBag.Title = "User Activity";
+    var history = ViewBag.History as List<MadeHuman_Admin.Models.UserActivityViewModel>;
+}
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<div class="max-w-7xl mx-auto p-6 space-y-6">
+    <form asp-action="CheckInOut" method="post" class="bg-gray-50 rounded-xl p-6 flex flex-col sm:flex-row sm:items-center sm:space-x-12 space-y-6 sm:space-y-0">
+        <div class="flex-1">
+            <label for="UserId" class="block font-semibold text-black mb-2">User ID</label>
+            <input asp-for="UserId" class="w-full bg-gray-200 placeholder-gray-400 rounded-md py-3 px-4 text-sm text-black focus:outline-none focus:ring-2 focus:ring-green-600" />
+        </div>
+        <div class="flex-1">
+            <label for="Activity" class="block font-semibold text-black mb-2">Activity</label>
+            <select asp-for="Activity" class="w-full bg-gray-200 text-sm text-black rounded-md py-3 px-4 focus:outline-none focus:ring-2 focus:ring-green-600">
+                <option disabled selected>Chọn</option>
+                <option value="CheckIn">Check In</option>
+                <option value="CheckOut">Check Out</option>
+            </select>
+        </div>
+        <button type="submit" class="bg-green-600 text-white rounded-full px-6 py-2 text-sm font-semibold shadow-md hover:shadow-lg transition-shadow">
+            Submit
+        </button>
+    </form>
+
+    <section class="bg-gray-50 rounded-xl p-4">
+        <div class="flex justify-between items-center mb-2">
+            <h2 class="font-semibold text-black">History</h2>
+        </div>
+        <table class="w-full text-left text-sm border-collapse rounded-md overflow-hidden">
+            <thead class="bg-gray-300 text-black">
+                <tr>
+                    <th class="py-2 px-3 font-normal">Date</th>
+                    <th class="py-2 px-3 font-normal">User ID</th>
+                    <th class="py-2 px-3 font-normal">Role</th>
+                    <th class="py-2 px-3 font-normal">Check In</th>
+                    <th class="py-2 px-3 font-normal">Total Hours</th>
+                    <th class="py-2 px-3 font-normal">Comments</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in history)
+                {
+                    <tr class="border-b border-gray-200">
+                        <td class="py-2 px-3">@item.Date.ToString("dd MMM")</td>
+                        <td class="py-2 px-3">@item.UserId</td>
+                        <td class="py-2 px-3">@item.Role</td>
+                        <td class="py-2 px-3">@item.CheckIn?.ToString("HH:mm")</td>
+                        <td class="py-2 px-3">@item.TotalHours</td>
+                        <td class="py-2 px-3">@item.Comment</td>
+                    </tr>
+                }
+                @* @(item.CheckOut == null ? "bg-white" : "bg-gray-100") *@
+            </tbody>
+        </table>
+    </section>
+</div>

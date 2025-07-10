@@ -50,7 +50,8 @@ namespace MadeHuman_Server.Controllers.WareHouse
         [HttpPost("generate-locations")]
         public async Task<IActionResult> GenerateLocations([FromBody] GenerateWHLocationRequest request)
         {
-            var result = await _service.GenerateLocationsAsync(
+            var result = await _service.GenerateLocationsAsync
+            (
                 request.ZoneId,
                 request.StartLetter,
                 request.EndLetter,
@@ -58,7 +59,8 @@ namespace MadeHuman_Server.Controllers.WareHouse
                 request.EndNumber,
                 request.StartSub,
                 request.EndSub,
-                request.Quantity);
+                request.Quantity
+            );
 
             return Ok(result);
         }
