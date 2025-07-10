@@ -19,7 +19,7 @@ builder.Services.AddScoped<IShopOrderService, ShopOrderService>();
 
 builder.Services.AddHttpClient("API", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7204/"); // Đảm bảo URL chính xác
+    client.BaseAddress = new Uri("https://hcm-628-madehuman-api.onrender.com"); // Đảm bảo URL chính xác
 });
 
 var app = builder.Build();
