@@ -18,9 +18,9 @@ namespace MadeHuman_Server.Service.Shop
     {
         private readonly ApplicationDbContext _context;
         private readonly ISkuGeneratorService _skuGenerator;
-        private readonly GoogleDriveService _googleDriveService;
+        private readonly GoogleDriveOAuthService _googleDriveService;
 
-        public ComboService(ApplicationDbContext context, ISkuGeneratorService skuGenerator, GoogleDriveService googleDriveService)
+        public ComboService(ApplicationDbContext context, ISkuGeneratorService skuGenerator, GoogleDriveOAuthService googleDriveService)
         {
             _context = context;
             _skuGenerator = skuGenerator;

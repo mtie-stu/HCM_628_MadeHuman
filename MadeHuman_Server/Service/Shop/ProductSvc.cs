@@ -17,9 +17,9 @@ namespace MadeHuman_Server.Service.Shop
     public class ProductService : IProductService
     {
         private readonly ApplicationDbContext _context;
-         private readonly GoogleDriveService _googleDriveService;
+         private readonly GoogleDriveOAuthService _googleDriveService;
 
-        public ProductService(ApplicationDbContext context, GoogleDriveService googleDriveService)
+        public ProductService(ApplicationDbContext context, GoogleDriveOAuthService googleDriveService)
         {
             _context = context;
             _googleDriveService = googleDriveService;

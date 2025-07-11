@@ -76,6 +76,7 @@ builder.Services.AddScoped<IUserTaskSvc, UserTaskSvc>();
 builder.Services.AddScoped<IInboundTaskSvc, InboundTaskSvc>();
 builder.Services.AddHostedService<ResetHourlyKPIsService>();
 builder.Services.AddSingleton<GoogleDriveService>();
+builder.Services.AddSingleton<GoogleDriveOAuthService>();
 
 // (Tùy chọn) Cấu hình upload file lớn nếu cần
 builder.Services.Configure<FormOptions>(options =>

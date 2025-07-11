@@ -1,53 +1,51 @@
-﻿using Google.Apis.Auth.OAuth2;
+﻿// ✅ GoogleDriveOAuthService.cs
+using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using Google.Apis.Upload;
-using Google.Apis.Drive.v3.Data;
+using Microsoft.AspNetCore.Http;
 using File = Google.Apis.Drive.v3.Data.File;
 
-public class GoogleDriveService
+public class GoogleDriveOAuthService
 {
     private readonly DriveService _driveService;
-    private readonly string _folderId; // ID thư mục Drive
+    private readonly string _folderId;
 
-    public GoogleDriveService(IWebHostEnvironment env, IConfiguration config)
+    public GoogleDriveOAuthService(IWebHostEnvironment env, IConfiguration config)
     {
-        var credentialPath = Path.Combine(env.ContentRootPath, "Data", "credentials.json");
+        string[] scopes = { DriveService.Scope.Drive }; // full access
 
-        GoogleCredential credential = GoogleCredential.FromFile(credentialPath)
-            .CreateScoped(DriveService.Scope.Drive);
+        string tokenPath = Path.Combine(env.ContentRootPath, "Data", "token.json");
+        _folderId = config["GoogleDrive:FolderId"];
+
+        // ✅ Load token trực tiếp từ token.json (không dùng FileDataStore nữa)
+        var credential = GoogleCredential.FromFile(tokenPath)
+            .CreateScoped(scopes);
 
         _driveService = new DriveService(new BaseClientService.Initializer()
         {
             HttpClientInitializer = credential,
-            ApplicationName = "MyDriveUploader"
+            ApplicationName = "MadeHumanUploader"
         });
-
-        _folderId = config["GoogleDrive:FolderId"];
-        Console.WriteLine($"📂 Uploading to Folder: {_folderId}");
-
     }
 
     public async Task<string> UploadFileAsync(IFormFile file)
     {
-        var fileMeta = new Google.Apis.Drive.v3.Data.File
+        var fileMetadata = new File
         {
             Name = file.FileName,
             Parents = new List<string> { _folderId }
         };
 
         using var stream = file.OpenReadStream();
-
-        var request = _driveService.Files.Create(fileMeta, stream, file.ContentType);
+        var request = _driveService.Files.Create(fileMetadata, stream, file.ContentType);
         request.Fields = "id";
-
         var result = await request.UploadAsync();
 
         if (result.Status == UploadStatus.Completed)
         {
             var fileId = request.ResponseBody.Id;
 
-            // Public permission
             await _driveService.Permissions.Create(new Google.Apis.Drive.v3.Data.Permission
             {
                 Type = "anyone",
@@ -56,11 +54,7 @@ public class GoogleDriveService
 
             return $"https://drive.google.com/uc?id={fileId}";
         }
-        else
-        {
-            // 👇 Log chi tiết lỗi
-            var errorMessage = $"Upload failed. Status: {result.Status}, Exception: {result.Exception?.Message}";
-            throw new Exception(errorMessage);
-        }
+
+        throw new Exception($"Upload failed: {result.Status}, {result.Exception?.Message}");
     }
 }
