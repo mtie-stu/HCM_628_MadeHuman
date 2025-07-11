@@ -20,7 +20,9 @@ namespace Madehuman_Share.ViewModel.Inbound
 
         public class RefillTaskDetailItem
         {
-            public Guid Id { get; set; }
+            public Guid Id { get; set; }    
+            public Guid? ProductSKUId { get; set; }     // có thể null nếu nhập theo SKU
+            public string? SKU { get; set; }            // SKU dạng text
             public Guid FromLocation { get; set; }
             public Guid ToLocation { get; set; }
             public int Quantity { get; set; }

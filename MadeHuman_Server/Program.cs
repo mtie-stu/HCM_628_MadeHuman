@@ -6,6 +6,7 @@ using MadeHuman_Server.Service.Shop;
 using MadeHuman_Server.Service.UserTask;
 using MadeHuman_Server.Service.WareHouse;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -74,8 +75,13 @@ builder.Services.AddScoped<IPartTimeAssignmentService, PartTimeAssignmentService
 builder.Services.AddScoped<IUserTaskSvc, UserTaskSvc>();
 builder.Services.AddScoped<IInboundTaskSvc, InboundTaskSvc>();
 builder.Services.AddHostedService<ResetHourlyKPIsService>();
+builder.Services.AddSingleton<GoogleDriveService>();
 
-
+// (Tùy chọn) Cấu hình upload file lớn nếu cần
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 104857600; // 100MB
+});
 // 📦 Controller & Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

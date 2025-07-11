@@ -26,5 +26,8 @@ EXPOSE 80
 # Copy output từ build stage
 COPY --from=build /app/publish .
 
+# Copy file credentials.json vào thư mục đúng vị trí
+COPY MadeHuman_Server/Data/credentials.json /app/Data/credentials.json
+
 # Start the app
 ENTRYPOINT ["dotnet", "MadeHuman_Server.dll"]
