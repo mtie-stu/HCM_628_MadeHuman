@@ -14,8 +14,4 @@
     <ProjectReference Include="..\Madehuman_Share\Madehuman_Share.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="ServicesTask\Services\" />
-  </ItemGroup>
-
 </Project>

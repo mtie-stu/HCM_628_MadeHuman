@@ -1,8 +1,13 @@
 ﻿@{
     Layout = null;
-
+   
     string currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
     string currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+    bool isDemoMenuActive = currentController == "Category"
+                     || currentController == "Product"
+                     || currentController == "Combo"
+                     || currentController == "ShopOrder"
+                     || currentController == "InboundReceipt"; // thêm dòng này
 
     string IsActive(string controller, string action) =>
         (currentController == controller && currentAction == action) ? "active" : "";
@@ -107,39 +112,10 @@
                  style="width: 56px; height: 56px; object-fit: cover;" />
 
             <!-- Dropdown -->
-            <div class="dropdown">
-                <a class="dropdown-toggle text-dark text-decoration-none fs-5 fw-bold d-inline-flex align-items-center"
-                   href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    User
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2"
-                           asp-controller="Category" asp-action="Index">
-                            <i class="fas fa-list"></i> Category
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2"
-                           asp-controller="Product" asp-action="Index">
-                            <i class="fas fa-box-open"></i> Product
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2"
-                           asp-controller="Combo" asp-action="Index">
-                            <i class="fas fa-cubes"></i> Combo
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2"
-                           asp-controller="ShopOrder" asp-action="Index">
-                            <i class="fas fa-shopping-cart"></i> ShopOrder
-                        </a>
-                    </li>
-                </ul>
+            <a class="text-dark text-decoration-none fs-5 fw-bold d-inline-flex align-items-center">
+                <i class="fas fa-user-circle me-2"></i> @User.Identity?.Name
+            </a>
 
-            </div>
         </div>
 
         <div>
@@ -213,10 +189,36 @@
                 <span><i class="fas fa-hourglass-half"></i> Check In/Out</span>
             </a>
 
-            <a asp-controller="Report" asp-action="Index"
-               class="@IsActive("Report","Index")">
-                <span><i class="fas fa-briefcase"></i> Reports</span>
-            </a>
+            <!-- Demo collapsible menu -->
+            <button type="button" class="mb-1 @(isDemoMenuActive ? "active" : "")"
+                    data-bs-toggle="collapse" data-bs-target="#demoSubmenu"
+                    aria-expanded="@isDemoMenuActive.ToString().ToLower()" aria-controls="demoSubmenu">
+                <span><i class="fas fa-briefcase"></i> Demo</span>
+                <i class="fas fa-chevron-down chevron"></i>
+            </button>
+
+            <div class="collapse @(isDemoMenuActive ? "show" : "")" id="demoSubmenu">
+                <a asp-controller="Category" asp-action="Index"
+                   class="@IsActive("Category", "Index")">
+                    <span><i class="fas fa-list me-2"></i> Category</span>
+                </a>
+                <a asp-controller="Product" asp-action="Index"
+                   class="@IsActive("Product", "Index")">
+                    <span><i class="fas fa-box-open me-2"></i> Product</span>
+                </a>
+                <a asp-controller="Combo" asp-action="Index"
+                   class="@IsActive("Combo", "Index")">
+                    <span><i class="fas fa-cubes me-2"></i> Combo</span>
+                </a>
+                <a asp-controller="ShopOrder" asp-action="Index"
+                   class="@IsActive("ShopOrder", "Index")">
+                    <span><i class="fas fa-shopping-cart me-2"></i> ShopOrder</span>
+                </a>
+                <a asp-controller="InboundReceipt" asp-action="Index"
+                   class="@IsActive("InboundReceipt", "Index")">
+                    <span><i class="fas fa-receipt me-2"></i> Inbound Receipt</span>
+                </a>
+            </div>
 
             <a asp-controller="Support" asp-action="Help"
                class="@IsActive("Support","Help")">
