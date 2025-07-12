@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using System.Data;
 
 namespace MadeHuman_Server.Controllers.Shop
 {
@@ -103,11 +104,13 @@ namespace MadeHuman_Server.Controllers.Shop
                 return Unauthorized(new { message = "Email hoặc mật khẩu không đúng!" });
             }
             var token = await _tokenService.GenerateJwtToken(user);
+            var roles = await _userManager.GetRolesAsync(user); // ⬅️ Lấy danh sách role
             return Ok(new
             {
                 token,
                 userId = user.Id,
-                email = user.Email
+                email = user.Email,
+                role = roles.FirstOrDefault() ?? "User" // ⬅️ Lấy role đầu tiên (nếu có)
             });
         }
         [HttpPost("logout")]

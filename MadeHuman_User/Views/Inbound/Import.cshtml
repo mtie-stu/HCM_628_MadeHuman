@@ -1,57 +1,92 @@
-﻿@model MadeHuman_User.Models.ImportTaskViewModel
+﻿@model Madehuman_Share.ViewModel.Inbound.CreateInboundTaskViewModel
 
 @{
-    ViewData["Title"] = "Nhập hàng";
+    ViewData["Title"] = "Tạo nhiệm vụ nhập kho";
 }
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <div class="container mt-4">
     <div class="card shadow-sm">
         <div class="card-body">
-            <form asp-action="Import" method="post" class="row g-4">
-                <!-- Mã nhiệm vụ nhập hàng -->
+            <form asp-action="Import" method="post" id="scanForm" class="row g-4">
+                <!-- Nhập mã phiếu nhập -->
                 <div class="col-md-6">
-                    <label class="form-label" for="TaskCode">Mã nhiệm vụ nhập hàng</label>
-                    <div class="input-group">
-                        <input asp-for="TaskCode" class="form-control" placeholder="Nhập mã nhiệm vụ..." />
-                        <button type="submit" class="btn btn-outline-secondary" title="Quét mã nhiệm vụ">
-                            <i class="fas fa-qrcode"></i>
-                        </button>
-                    </div>
-
-                    @if (Model?.SelectedProduct != null)
-                    {
-                        <div class="card mt-4" style="max-width: 320px;">
-                            <img src="@Model.SelectedProduct.ImageUrl" alt="Ảnh sản phẩm" class="card-img-top" />
-                            <div class="card-body p-2">
-                                <p class="card-text mb-1"><strong>@Model.SelectedProduct.ProductName</strong></p>
-                                <p class="card-text mb-1"><small class="text-muted">Mã SP: @Model.SelectedProduct.ProductItemId</small></p>
-                                <p class="card-text mb-1"><small class="text-muted">Số lượng yêu cầu: @Model.SelectedProduct.Quantity</small></p>
-                                <p class="card-text"><small class="text-muted">Vị trí lưu: @Model.SelectedProduct.LocationStorage</small></p>
-                            </div>
-                        </div>
-                    }
+                    <label class="form-label">Mã phiếu nhập</label>
+                    <input id="receiptIdInput" class="form-control" name="receiptId" placeholder="Nhập mã phiếu nhập (GUID)..." required />
                 </div>
 
-                <!-- Quét mã sản phẩm và nhập số lượng -->
-                <div class="col-md-6">
-                    <label class="form-label" for="ScannedProductCode">Mã sản phẩm</label>
-                    <div class="input-group mb-3">
-                        <input asp-for="ScannedProductCode" class="form-control" placeholder="Nhập hoặc quét mã sản phẩm..." />
-                        <button type="submit" class="btn btn-outline-secondary" title="Quét mã sản phẩm">
-                            <i class="fas fa-qrcode"></i>
-                        </button>
-                    </div>
-
-                    <label class="form-label" for="ScannedQuantity">Số lượng nhập kho</label>
-                    <input asp-for="ScannedQuantity" class="form-control" placeholder="Số lượng nhập..." />
+                <!-- Thông tin phiếu nhập -->
+                <div class="col-12" id="receiptInfo" style="display:none;">
+                    <h5 class="mt-3">Thông tin phiếu nhập</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item"><strong>Ngày tạo:</strong> <span id="createAt"></span></li>
+                        <li class="list-group-item"><strong>Ngày nhận:</strong> <span id="receivedAt"></span></li>
+                        <li class="list-group-item"><strong>Trạng thái:</strong> <span id="status"></span></li>
+                        <li class="list-group-item"><strong>Số lượng sản phẩm:</strong> <span id="itemCount"></span></li>
+                        <li class="list-group-item">
+                            <strong>Danh sách sản phẩm:</strong>
+                            <ul class="mt-2" id="receiptItemsList" style="padding-left: 1.2rem;"></ul>
+                        </li>
+                    </ul>
                 </div>
 
-                <!-- Nút xác nhận -->
-                <div class="col-12 text-end">
-                    <button type="submit" class="btn btn-dark mt-2">Xác nhận nhập kho</button>
+                <!-- Xác nhận -->
+                <div class="col-12 text-end mt-4">
+                    <button type="submit" class="btn btn-dark" id="btnSubmit" disabled>Xác nhận tạo nhiệm vụ</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        let timeout;
+
+        $('#receiptIdInput').on('input', function () {
+            clearTimeout(timeout);
+            const id = $(this).val().trim();
+
+            // Reset UI mỗi lần nhập
+            $('#receiptInfo').hide();
+            $('#btnSubmit').prop('disabled', true);
+            $('#receiptItemsList').empty();
+            $('#receiptIdInput').prop('readonly', false);
+
+            if (!id || id.length < 10) return;
+
+            timeout = setTimeout(() => {
+                $.get(`https://localhost:7204/api/InboundReceipt/${id}`)
+                    .done(function (data) {
+                        console.log("✅ Phiếu nhập tìm thấy:", data);
+
+                        // Hiển thị thông tin cơ bản
+                        $('#createAt').text(new Date(data.createAt).toLocaleString());
+                        $('#receivedAt').text(data.receivedAt ? new Date(data.receivedAt).toLocaleDateString() : 'Chưa nhận');
+                        $('#status').text(data.status);
+                        $('#itemCount').text(data.items.length);
+
+                        // Hiển thị danh sách sản phẩm
+                        data.items.forEach(item => {
+                            $('#receiptItemsList').append(`
+                                <li class="list-group-item">
+                                    <strong>SKU:</strong> ${item.productSKUId} |
+                                    <strong>Tên:</strong> ${item.productSKUName} |
+                                    <strong>Số lượng:</strong> ${item.quantity}
+                                </li>
+                            `);
+                        });
+
+                        $('#receiptInfo').show();
+                        $('#receiptIdInput').prop('readonly', true);
+                        $('#btnSubmit').prop('disabled', false);
+                    })
+                    .fail(function (xhr) {
+                        console.log("❌ Không tìm thấy phiếu nhập. Lỗi:", xhr.status);
+                        $('#receiptInfo').hide();
+                        $('#btnSubmit').prop('disabled', true);
+                    });
+            }, 500);
+        });
+    </script>
+}

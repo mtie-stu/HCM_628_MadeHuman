@@ -8,6 +8,7 @@ namespace MadeHuman_User.ServicesTask.Services
     {
         Task<LoginResultDto?> LoginAsync(LoginModel model);
         Task<bool> RegisterAsync(RegisterModel model);
+        Task StoreLoginCookiesAsync(LoginResultDto result, HttpContext httpContext);
     }
     public class AccountService : IAccountService
     { 
@@ -35,5 +36,32 @@ namespace MadeHuman_User.ServicesTask.Services
 
             return response.IsSuccessStatusCode;
         }
+
+        public Task StoreLoginCookiesAsync(LoginResultDto result, HttpContext httpContext)
+        {
+            var commonOptions = new CookieOptions
+            {
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTimeOffset.UtcNow.AddHours(1)
+            };
+
+            // Token: HttpOnly để tránh bị JS đọc
+            var tokenOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = commonOptions.Expires
+            };
+
+            httpContext.Response.Cookies.Append("JWTToken", result.Token, tokenOptions);
+            httpContext.Response.Cookies.Append("UserId", result.UserId, commonOptions);
+            httpContext.Response.Cookies.Append("EmailOrId", result.Email, commonOptions);
+            httpContext.Response.Cookies.Append("UserRole", result.Role, commonOptions); // ⬅️ Thêm dòng này
+            return Task.CompletedTask;
+        }
+
+
     }
 }

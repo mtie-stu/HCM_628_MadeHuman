@@ -18,13 +18,13 @@ namespace MadeHuman_Server.Controllers.Inbound
         {
             _inboundTaskSvc = inboundTaskService;
         }
-        [HttpPost("create")]            
+        [HttpPost("create")]
         public async Task<IActionResult> CreateAsync([FromBody] CreateInboundTaskViewModel vm)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = HttpContext.Items["User"]?.ToString(); // 👈 lấy từ middleware
 
             if (string.IsNullOrEmpty(userId))
-                return Unauthorized("UserId không tồn tại trong token.");
+                return Unauthorized("Không tìm thấy UserId từ JWT.");
 
             var result = await _inboundTaskSvc.CreateInboundTaskAsync(vm, userId);
             return Ok(new
@@ -34,6 +34,7 @@ namespace MadeHuman_Server.Controllers.Inbound
                 data = result
             });
         }
+
 
         [HttpGet("{inboundTaskId}")]
         public async Task<IActionResult> GetById(Guid inboundTaskId)

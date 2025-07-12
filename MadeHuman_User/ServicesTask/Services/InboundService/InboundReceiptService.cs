@@ -8,6 +8,7 @@ namespace MadeHuman_User.ServicesTask.Services.InboundService
         Task<List<InboundReceiptViewModel>> GetAllAsync();
         Task<InboundReceiptDetailViewModel?> GetByIdAsync(Guid id);
     }
+
     public class InboundReceiptService : IInboundReceiptService
     {
         private readonly HttpClient _client;

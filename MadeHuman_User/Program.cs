@@ -1,4 +1,5 @@
 ﻿
+using MadeHuman_User.JWT;
 using MadeHuman_User.ServicesTask.Services;
 using MadeHuman_User.ServicesTask.Services.InboundService;
 using MadeHuman_User.ServicesTask.Services.ShopService;
@@ -16,6 +17,7 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IComboService, ComboService>();
 builder.Services.AddScoped<IShopOrderService, ShopOrderService>();
 builder.Services.AddScoped<IInboundReceiptService, InboundReceiptService>();
+builder.Services.AddScoped<IInboundTaskService, InboundTaskService>();
 
 
 /*https://hcm-628-madehuman-api.onrender.com*/
@@ -37,9 +39,9 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
+app.UseMiddleware<JwtMiddleware>(); // ⬅️ Trước Authentication
 app.UseRouting();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseSession();
