@@ -23,6 +23,8 @@ namespace MadeHuman_Server.Model.Shop
         [JsonIgnore]
         public Combo Combo { get; set; }
         public ICollection<Inventory> Inventory { get; set; }
+        public int? QuantityInStock { get; set; } = default!;
+
 
     }
 }

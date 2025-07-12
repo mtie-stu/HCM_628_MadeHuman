@@ -1,6 +1,7 @@
 ﻿using MadeHuman_Server.Model.Shop;
 using MadeHuman_Server.Service.Shop;
 using Madehuman_Share.ViewModel.Shop;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -98,15 +99,28 @@ namespace MadeHuman_Server.Controllers.Shop
             });
         }
 
-      /*  [HttpPost("generate-single-combo")]
-        public async Task<IActionResult> GenerateRandomSingleCombo([FromBody] GenerateRandomOrdersSingleRequest model)
-        {
-            var result = await _orderService.CreateRandomOrdersWithSingleComboAsync(model);
-            return Ok(new
-            {
-                message = $"Tạo {result.Count} đơn hàng thành công.",
-                orders = result
-            });
-        }*/
+        //[HttpPost("generate-random-combo")]
+        //[Authorize] // Đảm bảo người dùng đã đăng nhập
+        //public async Task<IActionResult> GenerateRandomOrders([FromBody] GenerateRandomOrdersSingleRequest request)
+        //{
+        //    try
+        //    {
+        //        // Lấy UserId từ JWT claims
+        //        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        //        if (string.IsNullOrEmpty(userId))
+        //            return Unauthorized("Không thể xác định người dùng.");
+
+        //        var orders = await _orderService.CreateRandomOrdersWithSingleComboAsync(request, userId);
+        //        return Ok(orders);
+        //    }
+        //    catch (ArgumentException ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, $"Đã xảy ra lỗi: {ex.Message}");
+        //    }
+        //}
     }
 }

@@ -15,7 +15,7 @@ namespace MadeHuman_Server.Service.Shop
         Task<ShopOrder> CreateAsync(CreateShopOrderWithMultipleItems vm);
         Task<bool> UpdateAsync(Guid id, ShopOrder updated);
         Task<List<ShopOrder>> CreateRandomOrdersWithSingleProductAsync(GenerateRandomOrdersSingleRequest request, string userId);
-        Task<List<ShopOrder>> CreateRandomOrdersWithSingleComboAsync(GenerateRandomOrdersSingleRequest request);
+        //Task<List<ShopOrder>> CreateRandomOrdersWithSingleComboAsync(GenerateRandomOrdersSingleRequest request,string userId);
     }
     public class ShopOrderService : IShopOrderService
     {
@@ -183,60 +183,60 @@ namespace MadeHuman_Server.Service.Shop
 
 
 
-        public async Task<List<ShopOrder>> CreateRandomOrdersWithSingleComboAsync(GenerateRandomOrdersSingleRequest request)
-        {
-            if (request.NumberOfOrders <= 0)
-                throw new ArgumentException("Số lượng đơn hàng phải lớn hơn 0.");
-            if (request.MinQuantity <= 0 || request.MaxQuantity < request.MinQuantity)
-                throw new ArgumentException("Khoảng số lượng hàng hóa không hợp lệ.");
+        //public async Task<List<ShopOrder>> CreateRandomOrdersWithSingleComboAsync(GenerateRandomOrdersSingleRequest request, string UserId)
+        //{
+        //    if (request.NumberOfOrders <= 0)
+        //        throw new ArgumentException("Số lượng đơn hàng phải lớn hơn 0.");
+        //    if (request.MinQuantity <= 0 || request.MaxQuantity < request.MinQuantity)
+        //        throw new ArgumentException("Khoảng số lượng hàng hóa không hợp lệ.");
 
-            // Kiểm tra sản phẩm có tồn tại không
-            var productExists = await _context.ProductSKUs.AnyAsync(p => p.Id == request.ProductSKUsId);
-            if (!productExists)
-                throw new ArgumentException("SKU không tồn tại.");
+        //    // Kiểm tra sản phẩm có tồn tại không
+        //    var productExists = await _context.ProductSKUs.AnyAsync(p => p.Id == request.ProductSKUsId);
+        //    if (!productExists)
+        //        throw new ArgumentException("SKU không tồn tại.");
 
-            // Nếu muốn kiểm tra AppUserId có tồn tại thì thêm dòng dưới:
-            // var userExists = await _context.Users.AnyAsync(u => u.Id == request.AppUserId);
+        //    // Nếu muốn kiểm tra AppUserId có tồn tại thì thêm dòng dưới:
+        //    // var userExists = await _context.Users.AnyAsync(u => u.Id == request.AppUserId);
 
-            var random = new Random();
-            var orders = new List<ShopOrder>();
-            var appuserId = DefaultData.FakeUserId;
-            var product = await _context.ProductSKUs.FindAsync(request.ProductSKUsId);
-            if (product == null)
-                throw new ArgumentException("Sản phẩm không tồn tại.");
-            var unitPrice = product.Product.Price;
+        //    var random = new Random();
+        //    var orders = new List<ShopOrder>();
+     
+        //    var product = await _context.ProductSKUs.FindAsync(request.ProductSKUsId);
+        //    if (product == null)
+        //        throw new ArgumentException("Sản phẩm không tồn tại.");
+        //    var unitPrice = product.Product.Price;
 
-            for (int i = 0; i < request.NumberOfOrders; i++)
-            {
-                var quantity = random.Next(request.MinQuantity, request.MaxQuantity + 1);
-                var orderId = Guid.NewGuid();
+        //    for (int i = 0; i < request.NumberOfOrders; i++)
+        //    {
+        //        var quantity = random.Next(request.MinQuantity, request.MaxQuantity + 1);
+        //        var orderId = Guid.NewGuid();
 
-                var orderItem = new OrderItem
-                {
-                    OrderItemId = Guid.NewGuid(),
-                    ProductSKUsId = request.ProductSKUsId,
-                    Quantity = quantity,
-                    UnitPrice = request.UnitPrice,
-                    ShopOrderId = orderId
-                };
+        //        var orderItem = new OrderItem
+        //        {
+        //            OrderItemId = Guid.NewGuid(),
+        //            ProductSKUsId = request.ProductSKUsId,
+        //            Quantity = quantity,
+        //            UnitPrice = request.UnitPrice,
+        //            ShopOrderId = orderId
+        //        };
 
-                var order = new ShopOrder
-                {
-                    ShopOrderId = orderId,
-                    AppUserId = appuserId,
-                    Status = (Model.Shop.StatusOrder)request.Status,
-                    OrderDate = request.BaseOrderDate ?? DateTime.UtcNow,
-                    TotalAmount = quantity * request.UnitPrice,
-                    OrderItems = new List<OrderItem> { orderItem }
-                };
+        //        var order = new ShopOrder
+        //        {
+        //            ShopOrderId = orderId,
+        //            AppUserId = UserId,
+        //            Status = (Model.Shop.StatusOrder)request.Status,
+        //            OrderDate = request.BaseOrderDate ?? DateTime.UtcNow,
+        //            TotalAmount = quantity * request.UnitPrice,
+        //            OrderItems = new List<OrderItem> { orderItem }
+        //        };
 
-                orders.Add(order);
-            }
+        //        orders.Add(order);
+        //    }
 
-            _context.ShopOrders.AddRange(orders);
-            await _context.SaveChangesAsync();
+        //    _context.ShopOrders.AddRange(orders);
+        //    await _context.SaveChangesAsync();
 
-            return orders;
-        }
+        //    return orders;
+        //}
     }
 }

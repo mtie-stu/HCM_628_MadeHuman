@@ -3,6 +3,7 @@ using System;
 using MadeHuman_Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MadeHuman_Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250712110227_addQuantỉtyInComboAndProduct")]
+    partial class addQuantỉtyInComboAndProduct
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -343,6 +346,9 @@ namespace MadeHuman_Server.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int?>("Quantity")
+                        .HasColumnType("integer");
+
                     b.HasKey("ComboId");
 
                     b.ToTable("Combos");
@@ -426,6 +432,9 @@ namespace MadeHuman_Server.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int?>("QuantityInStock")
+                        .HasColumnType("integer");
+
                     b.HasKey("ProductId");
 
                     b.HasIndex("CategoryId");
@@ -465,9 +474,6 @@ namespace MadeHuman_Server.Migrations
 
                     b.Property<Guid?>("ProductId")
                         .HasColumnType("uuid");
-
-                    b.Property<int?>("QuantityInStock")
-                        .HasColumnType("integer");
 
                     b.Property<string>("SKU")
                         .IsRequired()
