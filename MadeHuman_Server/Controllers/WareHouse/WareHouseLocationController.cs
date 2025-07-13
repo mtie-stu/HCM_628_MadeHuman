@@ -52,14 +52,15 @@ namespace MadeHuman_Server.Controllers.WareHouse
         {
             var result = await _service.GenerateLocationsAsync
             (
+                //
                 request.ZoneId,
                 request.StartLetter,
                 request.EndLetter,
                 request.StartNumber,
                 request.EndNumber,
-                request.StartSub,
-                request.EndSub,
-                request.Quantity
+                request.StartSub,//1
+                request.EndSub,//2
+                request.Quantity//số lượng location
             );
 
             return Ok(result);

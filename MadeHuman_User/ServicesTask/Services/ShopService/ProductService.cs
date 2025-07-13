@@ -47,7 +47,7 @@ namespace MadeHuman_User.ServicesTask.Services.ShopService
             form.Add(new StringContent(model.Description ?? ""), "Description");
             form.Add(new StringContent(model.Price.ToString()), "Price");
             form.Add(new StringContent(model.SKU ?? ""), "SKU");//quét mã sku
-            form.Add(new StringContent(model.QuantityInStock.ToString()), "QuantityInStock");
+            //form.Add(new StringContent(model.QuantityInStock.ToString()), "QuantityInStock");
             form.Add(new StringContent(model.CategoryId.ToString()), "CategoryId");
             
             if (model.ImageFiles != null)

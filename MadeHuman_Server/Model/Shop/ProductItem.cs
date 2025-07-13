@@ -11,7 +11,7 @@ namespace MadeHuman_Server.Model.Shop
         [StringLength(50)]
         public string SKU { get; set; } = string.Empty;
 
-        public int QuantityInStock { get; set; } = default!;
+        //public int QuantityInStock { get; set; } = default!;
 
         // Foreign key
         public Guid ProductId { get; set; } = default!;
