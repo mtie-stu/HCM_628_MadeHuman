@@ -12,7 +12,7 @@ namespace Madehuman_Share.ViewModel.Inbound
         [Required]
         public Guid InboundReceiptId { get; set; }
 
-        [Required]
-        public string CreateBy { get; set; }
+        //[Required]
+        //public string? CreateBy { get; set; }
     }
 }

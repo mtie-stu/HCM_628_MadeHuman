@@ -6,13 +6,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Madehuman_Share.ViewModel.Inbound
+namespace Madehuman_Share.ViewModel.Inbound.InboundReceipt
 {
     public class CreateInboundReceiptViewModel
     {
         public Guid InboundReceiptId { get; set; } = Guid.NewGuid();
-        public DateTime ReceivedAt { get; set; }
-        public DateTime CreateAt{ get; set; }
+        public DateTime ReceivedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreateAt { get; set; } = DateTime.UtcNow;
+
 
         public List<InboundReceiptItemViewModel> Items { get; set; } = new();
     }

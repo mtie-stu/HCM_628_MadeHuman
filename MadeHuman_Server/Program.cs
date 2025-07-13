@@ -1,4 +1,5 @@
 ﻿using MadeHuman_Server.Data;
+using MadeHuman_Server.JwtMiddleware;
 using MadeHuman_Server.Model.User_Task;
 using MadeHuman_Server.Service;
 using MadeHuman_Server.Service.Inbound;
@@ -27,6 +28,18 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     ));
 /*builder.Services.AddDbContext<ApplicationDbContext>(options =>
    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection1")));*/
+
+// Thêm cấu hình CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("https://localhost:7112") // Giao diện FE
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials(); // Nếu dùng Cookie
+    });
+});
 
 // 👤 Identity
 builder.Services.AddIdentity<AppUser, IdentityRole>()
@@ -147,9 +160,11 @@ app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "MadeHuman API v1");
 });
-
+// Bật CORS trước UseAuthorization()
+app.UseCors("AllowFrontend");
 app.UseStaticFiles();
 app.UseHttpsRedirection();
+app.UseMiddleware<JwtMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();

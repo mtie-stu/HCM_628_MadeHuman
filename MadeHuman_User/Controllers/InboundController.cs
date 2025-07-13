@@ -1,10 +1,42 @@
 ﻿using MadeHuman_User.Models;
+using MadeHuman_User.ServicesTask.Services.InboundService;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MadeHuman_User.Controllers
 {
     public class InboundController : Controller
     {
+        private readonly IInboundTaskService _inboundTaskService;
+
+        public InboundController(IInboundTaskService inboundTaskService)
+        {
+            _inboundTaskService = inboundTaskService;
+        }
+        [HttpGet]
+        public IActionResult Import()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Import(Guid receiptId)
+        {
+            var success = await _inboundTaskService.CreateAsync(receiptId, HttpContext);
+
+            if (!success)
+            {
+                TempData["Error"] = "Tạo nhiệm vụ thất bại.";
+                return RedirectToAction("Import");
+            }
+
+            TempData["Success"] = "Tạo nhiệm vụ nhập kho thành công.";
+            return RedirectToAction("Index", "InboundReceipt");
+        }
+
+
+
+
+
         private static readonly List<(string ExportCode, ProductExportViewModel Product)> exportData = new()
         {
             ("EXP001", new ProductExportViewModel
@@ -99,63 +131,63 @@ namespace MadeHuman_User.Controllers
             return View(model);
         }
 
-        [HttpGet]
-        public IActionResult Import()
-        {
-            return View(new ImportTaskViewModel());
-        }
+        //[HttpGet]
+        //public IActionResult Import()
+        //{
+        //    return View(new ImportTaskViewModel());
+        //}
 
-        [HttpPost]
-        public IActionResult Import(ImportTaskViewModel model)
-        {
-            // Tìm danh sách sản phẩm thuộc nhiệm vụ được quét
-            model.Products = taskProducts
-                .Where(p => p.TaskCode == model.TaskCode)
-                .ToList();
+        //[HttpPost]
+        //public IActionResult Import(ImportTaskViewModel model)
+        //{
+        //    // Tìm danh sách sản phẩm thuộc nhiệm vụ được quét
+        //    model.Products = taskProducts
+        //        .Where(p => p.TaskCode == model.TaskCode)
+        //        .ToList();
 
-            if (!model.Products.Any())
-            {
-                ModelState.AddModelError("", "Không tìm thấy nhiệm vụ nhập hàng.");
-                return View(model);
-            }
+        //    if (!model.Products.Any())
+        //    {
+        //        ModelState.AddModelError("", "Không tìm thấy nhiệm vụ nhập hàng.");
+        //        return View(model);
+        //    }
 
-            // Nếu người dùng quét mã sản phẩm
-            if (!string.IsNullOrWhiteSpace(model.ScannedProductCode))
-            {
-                var matched = model.Products
-                    .FirstOrDefault(p => p.ProductItemId == model.ScannedProductCode);
+        //    // Nếu người dùng quét mã sản phẩm
+        //    if (!string.IsNullOrWhiteSpace(model.ScannedProductCode))
+        //    {
+        //        var matched = model.Products
+        //            .FirstOrDefault(p => p.ProductItemId == model.ScannedProductCode);
 
-                if (matched == null)
-                {
-                    ModelState.AddModelError("", "Không tìm thấy sản phẩm trong nhiệm vụ.");
-                    return View(model);
-                }
+        //        if (matched == null)
+        //        {
+        //            ModelState.AddModelError("", "Không tìm thấy sản phẩm trong nhiệm vụ.");
+        //            return View(model);
+        //        }
 
-                model.SelectedProduct = matched;
+        //        model.SelectedProduct = matched;
 
-                // Nếu có nhập số lượng
-                if (model.ScannedQuantity.HasValue)
-                {
-                    if (model.ScannedQuantity <= 0 || model.ScannedQuantity > matched.Quantity)
-                    {
-                        ModelState.AddModelError("", $"Số lượng không hợp lệ. Tối đa: {matched.Quantity}");
-                        return View(model);
-                    }
+        //        // Nếu có nhập số lượng
+        //        if (model.ScannedQuantity.HasValue)
+        //        {
+        //            if (model.ScannedQuantity <= 0 || model.ScannedQuantity > matched.Quantity)
+        //            {
+        //                ModelState.AddModelError("", $"Số lượng không hợp lệ. Tối đa: {matched.Quantity}");
+        //                return View(model);
+        //            }
 
-                    // Trừ số lượng (giả lập)
-                    matched.Quantity -= model.ScannedQuantity.Value;
+        //            // Trừ số lượng (giả lập)
+        //            matched.Quantity -= model.ScannedQuantity.Value;
 
-                    ViewBag.Success = $"✅ Nhập thành công {model.ScannedQuantity.Value} sản phẩm: {matched.ProductName}";
+        //            ViewBag.Success = $"✅ Nhập thành công {model.ScannedQuantity.Value} sản phẩm: {matched.ProductName}";
 
-                    // Reset form cho lượt tiếp theo
-                    model.ScannedProductCode = "";
-                    model.ScannedQuantity = null;
-                    model.SelectedProduct = null;
-                }
-            }
+        //            // Reset form cho lượt tiếp theo
+        //            model.ScannedProductCode = "";
+        //            model.ScannedQuantity = null;
+        //            model.SelectedProduct = null;
+        //        }
+        //    }
 
-            return View(model);
-        }
+        //    return View(model);
+        //}
 
     }
 }

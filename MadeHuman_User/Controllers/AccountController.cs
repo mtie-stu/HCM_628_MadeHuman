@@ -30,12 +30,12 @@ namespace MadeHuman_User.Controllers
                 return View(model);
             }
 
-            HttpContext.Session.SetString("Token", result.Token);
-            HttpContext.Session.SetString("UserId", result.UserId);
-            HttpContext.Session.SetString("Email", result.Email);
+            await _accountService.StoreLoginCookiesAsync(result, HttpContext);
 
             return RedirectToAction("Index", "Home");
         }
+
+
         [HttpGet]
         public IActionResult Register() => View();
         [HttpPost]

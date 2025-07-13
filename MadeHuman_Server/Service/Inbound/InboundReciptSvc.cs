@@ -1,6 +1,6 @@
 ﻿using MadeHuman_Server.Data;
 using MadeHuman_Server.Model.Inbound;
-using Madehuman_Share.ViewModel.Inbound;
+using Madehuman_Share.ViewModel.Inbound.InboundReceipt;
 using Microsoft.EntityFrameworkCore;
 
 namespace MadeHuman_Server.Service.Inbound
@@ -68,9 +68,11 @@ namespace MadeHuman_Server.Service.Inbound
         {
             return await _context.InboundReceipt
                 .Include(r => r.InboundTasks)
-                .Include(r => r.InboundReceiptItems) // cần sửa model để có navigation property ngược
+                .Include(r => r.InboundReceiptItems)
+                    .ThenInclude(i => i.ProductSKUs) // 👈 thêm dòng này để lấy tên SKU
                 .FirstOrDefaultAsync(r => r.Id == receiptId);
         }
+
 
         public async Task<List<InboundReceipts>> GetAllAsync()
         {

@@ -1,6 +1,6 @@
 ﻿using MadeHuman_Server.Model.Inbound;
 using MadeHuman_Server.Service.Inbound;
-using Madehuman_Share.ViewModel.Inbound;
+using Madehuman_Share.ViewModel.Inbound.InboundReceipt;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MadeHuman_Server.Controllers.Inbound
@@ -31,19 +31,54 @@ namespace MadeHuman_Server.Controllers.Inbound
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var receipts = await _inboundReciptService.GetAllAsync();
-            return Ok(receipts);
+            var receipts = await _inboundReciptService.GetAllAsync(); // Trả về List<InboundReceipts>
+
+            var result = receipts.Select(r => new InboundReceiptViewModel
+            {
+                Id = r.Id,
+                CreateAt = r.CreateAt,
+                ReceivedAt = r.ReceivedAt,
+                Status = r.Status.ToString(), // enum → string
+
+                TaskCode = r.InboundTasks?.Id.ToString(), // hoặc .TaskCode nếu có
+                TaskStatus = r.InboundTasks?.Status.ToString(),
+
+                ItemCount = r.InboundReceiptItems?.Count ?? 0
+            });
+
+            return Ok(result);
         }
+
+
 
         // GET: api/InboundReceipt/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var receipt = await _inboundReciptService.GetByIdAsync(id);
-            if (receipt == null)
+            var r = await _inboundReciptService.GetByIdAsync(id);
+            if (r == null)
                 return NotFound();
 
-            return Ok(receipt);
+            var result = new InboundReceiptDetailViewModel
+            {
+                Id = r.Id,
+                CreateAt = r.CreateAt,
+                ReceivedAt = r.ReceivedAt,
+                Status = r.Status.ToString(),
+                TaskCode = r.InboundTasks?.Id.ToString(), // nếu có TaskCode thì đổi lại
+                TaskStatus = r.InboundTasks?.Status.ToString(),
+
+                Items = r.InboundReceiptItems?.Select(i => new InboundReceiptItemDetail
+                {
+                    ProductSKUId = i.ProductSKUId,
+                    ProductSKUName = i.ProductSKUs?.SKU ?? "(Không có tên)", // 👈 lấy tên SKU nếu có
+                    Quantity = i.Quantity
+                }).ToList() ?? new()
+            };
+
+            return Ok(result);
         }
+
+
     }
 }

@@ -1,8 +1,14 @@
-﻿@{
+﻿@using System.Security.Claims
+@{
     Layout = null;
-
+   
     string currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
     string currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+    bool isDemoMenuActive = currentController == "Category"
+                     || currentController == "Product"
+                     || currentController == "Combo"
+                     || currentController == "ShopOrder"
+                     || currentController == "InboundReceipt"; // thêm dòng này
 
     string IsActive(string controller, string action) =>
         (currentController == controller && currentAction == action) ? "active" : "";
@@ -14,6 +20,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>@ViewData["Title"] - MadeHuman_User</title>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<link rel="stylesheet" asp-href="~/css/site.css" asp-append-version="true" />
 	<link rel="stylesheet" asp-href="~/MadeHuman_User.styles.css" asp-append-version="true" />
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
@@ -107,39 +114,14 @@
                  style="width: 56px; height: 56px; object-fit: cover;" />
 
             <!-- Dropdown -->
-            <div class="dropdown">
-                <a class="dropdown-toggle text-dark text-decoration-none fs-5 fw-bold d-inline-flex align-items-center"
-                   href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Nguyễn Văn A
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2"
-                           asp-controller="Category" asp-action="Index">
-                            <i class="fas fa-list"></i> Category
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2"
-                           asp-controller="Product" asp-action="Index">
-                            <i class="fas fa-box-open"></i> Product
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2"
-                           asp-controller="Combo" asp-action="Index">
-                            <i class="fas fa-cubes"></i> Combo
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2"
-                           asp-controller="ShopOrder" asp-action="Index">
-                            <i class="fas fa-shopping-cart"></i> ShopOrder
-                        </a>
-                    </li>
-                </ul>
+            <a class="text-dark text-decoration-none fs-5 fw-bold d-inline-flex align-items-center">
+                <i class="fas fa-user text-purple me-1"></i>
+                @Context.Request.Cookies["EmailOrId"] 
+            </a>
 
-            </div>
+
+         @*    (@Context.Request.Cookies["UserRole"]) *@
+
         </div>
 
         <div>
@@ -213,10 +195,36 @@
                 <span><i class="fas fa-hourglass-half"></i> Check In/Out</span>
             </a>
 
-            <a asp-controller="Report" asp-action="Index"
-               class="@IsActive("Report","Index")">
-                <span><i class="fas fa-briefcase"></i> Reports</span>
-            </a>
+            <!-- Demo collapsible menu -->
+            <button type="button" class="mb-1 @(isDemoMenuActive ? "active" : "")"
+                    data-bs-toggle="collapse" data-bs-target="#demoSubmenu"
+                    aria-expanded="@isDemoMenuActive.ToString().ToLower()" aria-controls="demoSubmenu">
+                <span><i class="fas fa-briefcase"></i> Demo</span>
+                <i class="fas fa-chevron-down chevron"></i>
+            </button>
+
+            <div class="collapse @(isDemoMenuActive ? "show" : "")" id="demoSubmenu">
+                <a asp-controller="Category" asp-action="Index"
+                   class="@IsActive("Category", "Index")">
+                    <span><i class="fas fa-list me-2"></i> Category</span>
+                </a>
+                <a asp-controller="Product" asp-action="Index"
+                   class="@IsActive("Product", "Index")">
+                    <span><i class="fas fa-box-open me-2"></i> Product</span>
+                </a>
+                <a asp-controller="Combo" asp-action="Index"
+                   class="@IsActive("Combo", "Index")">
+                    <span><i class="fas fa-cubes me-2"></i> Combo</span>
+                </a>
+                <a asp-controller="ShopOrder" asp-action="Index"
+                   class="@IsActive("ShopOrder", "Index")">
+                    <span><i class="fas fa-shopping-cart me-2"></i> ShopOrder</span>
+                </a>
+                <a asp-controller="InboundReceipt" asp-action="Index"
+                   class="@IsActive("InboundReceipt", "Index")">
+                    <span><i class="fas fa-receipt me-2"></i> Inbound Receipt</span>
+                </a>
+            </div>
 
             <a asp-controller="Support" asp-action="Help"
                class="@IsActive("Support","Help")">
@@ -242,7 +250,7 @@
 		</div>
 	</footer>
 
-	<script asp-src="~/lib/jquery/dist/jquery.min.js" asp-append-version="true"></script>
+	@* <script asp-src="~/lib/jquery/dist/jquery.min.js" asp-append-version="true"></script> *@
 	<script asp-src="~/js/site.js" asp-append-version="true"></script>
 	 @await RenderSectionAsync("Scripts", required: false)
 
