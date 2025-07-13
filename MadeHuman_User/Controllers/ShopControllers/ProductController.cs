@@ -70,7 +70,7 @@ namespace MadeHuman_User.Controllers.ShopControllers
                 Description = detail.Description,
                 Price = detail.Price,
                 SKU = detail.SKU,
-                QuantityInStock = detail.QuantityInStock,
+                //QuantityInStock = detail.QuantityInStock,
                 CategoryId = detail.CategoryId ?? Guid.Empty,
                 CategoryName = detail.CategoryName
             };
