@@ -99,28 +99,30 @@ namespace MadeHuman_Server.Controllers.Shop
             });
         }
 
-        //[HttpPost("generate-random-combo")]
-        //[Authorize] // Đảm bảo người dùng đã đăng nhập
-        //public async Task<IActionResult> GenerateRandomOrders([FromBody] GenerateRandomOrdersSingleRequest request)
-        //{
-        //    try
-        //    {
-        //        // Lấy UserId từ JWT claims
-        //        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        //        if (string.IsNullOrEmpty(userId))
-        //            return Unauthorized("Không thể xác định người dùng.");
-
-        //        var orders = await _orderService.CreateRandomOrdersWithSingleComboAsync(request, userId);
-        //        return Ok(orders);
-        //    }
-        //    catch (ArgumentException ex)
-        //    {
-        //        return BadRequest(ex.Message);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, $"Đã xảy ra lỗi: {ex.Message}");
-        //    }
-        //}
+        /// <summary>
+        /// Tạo nhiều đơn hàng với nhiều SKU ngẫu nhiên mỗi đơn
+        /// </summary>
+        [HttpPost("generate-multi-sku")]
+        [AllowAnonymous] // Hoặc [Authorize] nếu cần đăng nhập
+        public async Task<IActionResult> GenerateOrdersWithMultiSKU([FromBody] GenerateRandomMultiSKUOrdersRequest request)
+        {
+            try
+            {
+                var result = await _orderService.CreateRandomOrdersWithMultiSKUAsync(request);
+                return Ok(result);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"❌ Đã xảy ra lỗi: {ex.Message}");
+            }
+        }
     }
 }
