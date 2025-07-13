@@ -2,14 +2,14 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy các file .csproj để restore
+# Chỉ copy các file .csproj cần thiết để restore
 COPY ["MadeHuman_Server/MadeHuman_Server.csproj", "MadeHuman_Server/"]
 COPY ["Madehuman_Share/Madehuman_Share.csproj", "Madehuman_Share/"]
 
-# Restore dependencies
+# Khôi phục các dependency
 RUN dotnet restore "MadeHuman_Server/MadeHuman_Server.csproj"
 
-# Copy toàn bộ source code
+# Copy toàn bộ source code còn lại
 COPY MadeHuman_Server/ MadeHuman_Server/
 COPY Madehuman_Share/ Madehuman_Share/
 
@@ -23,15 +23,15 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 EXPOSE 80
 
-# Copy output đã build từ stage 1
+# Copy các file đã publish từ STAGE 1
 COPY --from=build /app/publish .
 
-# Copy các file cấu hình Google Drive OAuth
+# Copy cấu hình OAuth (dành cho Google Drive)
 COPY MadeHuman_Server/Data/credentials_oauth.json /app/Data/credentials_oauth.json
 COPY MadeHuman_Server/Data/token.json /app/Data/token.json
 
-# (Tùy chọn) Copy credentials.json nếu bạn vẫn dùng Service Account
+# (Tuỳ chọn) Copy thêm credentials.json nếu vẫn hỗ trợ Service Account
 COPY MadeHuman_Server/Data/credentials.json /app/Data/credentials.json
 
-# Start ứng dụng
+# Khởi động ứng dụng
 ENTRYPOINT ["dotnet", "MadeHuman_Server.dll"]
