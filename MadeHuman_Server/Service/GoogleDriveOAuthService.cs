@@ -12,6 +12,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using File = Google.Apis.Drive.v3.Data.File;
 using Google.Apis.Drive.v3.Data;
+using Google.Apis.Auth.OAuth2.Flows;
+using Google.Apis.Auth.OAuth2.Responses;
 
 public class GoogleDriveOAuthService
 {
@@ -20,25 +22,30 @@ public class GoogleDriveOAuthService
 
     public GoogleDriveOAuthService(IWebHostEnvironment env, IConfiguration config)
     {
-        // 1. Đường dẫn credentials và token
         string credPath = Path.Combine(env.ContentRootPath, "Data", "credentials_oauth.json");
         string tokenPath = Path.Combine(env.ContentRootPath, "Data", "token.json");
 
-        // 2. Đọc client secrets
+        // 1. Load client secret
         using var stream = new FileStream(credPath, FileMode.Open, FileAccess.Read);
         var secrets = GoogleClientSecrets.FromStream(stream).Secrets;
 
-        // 3. Tạo credential từ token có sẵn
-        var credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-            secrets,
-            new[] { DriveService.Scope.Drive },
-            "user",
-            CancellationToken.None,
-            new FileDataStore(Path.GetDirectoryName(tokenPath), true)
-        ).Result;
+        // 2. Tải token đã có sẵn
+        var tokenJson = System.IO.File.ReadAllText(tokenPath);
+        var token = Newtonsoft.Json.JsonConvert.DeserializeObject<TokenResponse>(tokenJson);
 
-        // 4. Tạo service
-        _driveService = new DriveService(new BaseClientService.Initializer()
+        // 3. Tạo credential từ token
+        var credential = new UserCredential(
+            new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
+            {
+                ClientSecrets = secrets,
+                Scopes = new[] { DriveService.Scope.Drive }
+            }),
+            "user",
+            token
+        );
+
+        // 4. Khởi tạo Drive service
+        _driveService = new DriveService(new BaseClientService.Initializer
         {
             HttpClientInitializer = credential,
             ApplicationName = "MadeHumanUploader"
