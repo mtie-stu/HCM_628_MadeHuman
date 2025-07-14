@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace MadeHuman_User.Models
+namespace MadeHuman_Admin.Models
 {
     public class PackerViewModel
     {

@@ -1,0 +1,98 @@
+﻿@model Madehuman_Share.ViewModel.Shop.CreateProduct_ProdcutSKU_ViewModel
+
+@{
+    ViewData["Title"] = "Tạo sản phẩm mới";
+}
+
+
+<form asp-action="Create" method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label"></label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Price" class="form-label"></label>
+        <input asp-for="Price" class="form-control" />
+        <span asp-validation-for="Price" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="SKU" class="form-label"></label>
+        <input asp-for="SKU" class="form-control" />
+        <span asp-validation-for="SKU" class="text-danger"></span>
+    </div>
+
+@*     <div class="mb-3">
+        <label asp-for="QuantityInStock" class="form-label"></label>
+        <input asp-for="QuantityInStock" class="form-control" />
+        <span asp-validation-for="QuantityInStock" class="text-danger"></span>
+    </div>
+ *@
+    <div class="mb-3">
+        <label asp-for="CategoryId" class="form-label"></label>
+        <input asp-for="CategoryId" class="form-control" />
+        <span asp-validation-for="CategoryId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ImageFiles" class="form-label fw-semibold">Hình ảnh</label>
+        <input asp-for="ImageFiles"
+               type="file"
+               multiple
+               accept="image/*"
+               class="form-control"
+               onchange="previewImages(event)" />
+        <span asp-validation-for="ImageFiles" class="text-danger"></span>
+
+        <div class="mt-3 d-flex flex-wrap gap-3" id="imagePreviewContainer"></div>
+    </div>
+
+
+    <button type="submit" class="btn btn-primary">Tạo sản phẩm</button>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function previewImages(event) {
+            const previewContainer = document.getElementById("imagePreviewContainer");
+            previewContainer.innerHTML = "";
+
+            Array.from(event.target.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const box = document.createElement("div");
+                    box.className = "position-relative";
+
+                    const img = document.createElement("img");
+                    img.src = e.target.result;
+                    img.className = "img-thumbnail";
+                    img.style.width = "130px";
+                    img.style.height = "130px";
+                    img.style.objectFit = "cover";
+
+                    const btn = document.createElement("button");
+                    btn.type = "button";
+                    btn.className = "btn btn-sm btn-danger position-absolute top-0 end-0";
+                    btn.style.borderRadius = "50%";
+                    btn.innerHTML = "&times;";
+                    btn.onclick = () => box.remove(); // Chỉ xoá UI
+
+                    box.appendChild(img);
+                    box.appendChild(btn);
+                    previewContainer.appendChild(box);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    </script>
+}
