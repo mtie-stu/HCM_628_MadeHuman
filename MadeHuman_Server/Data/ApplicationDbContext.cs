@@ -1,4 +1,5 @@
 ﻿using MadeHuman_Server.Model.Inbound;
+using MadeHuman_Server.Model.Outbound;
 using MadeHuman_Server.Model.Shop;
 using MadeHuman_Server.Model.User_Task;
 using MadeHuman_Server.Model.WareHouse;
@@ -40,6 +41,13 @@ namespace MadeHuman_Server.Data
         public DbSet<LowStockAlerts> LowStockAlerts { get; set; }
         public DbSet<RefillTasks> RefillTasks { get; set; }
         public DbSet<RefillTaskDetails> RefillTaskDetails { get; set; }
+        public DbSet<OutboundTask> OutboundTasks { get; set; }
+        public DbSet<OutboundTaskItems> OutboundTaskItems { get; set; }
+        public DbSet<OutboundTaskItemDetails> OutboundTaskItemDetails { get; set; }
+        public DbSet<PickTasks> PickTasks { get; set; }
+        public DbSet<PickTaskDetails> PickTaskDetails { get; set; }
+
+
 
 
         public static class DefaultData

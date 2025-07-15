@@ -21,11 +21,14 @@ builder.Services.AddScoped<IInboundTaskService, InboundTaskService>();
 
 
 /*https://hcm-628-madehuman-api.onrender.com*/
+//builder.Services.AddHttpClient("API", client =>
+//{
+//    client.BaseAddress = new Uri("https://localhost:7204/"); // Đảm bảo URL chính xác
+//});
 builder.Services.AddHttpClient("API", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7204/"); // Đảm bảo URL chính xác
+    client.BaseAddress = new Uri("https://hcm-628-madehuman-api.onrender.com/"); // Đảm bảo URL chính xác
 });
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
