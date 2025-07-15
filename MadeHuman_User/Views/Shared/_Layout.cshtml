@@ -116,7 +116,7 @@
             <!-- Dropdown -->
             <a class="text-dark text-decoration-none fs-5 fw-bold d-inline-flex align-items-center">
                 <i class="fas fa-user text-purple me-1"></i>
-                @Context.Request.Cookies["EmailOrId"] 
+                @Context.Request.Cookies["EmailOrId"] (@Context.Request.Cookies["UserRole"])
             </a>
 
 
@@ -160,7 +160,7 @@
                 </a>
             </div>
 
-            <!-- OutBound -->fdec
+            <!-- OutBound -->
             <button type="button" data-bs-toggle="collapse" data-bs-target="#collapseOutbound"
                     aria-expanded="false" aria-controls="collapseOutbound">
                 <span><i class="fas fa-upload"></i> OutBound</span>
@@ -190,8 +190,8 @@
             </div>
 
             
-            <a asp-controller="Staff" asp-action="CheckInOut"
-               class="@IsActive("Staff","CheckInOut")">
+            <a asp-controller="User" asp-action="CheckInOut"
+               class="@IsActive("User","CheckInOut")">
                 <span><i class="fas fa-hourglass-half"></i> Check In/Out</span>
             </a>
 

@@ -18,12 +18,13 @@ builder.Services.AddScoped<IComboService, ComboService>();
 builder.Services.AddScoped<IShopOrderService, ShopOrderService>();
 builder.Services.AddScoped<IInboundReceiptService, InboundReceiptService>();
 builder.Services.AddScoped<IInboundTaskService, InboundTaskService>();
+builder.Services.AddScoped<ICheckinCheckoutService, CheckinCheckoutService>();
 
 
 /*https://hcm-628-madehuman-api.onrender.com*/
 builder.Services.AddHttpClient("API", client =>
 {
-    client.BaseAddress = new Uri("https://hcm-628-madehuman-api.onrender.com/"); // Đảm bảo URL chính xác
+    client.BaseAddress = new Uri("https://localhost:7204/"); // Đảm bảo URL chính xác
 });
 
 var app = builder.Build();
