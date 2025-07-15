@@ -1,4 +1,5 @@
 ﻿using MadeHuman_Admin.Models;
+using MadeHuman_User.Models;
 using MadeHuman_Admin.ServicesTask.Services.InboundService;
 using Microsoft.AspNetCore.Mvc;
 
