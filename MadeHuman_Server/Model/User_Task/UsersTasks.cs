@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using MadeHuman_Server.Model.Inbound;
 using System.Text.Json.Serialization;
+using MadeHuman_Server.Model.Outbound;
 
 namespace MadeHuman_Server.Model.User_Task
 {
@@ -43,7 +44,8 @@ namespace MadeHuman_Server.Model.User_Task
 
         [JsonIgnore]
         public ICollection<InboundTasks> InboundTasks { get; set; }
-
+        [JsonIgnore]
+        public ICollection<PickTasks> PickTasks { get; set; }
         public int TotalKPI { get; set; } = default!;
         public int HourlyKPIs { get; set; } = default!;
     }

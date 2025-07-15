@@ -28,7 +28,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Model\Outbound\" />
     <Folder Include="Uploads\" />
   </ItemGroup>
 
