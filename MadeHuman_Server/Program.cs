@@ -6,6 +6,7 @@ using MadeHuman_Server.Service.Inbound;
 using MadeHuman_Server.Service.Shop;
 using MadeHuman_Server.Service.UserTask;
 using MadeHuman_Server.Service.WareHouse;
+using MadeHuman_Server.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
@@ -91,6 +92,8 @@ builder.Services.AddHostedService<ResetHourlyKPIsService>();
 builder.Services.AddSingleton<GoogleDriveService>();
 builder.Services.AddSingleton<GoogleDriveOAuthService>();
 builder.Services.AddHostedService<InventoryQuantityUpdateService>();
+builder.Services.AddScoped<BasketService>();
+
 
 // (Tùy chọn) Cấu hình upload file lớn nếu cần
 builder.Services.Configure<FormOptions>(options =>
