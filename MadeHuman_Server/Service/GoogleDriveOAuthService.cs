@@ -1,10 +1,19 @@
-﻿// ✅ GoogleDriveOAuthService.cs
-using Google.Apis.Auth.OAuth2;
+﻿using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
+using Google.Apis.Util.Store;
 using Google.Apis.Upload;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Hosting;
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using File = Google.Apis.Drive.v3.Data.File;
+using Google.Apis.Drive.v3.Data;
+using Google.Apis.Auth.OAuth2.Flows;
+using Google.Apis.Auth.OAuth2.Responses;
 
 public class GoogleDriveOAuthService
 {
@@ -13,40 +22,58 @@ public class GoogleDriveOAuthService
 
     public GoogleDriveOAuthService(IWebHostEnvironment env, IConfiguration config)
     {
-        string[] scopes = { DriveService.Scope.Drive }; // full access
-
+        string credPath = Path.Combine(env.ContentRootPath, "Data", "credentials_oauth.json");
         string tokenPath = Path.Combine(env.ContentRootPath, "Data", "token.json");
-        _folderId = config["GoogleDrive:FolderId"];
 
-        // ✅ Load token trực tiếp từ token.json (không dùng FileDataStore nữa)
-        var credential = GoogleCredential.FromFile(tokenPath)
-            .CreateScoped(scopes);
+        // 1. Load client secret
+        using var stream = new FileStream(credPath, FileMode.Open, FileAccess.Read);
+        var secrets = GoogleClientSecrets.FromStream(stream).Secrets;
 
-        _driveService = new DriveService(new BaseClientService.Initializer()
+        // 2. Tải token đã có sẵn
+        var tokenJson = System.IO.File.ReadAllText(tokenPath);
+        var token = Newtonsoft.Json.JsonConvert.DeserializeObject<TokenResponse>(tokenJson);
+
+        // 3. Tạo credential từ token
+        var credential = new UserCredential(
+            new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
+            {
+                ClientSecrets = secrets,
+                Scopes = new[] { DriveService.Scope.Drive }
+            }),
+            "user",
+            token
+        );
+
+        // 4. Khởi tạo Drive service
+        _driveService = new DriveService(new BaseClientService.Initializer
         {
             HttpClientInitializer = credential,
             ApplicationName = "MadeHumanUploader"
         });
+
+        _folderId = config["GoogleDrive:FolderId"];
     }
 
     public async Task<string> UploadFileAsync(IFormFile file)
     {
-        var fileMetadata = new File
+        var fileMeta = new File
         {
             Name = file.FileName,
-            Parents = new List<string> { _folderId }
+            Parents = new[] { _folderId }
         };
 
         using var stream = file.OpenReadStream();
-        var request = _driveService.Files.Create(fileMetadata, stream, file.ContentType);
+        var request = _driveService.Files.Create(fileMeta, stream, file.ContentType);
         request.Fields = "id";
+
         var result = await request.UploadAsync();
 
         if (result.Status == UploadStatus.Completed)
         {
-            var fileId = request.ResponseBody.Id;
+            string fileId = request.ResponseBody.Id;
 
-            await _driveService.Permissions.Create(new Google.Apis.Drive.v3.Data.Permission
+            // Mở quyền xem public
+            await _driveService.Permissions.Create(new Permission
             {
                 Type = "anyone",
                 Role = "reader"
@@ -55,6 +82,6 @@ public class GoogleDriveOAuthService
             return $"https://drive.google.com/uc?id={fileId}";
         }
 
-        throw new Exception($"Upload failed: {result.Status}, {result.Exception?.Message}");
+        throw new Exception($"Upload failed: {result.Exception?.Message}");
     }
 }
