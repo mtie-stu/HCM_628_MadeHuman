@@ -2,7 +2,7 @@
 //using MadeHuman_Share.ViewModel;
 using System.Net.Http;
 
-namespace MadeHuman_Admin.ServicesTask.Services
+namespace MadeHuman_User.ServicesTask.Services
 {
     public interface IAccountService
     {

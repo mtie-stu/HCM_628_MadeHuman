@@ -2,7 +2,7 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
 
-namespace MadeHuman_Admin.ServicesTask.Services.ShopService
+namespace MadeHuman_User.ServicesTask.Services.ShopService
 {
     public interface IComboService
     {

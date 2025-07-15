@@ -5,7 +5,7 @@ using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 
-namespace MadeHuman_Admin.JWT
+namespace MadeHuman_User.JWT
 {
     public class JwtMiddleware
     {

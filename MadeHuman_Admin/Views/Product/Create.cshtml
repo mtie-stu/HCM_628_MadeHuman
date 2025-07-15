@@ -38,9 +38,12 @@
  *@
     <div class="mb-3">
         <label asp-for="CategoryId" class="form-label"></label>
-        <input asp-for="CategoryId" class="form-control" />
+        <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-select">
+            <option value="">-- Chọn danh mục --</option>
+        </select>
         <span asp-validation-for="CategoryId" class="text-danger"></span>
     </div>
+
 
     <div class="mb-3">
         <label asp-for="ImageFiles" class="form-label fw-semibold">Hình ảnh</label>

@@ -1,7 +1,7 @@
-﻿using MadeHuman_Admin.Models;
+﻿using MadeHuman_User.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace MadeHuman_Admin.Controllers
+namespace MadeHuman_User.Controllers
 {
     public class OutboundController : Controller
     {
