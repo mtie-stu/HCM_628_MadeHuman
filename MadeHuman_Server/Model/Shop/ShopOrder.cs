@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using MadeHuman_Server.Model.User_Task;
+using MadeHuman_Server.Model.Outbound;
 
 namespace MadeHuman_Server.Model.Shop
 {
@@ -34,5 +35,6 @@ namespace MadeHuman_Server.Model.Shop
         public AppUser AppUser { get; set; }
         [JsonIgnore]
         public ICollection<OrderItem> OrderItems { get; set; }
+        public OutboundTaskItems OutboundTaskItems { get; set; }
     }
 }
