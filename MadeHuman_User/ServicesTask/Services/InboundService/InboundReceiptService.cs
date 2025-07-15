@@ -1,6 +1,6 @@
 ﻿using Madehuman_Share.ViewModel.Inbound.InboundReceipt;
 
-namespace MadeHuman_Admin.ServicesTask.Services.InboundService
+namespace MadeHuman_User.ServicesTask.Services.InboundService
 {
     public interface IInboundReceiptService
     {

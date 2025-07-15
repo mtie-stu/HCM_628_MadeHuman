@@ -1,7 +1,7 @@
 ﻿using Madehuman_Share.ViewModel.Inbound;
 using System.Net.Http.Headers;
 
-namespace MadeHuman_Admin.ServicesTask.Services.InboundService
+namespace MadeHuman_User.ServicesTask.Services.InboundService
 {
     public interface IInboundTaskService 
     {

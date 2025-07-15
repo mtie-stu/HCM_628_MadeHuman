@@ -2,7 +2,7 @@
 using Madehuman_Share.ViewModel.Shop;
 using System.Net.Http.Headers;
 
-namespace MadeHuman_Admin.ServicesTask.Services.ShopService
+namespace MadeHuman_User.ServicesTask.Services.ShopService
 {
     public interface IProductService
     {
