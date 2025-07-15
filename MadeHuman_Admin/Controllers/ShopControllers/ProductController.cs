@@ -3,7 +3,6 @@ using MadeHuman_Admin.ServicesTask.Services.ShopService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json.Linq;
-using MadeHuman_User.ServicesTask.Services.ShopService;
 
 namespace MadeHuman_Admin.Controllers.ShopControllers
 {
@@ -36,26 +35,41 @@ namespace MadeHuman_Admin.Controllers.ShopControllers
         }
 
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            return View();
+            var categories = await _categoryService.GetAllAsync() ?? new();
+
+            // Truyền vào ViewBag để dùng trong dropdown
+            ViewBag.Categories = new SelectList(categories, "CategoryId", "Name");
+
+            var createModel = new CreateProduct_ProdcutSKU_ViewModel();
+
+            return View(createModel);
         }
+
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateProduct_ProdcutSKU_ViewModel model)
         {
             if (!ModelState.IsValid)
+            {
+                var categories = await _categoryService.GetAllAsync() ?? new();
+                ViewBag.Categories = new SelectList(categories, "CategoryId", "Name", model.CategoryId);
                 return View(model);
+            }
 
             var success = await _productService.CreateAsync(model);
             if (!success)
             {
+                var categories = await _categoryService.GetAllAsync() ?? new();
+                ViewBag.Categories = new SelectList(categories, "CategoryId", "Name", model.CategoryId);
                 ModelState.AddModelError(string.Empty, "Tạo sản phẩm thất bại.");
                 return View(model);
             }
 
             return RedirectToAction("Index");
         }
+
 
 
         [HttpGet]

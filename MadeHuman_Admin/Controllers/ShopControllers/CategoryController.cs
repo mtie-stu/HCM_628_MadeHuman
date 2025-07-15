@@ -1,7 +1,6 @@
 ﻿using Madehuman_Share.ViewModel.Shop;
 using MadeHuman_Admin.ServicesTask.Services.ShopService;
 using Microsoft.AspNetCore.Mvc;
-using MadeHuman_User.ServicesTask.Services.ShopService;
 
 namespace MadeHuman_Admin.Controllers.ShopControllers
 {
