@@ -1,8 +1,8 @@
 ﻿using Madehuman_Share.ViewModel.Shop;
-using MadeHuman_User.ServicesTask.Services.ShopService;
+using MadeHuman_Admin.ServicesTask.Services.ShopService;
 using Microsoft.AspNetCore.Mvc;
 
-namespace MadeHuman_User.Controllers.ShopControllers
+namespace MadeHuman_Admin.Controllers.ShopControllers
 {
     public class CategoryController : Controller
     {

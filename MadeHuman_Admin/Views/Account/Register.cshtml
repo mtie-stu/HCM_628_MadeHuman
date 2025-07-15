@@ -1,0 +1,153 @@
+﻿@model Madehuman_Share.ViewModel.RegisterModel
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Register";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Register</title>
+    <link rel="stylesheet" href="~/css/login.css" />
+</head>
+<body>
+    <div class="login-container">
+        <h1>MADEHUMAN</h1>
+        <h3>Đăng ký tài khoản mới</h3>
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="text-danger">@TempData["Error"]</div>
+        }
+        @if (TempData["Success"] != null)
+        {
+            <div class="text-success">@TempData["Success"]</div>
+        }
+
+        <form asp-action="Register" method="post">
+            <input asp-for="Name" class="form-control" placeholder="Họ tên" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+
+            <input asp-for="Email" class="form-control" placeholder="Email" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+
+            <input asp-for="SĐT" class="form-control" placeholder="Số điện thoại" />
+            <span asp-validation-for="SĐT" class="text-danger"></span>
+
+            <input asp-for="DiaChi" class="form-control" placeholder="Địa chỉ" />
+            <span asp-validation-for="DiaChi" class="text-danger"></span>
+
+            <input asp-for="Password" type="password" class="form-control" placeholder="Mật khẩu" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+
+            <input asp-for="PasswordConfirm" type="password" class="form-control" placeholder="Nhập lại mật khẩu" />
+            <span asp-validation-for="PasswordConfirm" class="text-danger"></span>
+
+            <span class="password-hint">Mật khẩu ít nhất 8 ký tự, gồm 1 số và 1 ký tự đặc biệt.</span>
+
+            <button type="submit">ĐĂNG KÝ</button>
+        </form>
+
+        <a href="@Url.Action("Login", "Account")">Đã có tài khoản? Đăng nhập</a>
+    </div>
+
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+</body>
+</html>
+
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #ffffff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .login-container {
+        text-align: center;
+        width: 100%;
+        max-width: 320px;
+        margin: auto;
+    }
+
+        .login-container h1 {
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 40px;
+        }
+
+        .login-container h3 {
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="email"] {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    input::placeholder {
+        color: #999;
+    }
+
+    button[type="submit"] {
+        background-color: #f7a340;
+        color: white;
+        border: none;
+        padding: 10px;
+        font-weight: bold;
+        border-radius: 20px;
+        cursor: pointer;
+        margin-top: 10px;
+        transition: background-color 0.2s;
+    }
+
+        button[type="submit"]:hover {
+            background-color: #d4882e;
+        }
+
+    .text-danger {
+        font-size: 12px;
+        color: red;
+        text-align: left;
+    }
+
+    .text-success {
+        font-size: 12px;
+        color: green;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    .password-hint {
+        font-size: 11px;
+        color: #666;
+    }
+
+    a {
+        display: block;
+        margin-top: 10px;
+        font-size: 11px;
+        color: #888;
+        text-decoration: none;
+    }
+
+        a:hover {
+            text-decoration: underline;
+        }
+</style>

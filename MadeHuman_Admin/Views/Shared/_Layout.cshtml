@@ -3,10 +3,14 @@
 
     string currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
     string currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+    bool isDemoMenuActive = currentController == "Category"
+                     || currentController == "Product"
+                     || currentController == "Combo"
+                     || currentController == "ShopOrder"
+                     || currentController == "InboundReceipt"; // thêm dòng này
 
     string IsActive(string controller, string action) =>
         (currentController == controller && currentAction == action) ? "active" : "";
-
 }
 
 <!DOCTYPE html>
@@ -102,11 +106,22 @@
         <div class="d-flex align-items-center gap-3">
             <img src="https://storage.googleapis.com/a1aa/image/77806709-391a-489f-73cd-6465f3e28dfb.jpg"
                  alt="Profile picture"
-                 class="rounded-circle shadow" style="width: 56px; height: 56px; object-fit: cover;" />
-            <span class="fs-5 fw-bold">Nguyễn Văn A</span>
+                 class="rounded-circle shadow"
+                 style="width: 56px; height: 56px; object-fit: cover;" />
+
+            <!-- Dropdown -->
+            <a class="text-dark text-decoration-none fs-5 fw-bold d-inline-flex align-items-center">
+                <i class="fas fa-user text-purple me-1"></i>
+                @Context.Request.Cookies["EmailOrId"]
+            </a>
+
+
+            @*    (@Context.Request.Cookies["UserRole"]) *@
+
         </div>
+
         <div>
-            <button class="btn border-0 text-warning fs-4 position-relative">
+            <button aria-label="Notifications" class="position-relative text-warning fs-4 border-0 bg-transparent">
                 <i class="fas fa-bell"></i>
             </button>
         </div>

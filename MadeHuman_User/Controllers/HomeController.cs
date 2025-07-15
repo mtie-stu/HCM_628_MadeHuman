@@ -1,8 +1,8 @@
-using MadeHuman_User.Models;
+using MadeHuman_Admin.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
-namespace MadeHuman_User.Controllers
+namespace MadeHuman_Admin.Controllers
 {
     public class HomeController : Controller
     {

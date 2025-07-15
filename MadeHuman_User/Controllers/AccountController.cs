@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Madehuman_Share.ViewModel;
-using MadeHuman_User.ServicesTask.Services;
+using MadeHuman_Admin.ServicesTask.Services;
 
 
-namespace MadeHuman_User.Controllers
+namespace MadeHuman_Admin.Controllers
 {
     public class AccountController : Controller
     {

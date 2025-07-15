@@ -1,8 +1,8 @@
 ﻿
-using MadeHuman_User.JWT;
-using MadeHuman_User.ServicesTask.Services;
-using MadeHuman_User.ServicesTask.Services.InboundService;
-using MadeHuman_User.ServicesTask.Services.ShopService;
+using MadeHuman_Admin.JWT;
+using MadeHuman_Admin.ServicesTask.Services;
+using MadeHuman_Admin.ServicesTask.Services.InboundService;
+using MadeHuman_Admin.ServicesTask.Services.ShopService;
 
 var builder = WebApplication.CreateBuilder(args);
 
