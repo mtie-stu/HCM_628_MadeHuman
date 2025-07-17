@@ -1,5 +1,6 @@
 ﻿using MadeHuman_Server.Data;
 using MadeHuman_Server.Model.User_Task;
+using Madehuman_Share.ViewModel;
 using Madehuman_Share.ViewModel.PartTime_Task;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +14,7 @@ namespace MadeHuman_Server.Service.UserTask
         Task UpdateAsync(UsersTasks userTask);
         Task<Guid?> GetUserTaskIdAsync(string userId, DateOnly workDate);
         Task<List<GetKPIForPartTime_Viewmodel>> GetUserTaskSummariesAsync(DateOnly workDate, TaskTypeUservm taskType);
+        Task<List<CheckInCheckOutTodayViewModel>> GetCheckInOutTodayAsync();
 
     }
 
@@ -265,6 +267,26 @@ namespace MadeHuman_Server.Service.UserTask
         {
             _context.UsersTasks.Update(userTask);
             await _context.SaveChangesAsync();
+        }
+        public async Task<List<CheckInCheckOutTodayViewModel>> GetCheckInOutTodayAsync()
+        {
+            var today = DateTime.UtcNow.Date;
+
+            var logs = await _context.CheckInCheckOutLog
+                .Where(x => x.Timestamp.Date == today)
+                .OrderBy(x => x.Timestamp)
+                .Select(x => new CheckInCheckOutTodayViewModel
+                {
+                    UserId = x.UserId,
+                    PartTimeId = x.PartTimeId,
+                    Timestamp = x.Timestamp,
+                    IsCheckIn = x.IsCheckIn,
+                    IsOvertime = x.IsOvertime,
+                    Note = x.Note
+                })
+                .ToListAsync();
+
+            return logs;
         }
     }
 }

@@ -1,0 +1,73 @@
+﻿@using Madehuman_Share.ViewModel.Inbound
+@model List<RefillTaskFullViewModel>
+
+@{
+    ViewData["Title"] = "Danh sách nhiệm vụ bổ sung kho";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="text-primary">Danh sách nhiệm vụ bổ sung kho</h2>
+        <a class="btn btn-success" asp-action="Create">
+            ➕ Tạo nhiệm vụ
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-warning">Không có nhiệm vụ nào được tạo.</div>
+    }
+    else
+    {
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Mã nhiệm vụ</th>
+                    <th>Người tạo</th>
+                    <th>Ngày tạo</th>
+                    <th>Số lượng chi tiết</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var task in Model)
+                {
+                    <tr>
+                        <td>@task.Id</td>
+                        <td>@task.CreateBy</td>
+                        <td>@task.CreateAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@task.Details.Count</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="collapse" data-bs-target="#details-@task.Id">
+                                👁 Chi tiết
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="collapse" id="details-@task.Id">
+                        <td colspan="5">
+                            <table class="table table-sm table-striped mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>From</th>
+                                        <th>To</th>
+                                        <th>Số lượng</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var d in task.Details)
+                                    {
+                                        <tr>
+                                            <td>@d.FromLocation</td>
+                                            <td>@d.ToLocation</td>
+                                            <td>@d.Quantity</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

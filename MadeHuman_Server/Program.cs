@@ -81,6 +81,7 @@ builder.Services.AddScoped<IComboService, ComboService>();
 builder.Services.AddScoped<ISkuGeneratorService, SkuGeneratorService>();
 builder.Services.AddScoped<ISKUServices, SKUSvc>();
 builder.Services.AddScoped<IInboundReciptService, InboundReciptSvc>();
+builder.Services.AddScoped<IRefillTaskService, RefillTaskService>();
 builder.Services.AddHostedService<ReceiptStatusUpdaterService>();
 builder.Services.AddScoped<GoogleSheetService>();
 builder.Services.AddScoped<IPartTimeCompanyService, PartTimeCompanySvc>();

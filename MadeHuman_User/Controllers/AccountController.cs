@@ -35,7 +35,6 @@ namespace MadeHuman_User.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-
         [HttpGet]
         public IActionResult Register() => View();
         [HttpPost]

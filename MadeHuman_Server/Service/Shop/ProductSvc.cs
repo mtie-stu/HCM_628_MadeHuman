@@ -66,14 +66,14 @@ namespace MadeHuman_Server.Service.Shop
                 },
 
                 ProductItems = new List<ProductItem>
-        {
-            new ProductItem
-            {
-                ProductItemId = Guid.NewGuid(),
-                ProductId = productId,
-                SKU = createproduct.SKU,
-            }
-        }
+                {
+                    new ProductItem
+                    {
+                        ProductItemId = Guid.NewGuid(),
+                        ProductId = productId,
+                        SKU = createproduct.SKU,
+                    }
+                }
             };
 
             _context.Products.Add(product);

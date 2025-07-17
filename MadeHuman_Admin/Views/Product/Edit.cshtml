@@ -1,0 +1,66 @@
+﻿@model Madehuman_Share.ViewModel.Shop.CreateProduct_ProdcutSKU_ViewModel
+
+@{
+    ViewData["Title"] = "Cập nhật sản phẩm";
+}
+
+<h2 class="mb-4 text-primary">📝 Cập nhật sản phẩm</h2>
+
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
+    @Html.HiddenFor(m => m.ProductId)
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="Name" class="form-label">Tên sản phẩm</label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="SKU" class="form-label">Mã SKU</label>
+            <input asp-for="SKU" class="form-control" />
+            <span asp-validation-for="SKU" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label">Mô tả</label>
+        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="Price" class="form-label">Giá (₫)</label>
+            <input asp-for="Price" class="form-control" />
+            <span asp-validation-for="Price" class="text-danger"></span>
+        </div>
+        @* <div class="col-md-6">
+            <label asp-for="QuantityInStock" class="form-label">Số lượng tồn</label>
+            <input asp-for="QuantityInStock" class="form-control" />
+            <span asp-validation-for="QuantityInStock" class="text-danger"></span>
+        </div> *@
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Danh mục</label>
+
+        @if (ViewBag.Categories is SelectList list && list.Any())
+        {
+            <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-select"></select>
+        }
+        else
+        {
+            <input class="form-control" value="@Model.CategoryName" disabled />
+        }
+    </div>
+
+
+    <div class="d-flex justify-content-between mt-4">
+        <button type="submit" class="btn btn-success"><i class="bi bi-save"></i> Lưu thay đổi</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">↩️ Quay lại danh sách</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -2,7 +2,7 @@
 using MadeHuman_User.ServicesTask.Services.InboundService;
 using Microsoft.AspNetCore.Mvc;
 
-namespace MadeHuman_User.Controllers
+namespace MadeHuman_User.Controllers.InboundControlles
 {
     public class InboundReceiptController : Controller
     {

@@ -46,5 +46,12 @@ namespace MadeHuman_Server.Controllers.User_Task
                 });
             }
         }
+        [HttpGet("today")]
+        public async Task<IActionResult> GetTodayLogs()
+        {
+            var result = await _userTaskSvc.GetCheckInOutTodayAsync();
+            return Ok(result);
+        }
+
     }
 }

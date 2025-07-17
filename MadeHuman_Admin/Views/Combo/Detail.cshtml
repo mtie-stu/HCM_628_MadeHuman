@@ -1,0 +1,73 @@
+﻿@model Madehuman_Share.ViewModel.Shop.ComboDetailViewModel
+
+@{
+    ViewBag.Title = "Chi tiết Combo";
+}
+<style>
+    .table th, .table td {
+        vertical-align: middle !important;
+    }
+
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    dl dt {
+        font-weight: 600;
+    }
+
+</style>
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <h3 class="card-title text-primary mb-3">Chi tiết Combo: @Model.Name</h3>
+
+        <dl class="row mb-4">
+            <dt class="col-sm-3">Mô tả:</dt>
+            <dd class="col-sm-9">@Model.Description</dd>
+
+            <dt class="col-sm-3">Giá:</dt>
+            <dd class="col-sm-9 text-success fw-semibold">@Model.Price.ToString("N0") ₫</dd>
+
+            <dt class="col-sm-3">SKU:</dt>
+            <dd class="col-sm-9 text-muted">@Model.SKU</dd>
+        </dl>
+
+        <h5 class="mb-3">Danh sách sản phẩm trong combo:</h5>
+
+        @if (Model.ComboItems.Count == 0)
+        {
+            <div class="alert alert-warning">Combo chưa có sản phẩm nào.</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped align-middle shadow-sm">
+                    <thead class="table-light text-center">
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th>Số lượng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.ComboItems)
+                        {
+                            <tr>
+                                <td>@item.ProductName</td>
+                                <td class="text-center">@item.Quantity</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <!-- ✅ Nút Thêm sản phẩm -->
+        <div class="mt-3">
+            <a asp-action="AddItems" asp-route-comboId="@Model.ComboId" class="btn btn-outline-primary">
+                <i class="bi bi-plus-circle"></i> Thêm sản phẩm
+            </a>
+        </div>
+
+    </div>
+</div>
