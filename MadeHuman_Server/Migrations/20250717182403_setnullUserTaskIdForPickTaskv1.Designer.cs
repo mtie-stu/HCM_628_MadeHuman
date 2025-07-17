@@ -3,6 +3,7 @@ using System;
 using MadeHuman_Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MadeHuman_Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250717182403_setnullUserTaskIdForPickTaskv1")]
+    partial class setnullUserTaskIdForPickTaskv1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -436,6 +439,9 @@ namespace MadeHuman_Server.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
+
+                    b.Property<Guid?>("UserTaskId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid?>("UsersTasksId")
                         .HasColumnType("uuid");
@@ -1390,11 +1396,9 @@ namespace MadeHuman_Server.Migrations
 
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.PickTasks", b =>
                 {
-                    b.HasOne("MadeHuman_Server.Model.User_Task.UsersTasks", "UsersTasks")
+                    b.HasOne("MadeHuman_Server.Model.User_Task.UsersTasks", null)
                         .WithMany("PickTasks")
                         .HasForeignKey("UsersTasksId");
-
-                    b.Navigation("UsersTasks");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.ComboItem", b =>

@@ -280,7 +280,7 @@ namespace MadeHuman_Server.Service.Outbound
                                     && l.Inventory != null
                                     && l.Inventory.ProductSKUId == skuId
                                     && !usedLocationIds.Contains(l.Id))
-                                .OrderByDescending(l => l.Inventory.StockQuantity ?? 0)
+                                .OrderByDescending(l => l.Inventory.StockQuantity)
                                 .FirstOrDefaultAsync();
 
                             if (location == null)
@@ -291,7 +291,7 @@ namespace MadeHuman_Server.Service.Outbound
 
                             usedLocationIds.Add(location.Id);
                             var inventory = location.Inventory;
-                            inventory.QuantityBooked = (inventory.QuantityBooked ?? 0) + qty;
+                            inventory.QuantityBooked = (inventory.QuantityBooked) + qty;
                             inventory.LastUpdated = DateTime.UtcNow;
 
                             detailList.Add(new OutboundTaskItemDetails
@@ -347,6 +347,7 @@ namespace MadeHuman_Server.Service.Outbound
                 Id = Guid.NewGuid(),
                 CreateAt = DateTime.UtcNow,
                 Status = StatusPickTask.Created,
+                UsersTasksId = null, // ⛔ BẮT BUỘC GÁN RÕ RÀNG
                 PickTaskDetails = new List<PickTaskDetails>()
             };
 
@@ -361,13 +362,13 @@ namespace MadeHuman_Server.Service.Outbound
                         && l.Inventory != null
                         && l.Inventory.ProductSKUId == detail.ProductSKUId
                         && !usedLocationIds.Contains(l.Id))
-                    .OrderByDescending(l => l.Inventory.StockQuantity ?? 0)
+                    .OrderByDescending(l => l.Inventory.StockQuantity)
                     .FirstOrDefaultAsync();
 
                 if (location == null) continue;
 
                 usedLocationIds.Add(location.Id);
-                location.Inventory.QuantityBooked = (location.Inventory.QuantityBooked ?? 0) + detail.Quantity;
+                location.Inventory.QuantityBooked = (location.Inventory.QuantityBooked ) + detail.Quantity;
                 location.Inventory.LastUpdated = DateTime.UtcNow;
 
                 pickTask.PickTaskDetails.Add(new PickTaskDetails
@@ -382,6 +383,7 @@ namespace MadeHuman_Server.Service.Outbound
 
             return pickTask;
         }
+
 
 
     }

@@ -16,7 +16,8 @@ namespace MadeHuman_Server.Model.Outbound
         public DateTime CreateAt { get; set; }
         public DateTime FinishAt { get; set; }
         public StatusPickTask Status { get; set; }
-        public Guid UserTaskId { get; set; }
+
+        public Guid? UsersTasksId { get; set; }  // KHÓA NGOẠI CHÍNH
         public UsersTasks UsersTasks { get; set; }
 
         [JsonIgnore]
