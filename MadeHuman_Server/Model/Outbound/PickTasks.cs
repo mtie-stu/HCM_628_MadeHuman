@@ -20,7 +20,7 @@ namespace MadeHuman_Server.Model.Outbound
         public UsersTasks UsersTasks { get; set; }
 
         [JsonIgnore]
-        public ICollection<PickTaskDetails> PickTaskDetails { get; set; }
+        public List<PickTaskDetails> PickTaskDetails { get; set; } = new();
 
     }
 }
