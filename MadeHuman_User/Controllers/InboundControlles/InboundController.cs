@@ -3,7 +3,7 @@ using MadeHuman_User.Models;
 using Microsoft.AspNetCore.Mvc;
 
 
-namespace MadeHuman_User.Controllers
+namespace MadeHuman_User.Controllers.InboundControlles
 {
     public class InboundController : Controller
     {

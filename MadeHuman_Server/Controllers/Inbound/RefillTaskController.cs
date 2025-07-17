@@ -10,7 +10,6 @@ namespace MadeHuman_Server.Controllers.Inbound
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-
     public class RefillTaskController : ControllerBase
     {
         private readonly IRefillTaskService _refillTaskService;

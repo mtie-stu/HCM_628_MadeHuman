@@ -34,7 +34,7 @@ public class InventoryQuantityUpdateService : BackgroundService
 
                 foreach (var sku in skuList)
                 {
-                    var totalStock = sku.Inventory.Sum(i => i.StockQuantity ?? 0);
+                    var totalStock = sku.Inventory.Sum(i => i.StockQuantity);
                     sku.QuantityInStock = totalStock;
                 }
 

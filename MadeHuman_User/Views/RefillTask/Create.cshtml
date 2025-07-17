@@ -1,0 +1,82 @@
+﻿@using Madehuman_Share.ViewModel.Inbound
+@model RefillTaskFullViewModel
+
+@{
+    ViewData["Title"] = "Tạo nhiệm vụ bổ sung kho";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <h2 class="text-primary mb-3">Tạo nhiệm vụ bổ sung kho</h2>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <form asp-action="Create" method="post" id="refillForm" class="card p-4 shadow-sm">
+        <div class="mb-3">
+            <label class="form-label">Người tạo</label>
+            <input asp-for="CreateBy" class="form-control" readonly />
+        </div>
+
+        <hr />
+        <h5>Danh sách chi tiết bổ sung</h5>
+
+        <table class="table table-bordered" id="detailsTable">
+            <thead>
+                <tr>
+                    <th>SKU (text)</th>
+                    <th>From Location</th>
+                    <th>To Location</th>
+                    <th>Số lượng</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="detailsBody">
+                <tr>
+                    <td><input name="Details[0].SKU" class="form-control" /></td>
+                    <td><input name="Details[0].FromLocation" class="form-control" /></td>
+                    <td><input name="Details[0].ToLocation" class="form-control" /></td>
+                    <td><input name="Details[0].Quantity" type="number" class="form-control" /></td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">🗑</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <button type="button" class="btn btn-secondary mb-3" onclick="addDetail()">➕ Thêm dòng</button>
+
+        <div>
+            <button type="submit" class="btn btn-success">✅ Tạo nhiệm vụ</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        let rowIndex = 1;
+
+        function addDetail() {
+            const newRow = `
+                <tr>
+                    <td><input name="Details[${rowIndex}].SKU" class="form-control" /></td>
+                    <td><input name="Details[${rowIndex}].FromLocation" class="form-control" /></td>
+                    <td><input name="Details[${rowIndex}].ToLocation" class="form-control" /></td>
+                    <td><input name="Details[${rowIndex}].Quantity" type="number" class="form-control" /></td>
+                    <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">🗑</button></td>
+                </tr>`;
+            document.getElementById('detailsBody').insertAdjacentHTML('beforeend', newRow);
+            rowIndex++;
+        }
+
+        function removeRow(button) {
+            button.closest('tr').remove();
+        }
+    </script>
+}

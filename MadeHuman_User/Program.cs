@@ -3,6 +3,7 @@ using MadeHuman_User.JWT;
 using MadeHuman_User.ServicesTask.Services;
 using MadeHuman_User.ServicesTask.Services.InboundService;
 using MadeHuman_User.ServicesTask.Services.ShopService;
+using System.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,12 +20,13 @@ builder.Services.AddScoped<IShopOrderService, ShopOrderService>();
 builder.Services.AddScoped<IInboundReceiptService, InboundReceiptService>();
 builder.Services.AddScoped<IInboundTaskService, InboundTaskService>();
 builder.Services.AddScoped<ICheckinCheckoutService, CheckinCheckoutService>();
-
+builder.Services.AddScoped<IRefillTaskService, RefillTaskService>();
 
 /*https://hcm-628-madehuman-api.onrender.com*/
 builder.Services.AddHttpClient("API", client =>
 {
     client.BaseAddress = new Uri("https://localhost:7204/"); // Đảm bảo URL chính xác
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 });
 
 var app = builder.Build();

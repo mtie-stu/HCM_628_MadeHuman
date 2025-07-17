@@ -12,8 +12,8 @@ namespace MadeHuman_Server.Model.Inbound
         [Key]
         public Guid Id { get; set; } = default!;
 
-        public  int?  StockQuantity { get; set; }
-        public int? QuantityBooked { get; set; }
+        public  int  StockQuantity { get; set; }
+        public int QuantityBooked { get; set; }
         public DateTime LastUpdated{  get; set; } = default!;   
 
         public Guid? ProductSKUId { get; set; }

@@ -278,6 +278,7 @@ namespace MadeHuman_Server.Service.Inbound
                     ProductSKUId = batch.ProductSKUId,
                     WarehouseLocationId = batch.WarehouseLocationId,
                     StockQuantity = batch.Quantity,
+                    QuantityBooked = 0,
                     LastUpdated = DateTime.UtcNow
                 };
                 _context.Inventory.Add(inventory);
