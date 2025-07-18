@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Madehuman_Share.ViewModel.WareHouse
+namespace Madehuman_User.ViewModel.WareHouse
 {
    public class WareHouseZoneViewModel
    {

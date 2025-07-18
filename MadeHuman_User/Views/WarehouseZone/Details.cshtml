@@ -1,0 +1,19 @@
+﻿@model Madehuman_User.ViewModel.WareHouse.WareHouseZoneViewModel
+
+@{
+    
+}
+
+<h2>@ViewData["Title"]Chi tiết khu</h2>
+
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title">ID Khu Vực: @Model.Id</h4>
+        <p><strong>Tên khu:</strong> @Model.Name</p>
+        <p><strong>ID kho hàng:</strong> @Model.WarehouseId</p>
+    </div>
+</div>
+
+<br />
+<a asp-action="Index" class="btn btn-secondary">⬅️ Quay lại danh sách</a>
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">✏️ Sửa</a>

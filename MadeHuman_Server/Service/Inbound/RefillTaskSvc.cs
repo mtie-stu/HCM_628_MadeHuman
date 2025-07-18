@@ -2,7 +2,7 @@
 using MadeHuman_Server.Model.Inbound;
 using MadeHuman_Server.Model.WareHouse;
 using MadeHuman_Server.Service.UserTask;
-using Madehuman_Share.ViewModel.Inbound;
+using Madehuman_User.ViewModel.Inbound;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;

@@ -1,0 +1,19 @@
+﻿@model Madehuman_Share.ViewModel.WareHouse.WarehouseLocationViewModel
+
+@{
+    
+}
+
+<h2>@ViewData["Title"]Chi tiết vị trí</h2>
+
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title">ID: @Model.Id</h4>
+        <p><strong>Vị Trí:</strong> @Model.NameLocation</p>
+        <p><strong>ID Khu Vực:</strong> @Model.ZoneId</p>
+    </div>
+</div>
+
+<br />
+<a asp-action="Index" class="btn btn-secondary">⬅️ Quay lại danh sách</a>
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">✏️ Sửa</a>

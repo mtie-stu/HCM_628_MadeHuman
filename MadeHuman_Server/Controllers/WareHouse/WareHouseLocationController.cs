@@ -1,5 +1,6 @@
 ﻿using MadeHuman_Server.Service.WareHouse;
 using Madehuman_Share.ViewModel.WareHouse;
+using Madehuman_User.ViewModel.WareHouse;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;

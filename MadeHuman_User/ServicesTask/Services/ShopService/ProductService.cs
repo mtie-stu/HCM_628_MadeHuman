@@ -1,5 +1,5 @@
 ﻿
-using Madehuman_Share.ViewModel.Shop;
+using Madehuman_User.ViewModel.Shop;
 using System.Net.Http.Headers;
 
 namespace MadeHuman_User.ServicesTask.Services.ShopService

@@ -1,7 +1,7 @@
 ﻿using MadeHuman_Server.Data;
 using MadeHuman_Server.Model.Inbound;
-using Madehuman_Share.ViewModel.Inbound;
-using Madehuman_Share.ViewModel.Inbound.InboundReceipt;
+using Madehuman_User.ViewModel.Inbound;
+using Madehuman_User.ViewModel.Inbound.InboundReceipt;
 using Microsoft.EntityFrameworkCore;
 
 namespace MadeHuman_Server.Service.Inbound

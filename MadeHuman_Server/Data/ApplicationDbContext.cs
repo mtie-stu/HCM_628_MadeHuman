@@ -2,7 +2,7 @@
 using MadeHuman_Server.Model.Shop;
 using MadeHuman_Server.Model.User_Task;
 using MadeHuman_Server.Model.WareHouse;
-using Madehuman_Share.ViewModel.WareHouse;
+using Madehuman_User.ViewModel.WareHouse;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;

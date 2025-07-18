@@ -1,4 +1,4 @@
-﻿using Madehuman_Share.ViewModel.Inbound;
+﻿using Madehuman_User.ViewModel.Inbound;
 using System.Net.Http.Headers;
 
 namespace MadeHuman_User.ServicesTask.Services.InboundService

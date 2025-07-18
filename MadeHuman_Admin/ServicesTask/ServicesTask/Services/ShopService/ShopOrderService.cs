@@ -1,4 +1,4 @@
-﻿using Madehuman_Share.ViewModel.Shop;
+﻿using Madehuman_User.ViewModel.Shop;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Text;

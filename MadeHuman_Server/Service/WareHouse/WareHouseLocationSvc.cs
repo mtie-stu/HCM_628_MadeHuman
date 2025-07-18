@@ -2,6 +2,7 @@
 using MadeHuman_Server.Model.Inbound;
 using MadeHuman_Server.Model.WareHouse;
 using Madehuman_Share.ViewModel.WareHouse;
+using Madehuman_User.ViewModel.WareHouse;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 

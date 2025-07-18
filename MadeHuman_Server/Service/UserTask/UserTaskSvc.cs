@@ -1,7 +1,7 @@
 ﻿using MadeHuman_Server.Data;
 using MadeHuman_Server.Model.User_Task;
-using Madehuman_Share.ViewModel;
-using Madehuman_Share.ViewModel.PartTime_Task;
+using Madehuman_User.ViewModel;
+using Madehuman_User.ViewModel.PartTime_Task;
 using Microsoft.EntityFrameworkCore;
 
 namespace MadeHuman_Server.Service.UserTask

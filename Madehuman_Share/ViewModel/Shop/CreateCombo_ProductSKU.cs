@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Http;
 using System.Text.Json;
 
-namespace Madehuman_Share.ViewModel.Shop
+namespace Madehuman_User.ViewModel.Shop
 {
     public class CreateComboWithItemsViewModel
     {

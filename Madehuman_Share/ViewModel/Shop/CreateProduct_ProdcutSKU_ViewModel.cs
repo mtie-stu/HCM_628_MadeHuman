@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Madehuman_Share.ViewModel.Shop
+namespace Madehuman_User.ViewModel.Shop
 {
     public class CreateProduct_ProdcutSKU_ViewModel
     {

@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace Madehuman_Share.ViewModel.PartTime_Task
+namespace Madehuman_User.ViewModel.PartTime_Task
 {
     public enum Regime
     {

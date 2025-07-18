@@ -1,5 +1,5 @@
 ﻿using MadeHuman_Server.Data;
-using Madehuman_Share.ViewModel.Shop;
+using Madehuman_User.ViewModel.Shop;
 using Microsoft.EntityFrameworkCore;
 using System;
 

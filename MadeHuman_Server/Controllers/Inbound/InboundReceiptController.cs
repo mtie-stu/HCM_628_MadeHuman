@@ -1,6 +1,6 @@
 ﻿using MadeHuman_Server.Model.Inbound;
 using MadeHuman_Server.Service.Inbound;
-using Madehuman_Share.ViewModel.Inbound.InboundReceipt;
+using Madehuman_User.ViewModel.Inbound.InboundReceipt;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MadeHuman_Server.Controllers.Inbound

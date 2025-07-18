@@ -1,5 +1,5 @@
 ﻿using MadeHuman_Server.Model.User_Task;
-using Madehuman_Share.ViewModel;
+using Madehuman_User.ViewModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

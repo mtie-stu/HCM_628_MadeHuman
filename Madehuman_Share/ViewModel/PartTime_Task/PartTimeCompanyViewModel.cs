@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-namespace Madehuman_Share.ViewModel.PartTime_Task
+namespace Madehuman_User.ViewModel.PartTime_Task
 {
     public enum StatusPart_Time_Companyvm
     {

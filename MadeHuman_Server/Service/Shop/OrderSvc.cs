@@ -2,7 +2,7 @@
 using MadeHuman_Server.Service.Shop;
 
 using MadeHuman_Server.Model.Shop;
-using Madehuman_Share.ViewModel.Shop;
+using Madehuman_User.ViewModel.Shop;
 using Microsoft.EntityFrameworkCore;
 using static MadeHuman_Server.Data.ApplicationDbContext;
 

@@ -1,0 +1,34 @@
+﻿@model List<Madehuman_Share.ViewModel.WareHouse.WarehouseLocationViewModel>
+
+@{
+    
+}
+
+<h2>@ViewData["Title"]Danh sách vị trí trong kho</h2>
+
+<a asp-action="Create" class="btn btn-primary mb-3">➕ Thêm vị trí mới</a>
+
+<table class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>ID </th>
+            <th>Vị Trí</th>
+            <th>ID Khu Vực</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var location in Model)
+        {
+            <tr>
+                <td>@location.Id</td>
+                <td>@location.NameLocation</td>
+                <td>@location.ZoneId</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@location.Id" class="btn btn-info btn-sm">🔍 Xem</a>
+                    <a asp-action="Edit" asp-route-id="@location.Id" class="btn btn-warning btn-sm">✏️ Sửa</a>
+                    <a asp-action="Delete" asp-route-id="@location.Id" class="btn btn-danger btn-sm">🗑️ Xoá</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

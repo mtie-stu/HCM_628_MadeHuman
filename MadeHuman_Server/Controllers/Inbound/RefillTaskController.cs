@@ -1,5 +1,5 @@
 ﻿using MadeHuman_Server.Service.Inbound;
-using Madehuman_Share.ViewModel.Inbound;
+using Madehuman_User.ViewModel.Inbound;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Madehuman_Share.ViewModel.WareHouse;
+using Madehuman_User.ViewModel.WareHouse;
 using MadeHuman_Server.Model.WareHouse;
 using MadeHuman_Server.Service.WareHouse;
 

@@ -1,4 +1,4 @@
-﻿using Madehuman_Share.ViewModel.Inbound.InboundReceipt;
+﻿using Madehuman_User.ViewModel.Inbound.InboundReceipt;
 
 namespace MadeHuman_Admin.ServicesTask.Services.InboundService
 {

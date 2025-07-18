@@ -1,0 +1,33 @@
+﻿@model List<Madehuman_Share.ViewModel.WareHouse.WarehouseLocationViewModel>
+
+@{
+    ViewData["Title"] = "Danh sách vị trí được tạo";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-warning">Không có vị trí nào được tạo.</div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Tên Vị Trí</th>
+                <th>ZoneId</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.NameLocation</td>
+                    <td>@item.ZoneId</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<a asp-action="Generate" class="btn btn-primary">Quay lại tạo mới</a>

@@ -3,6 +3,7 @@ using MadeHuman_User.JWT;
 using MadeHuman_User.ServicesTask.Services;
 using MadeHuman_User.ServicesTask.Services.InboundService;
 using MadeHuman_User.ServicesTask.Services.ShopService;
+using MadeHuman_User.ServicesTask.Services.WareHouseService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,15 +20,24 @@ builder.Services.AddScoped<IShopOrderService, ShopOrderService>();
 builder.Services.AddScoped<IInboundReceiptService, InboundReceiptService>();
 builder.Services.AddScoped<IInboundTaskService, InboundTaskService>();
 builder.Services.AddScoped<ICheckinCheckoutService, CheckinCheckoutService>();
+builder.Services.AddScoped<IWarehouseApiService, WarehouseApiService>();
+builder.Services.AddScoped<IWarehouseZoneApiService, WarehouseZoneApiService>();
+builder.Services.AddScoped<IWarehouseLocationApiService, WarehouseLocationApiService>();
 
 
-/*https://hcm-628-madehuman-api.onrender.com*/
+
+
+///*https://hcm-628-madehuman-api.onrender.com*/
+//builder.Services.AddHttpClient("API", client =>
+//{
+//    client.BaseAddress = new Uri("https://localhost:7204/"); // Đảm bảo URL chính xác
+//});
 builder.Services.AddHttpClient("API", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7204/"); // Đảm bảo URL chính xác
+    client.BaseAddress = new Uri("https://hcm-628-madehuman-api.onrender.com/"); // Đảm bảo URL chính xác
 });
-
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

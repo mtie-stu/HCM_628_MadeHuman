@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Madehuman_Share.ViewModel.Shop
+namespace Madehuman_User.ViewModel.Shop
 {
     public class ComboListItemViewModel
     {

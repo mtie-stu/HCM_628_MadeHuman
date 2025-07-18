@@ -1,6 +1,6 @@
 ﻿using MadeHuman_Server.Data;
 using MadeHuman_Server.Model.WareHouse;
-using Madehuman_Share.ViewModel.WareHouse;
+using Madehuman_User.ViewModel.WareHouse;
 using Microsoft.EntityFrameworkCore;
 namespace MadeHuman_Server.Service.WareHouse
 {

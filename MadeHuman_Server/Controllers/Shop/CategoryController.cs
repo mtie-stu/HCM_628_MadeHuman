@@ -1,6 +1,6 @@
 ﻿using MadeHuman_Server.Data;
 using MadeHuman_Server.Service.Shop;
-using Madehuman_Share.ViewModel.Shop;
+using Madehuman_User.ViewModel.Shop;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;

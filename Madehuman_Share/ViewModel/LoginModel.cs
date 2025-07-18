@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Madehuman_Share.ViewModel
+namespace Madehuman_User.ViewModel
 {
     public class LoginModel
     {

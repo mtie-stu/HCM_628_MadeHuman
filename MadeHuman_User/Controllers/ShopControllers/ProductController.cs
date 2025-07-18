@@ -1,4 +1,4 @@
-﻿using Madehuman_Share.ViewModel.Shop;
+﻿using Madehuman_User.ViewModel.Shop;
 using MadeHuman_User.ServicesTask.Services.ShopService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;

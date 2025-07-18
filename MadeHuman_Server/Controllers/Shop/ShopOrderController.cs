@@ -1,6 +1,6 @@
 ﻿using MadeHuman_Server.Model.Shop;
 using MadeHuman_Server.Service.Shop;
-using Madehuman_Share.ViewModel.Shop;
+using Madehuman_User.ViewModel.Shop;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -51,7 +51,7 @@ namespace MadeHuman_Server.Controllers.Shop
                 AppUserEmail = order.AppUser?.Email,
                 OrderDate = order.OrderDate,
                 TotalAmount = order.TotalAmount,
-                Status = (Madehuman_Share.ViewModel.Shop.StatusOrder)order.Status,
+                Status = (Madehuman_User.ViewModel.Shop.StatusOrder)order.Status,
                 Items = order.OrderItems.Select(item => new OrderItemViewModel
                 {
                     ProductSKUsId = item.ProductSKUsId,

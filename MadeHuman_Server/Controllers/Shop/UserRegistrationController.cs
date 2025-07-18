@@ -1,5 +1,5 @@
 ﻿using MadeHuman_Server.Service;
-using Madehuman_Share.ViewModel;
+using Madehuman_User.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MadeHuman_Server.Controllers
