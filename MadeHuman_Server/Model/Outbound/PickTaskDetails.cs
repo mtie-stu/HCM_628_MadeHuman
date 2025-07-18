@@ -19,7 +19,10 @@ namespace MadeHuman_Server.Model.Outbound
         [ForeignKey("ProductSKUId")]
         [JsonIgnore]
         public ProductSKU ProductSKUs { get; set; }
-        public Guid PickTaskId { get; set; }
-        public PickTasks PickTasks {  get; set; }   
+        public Guid PickTaskId { get; set; } // KHÔNG phải PicksTasksId
+
+        [ForeignKey(nameof(PickTaskId))]
+        public PickTasks PickTask { get; set; }
+
     }
 }

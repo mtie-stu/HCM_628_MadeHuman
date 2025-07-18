@@ -3,6 +3,7 @@ using System;
 using MadeHuman_Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MadeHuman_Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250718042525_removePickTaskId")]
+    partial class removePickTaskId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -396,7 +399,10 @@ namespace MadeHuman_Server.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("PickTaskId")
+                    b.Property<Guid>("PickTasksId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PicksTasksId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("ProductSKUId")
@@ -410,7 +416,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PickTaskId");
+                    b.HasIndex("PickTasksId");
 
                     b.HasIndex("ProductSKUId");
 
@@ -1360,9 +1366,9 @@ namespace MadeHuman_Server.Migrations
 
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.PickTaskDetails", b =>
                 {
-                    b.HasOne("MadeHuman_Server.Model.Outbound.PickTasks", "PickTask")
+                    b.HasOne("MadeHuman_Server.Model.Outbound.PickTasks", "PickTasks")
                         .WithMany("PickTaskDetails")
-                        .HasForeignKey("PickTaskId")
+                        .HasForeignKey("PickTasksId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1378,7 +1384,7 @@ namespace MadeHuman_Server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("PickTask");
+                    b.Navigation("PickTasks");
 
                     b.Navigation("ProductSKUs");
 

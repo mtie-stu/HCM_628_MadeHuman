@@ -95,6 +95,7 @@ builder.Services.AddSingleton<GoogleDriveOAuthService>();
 builder.Services.AddHostedService<InventoryQuantityUpdateService>();
 builder.Services.AddHostedService<OutboundTaskBackgroundService>();
 builder.Services.AddScoped<OutboundTaskService>();
+builder.Services.AddScoped<IProductImageService, ProductImageService>();
 
 // (Tùy chọn) Cấu hình upload file lớn nếu cần
 builder.Services.Configure<FormOptions>(options =>
