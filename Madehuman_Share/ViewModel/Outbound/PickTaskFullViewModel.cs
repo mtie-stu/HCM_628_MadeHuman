@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Madehuman_Share.ViewModel.Outbound
 {
-    public enum StatusPickTask
+    public enum StatusPickTaskvm
     {
         Created,
         Recived,
@@ -17,7 +17,7 @@ namespace Madehuman_Share.ViewModel.Outbound
         public Guid Id { get; set; }
         public DateTime CreateAt { get; set; }
         public DateTime FinishAt { get; set; }
-        public StatusPickTask Status { get; set; }
+        public StatusPickTaskvm Status { get; set; }
         public Guid? UsersTasksId { get; set; }
 
         public List<PickTaskDetailItem> Details { get; set; }

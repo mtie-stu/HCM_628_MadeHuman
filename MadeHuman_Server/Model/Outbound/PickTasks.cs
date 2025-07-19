@@ -1,5 +1,7 @@
-﻿using MadeHuman_Server.Model.Inbound;
+﻿using Google.Apis.Drive.v3.Data;
+using MadeHuman_Server.Model.Inbound;
 using MadeHuman_Server.Model.User_Task;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace MadeHuman_Server.Model.Outbound
@@ -22,6 +24,9 @@ namespace MadeHuman_Server.Model.Outbound
 
         [JsonIgnore]
         public List<PickTaskDetails> PickTaskDetails { get; set; } = new();
+        public Guid OutboundTaskId { get; set; } // ⚠️ THÊM KHÓA NGOẠI RÕ RÀNG
+        [ForeignKey(nameof(OutboundTaskId))]
+        public OutboundTask OutboundTask { get; set; }
 
     }
 }

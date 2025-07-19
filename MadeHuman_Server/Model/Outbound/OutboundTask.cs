@@ -14,6 +14,7 @@ namespace MadeHuman_Server.Model.Outbound
         public StatusOutbountTask Status { get; set; }
         public Baskets Baskets { get; set; }
         public ICollection<OutboundTaskItems> OutboundTaskItems { get; set; }
+        public PickTasks PickTasks { get; set; }  // 1-1
 
     }
 }

@@ -12,8 +12,9 @@ namespace MadeHuman_Server.Model.Outbound
         public Guid WarehouseLocationId { get; set; }
         [ForeignKey("WarehouseLocationId")]
         public WarehouseLocations WarehouseLocation { get; set; }
-
+        public bool IsPicked { get; set; }  = false;
         public Guid ProductSKUId { get; set; } = default!;
+        public int QuantityPicked { get; set; } = 0;
 
 
         [ForeignKey("ProductSKUId")]
