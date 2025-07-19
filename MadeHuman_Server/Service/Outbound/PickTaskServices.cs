@@ -10,34 +10,34 @@ namespace MadeHuman_Server.Service.Outbound
 {
     public interface IPickTaskServices
     {
-      Task<PickTaskFullViewModel?> AssignPickTaskToCurrentUserAsync();
+        Task<PickTaskFullViewModel?> AssignPickTaskToCurrentUserAsync();
         Task<List<string>> ValidatePickTaskScanAsync(ScanPickTaskValidationRequest request);
-        Task StorePickTaskDetailAsync(PickTasks task, PickTaskDetails detail, Guid userTaskId);
+        Task StorePickTaskDetailAsync(PickTasks task, PickTaskDetails detail, Guid userTaskId, Guid basketId);
     }
+
     public class PickTaskServices : IPickTaskServices
     {
         private readonly ApplicationDbContext _context;
         private readonly IUserTaskSvc _usertaskservice;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public PickTaskServices(ApplicationDbContext dbContext, IUserTaskSvc userTaskSvc, IHttpContextAccessor httpContextAccessor) 
+
+        public PickTaskServices(ApplicationDbContext dbContext, IUserTaskSvc userTaskSvc, IHttpContextAccessor httpContextAccessor)
         {
             _context = dbContext;
             _usertaskservice = userTaskSvc;
             _httpContextAccessor = httpContextAccessor;
         }
+
         public async Task<PickTaskFullViewModel?> AssignPickTaskToCurrentUserAsync()
         {
-            // 1. Lấy userId hiện tại
             var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 throw new UnauthorizedAccessException("❌ Không xác định được người dùng hiện tại.");
 
-            // 2. Lấy UserTaskId hôm nay của người dùng
             var userTaskId = await _usertaskservice.GetUserTaskIdAsync(userId, DateOnly.FromDateTime(DateTime.UtcNow));
             if (userTaskId == null)
                 throw new InvalidOperationException("❌ Không tìm thấy phân công công việc hôm nay cho người dùng.");
 
-            // 3. Tìm PickTask chưa được gán
             var task = await _context.PickTasks
                 .Include(p => p.PickTaskDetails)
                 .Where(p => p.UsersTasksId == null || p.UsersTasksId == Guid.Empty)
@@ -45,15 +45,12 @@ namespace MadeHuman_Server.Service.Outbound
                 .FirstOrDefaultAsync();
 
             if (task == null)
-                return null; // 🎉 Hết PickTask chưa gán
+                return null;
 
-            // 4. Gán UsersTasksId
             task.UsersTasksId = userTaskId;
             task.Status = StatusPickTask.Recived;
-
             await _context.SaveChangesAsync();
 
-            // 5. Trả về ViewModel
             return new PickTaskFullViewModel
             {
                 Id = task.Id,
@@ -70,10 +67,9 @@ namespace MadeHuman_Server.Service.Outbound
                 }).ToList()
             };
         }
+
         public async Task<List<string>> ValidatePickTaskScanAsync(ScanPickTaskValidationRequest request)
         {
-            var errors = new List<string>();
-
             var task = await _context.PickTasks
                 .Include(t => t.PickTaskDetails)
                 .FirstOrDefaultAsync(t => t.Id == request.PickTaskId);
@@ -107,45 +103,67 @@ namespace MadeHuman_Server.Service.Outbound
             if (!string.Equals(request.SKU, sku, StringComparison.OrdinalIgnoreCase))
                 return new() { $"❌ SKU không khớp. Hệ thống: {sku}, bạn nhập: {request.SKU}" };
 
-            await StorePickTaskDetailAsync(task, detail, userTaskId.Value);
+            if (request.BasketId == null)
+                return new() { "❌ Bạn chưa quét giỏ." };
+
+            // ✅ Gán OutboundTaskId vào basket
+            var assignResult = await AssignBasketToOutboundTaskAsync(request.BasketId.Value, task.OutboundTaskId);
+            if (assignResult.Any())
+                return assignResult;
+
+            // ✅ Ghi nhận pick
+            await StorePickTaskDetailAsync(task, detail, userTaskId.Value, request.BasketId.Value);
 
             return new() { "✅ Đã ghi nhận 1 lần pick thành công." };
         }
-        public async Task StorePickTaskDetailAsync(PickTasks task, PickTaskDetails detail, Guid userTaskId)
+
+        public async Task StorePickTaskDetailAsync(PickTasks task, PickTaskDetails detail, Guid userTaskId, Guid basketId)
         {
-            // Kiểm tra tồn kho
+            detail.QuantityPicked += 1;
+
+            if (detail.QuantityPicked < detail.Quantity)
+            {
+                await _context.SaveChangesAsync();
+                return;
+            }
+
+            detail.IsPicked = true;
+
+            // ✅ Kiểm tra giỏ có khớp với OutboundTask hay không
+            var basket = await _context.Baskets.FindAsync(basketId);
+            if (basket == null)
+                throw new Exception("❌ Không tìm thấy giỏ hàng đã quét.");
+
+            if (basket.OutBoundTaskId != task.OutboundTaskId)
+                throw new Exception("❌ Giỏ hàng không khớp với nhiệm vụ pick hiện tại.");
+
+            // ✅ Trừ tồn kho và ghi log
             var inventory = await _context.Inventory.FirstOrDefaultAsync(i =>
                 i.ProductSKUId == detail.ProductSKUId &&
                 i.WarehouseLocationId == detail.WarehouseLocationId);
 
-            if (inventory == null || inventory.StockQuantity < 1)
-                throw new Exception("❌ Không đủ tồn kho để pick. Vui lòng nhờ staff hỗ trợ điều chỉnh vị trí.");
+            if (inventory == null || inventory.StockQuantity < detail.Quantity)
+                throw new Exception("❌ Không đủ tồn kho để hoàn tất pick. Vui lòng nhờ staff hỗ trợ.");
 
-            inventory.StockQuantity -= 1;
+            inventory.StockQuantity -= detail.Quantity;
             inventory.LastUpdated = DateTime.UtcNow;
-
-            detail.QuantityPicked += 1;
 
             _context.InventoryLogs.Add(new InventoryLogs
             {
                 Id = Guid.NewGuid(),
                 InventoryId = inventory.Id,
                 StockQuantity = inventory.StockQuantity,
-                ChangeQuantity = -1,
+                ChangeQuantity = -detail.Quantity,
                 RemainingQuantity = inventory.StockQuantity,
                 ActionInventoryLogs = ActionInventoryLogs.Take,
                 ChangeBy = userTaskId.ToString(),
                 Time = DateTime.UtcNow
             });
 
-            if (detail.QuantityPicked >= detail.Quantity)
-            {
-                detail.IsPicked = true;
-            }
-
             if (task.PickTaskDetails.All(d => d.IsPicked))
             {
                 task.Status = StatusPickTask.Finished;
+                task.FinishAt = DateTime.UtcNow;
 
                 var totalQty = task.PickTaskDetails.Sum(d => d.Quantity);
                 var userTask = await _context.UsersTasks.FirstOrDefaultAsync(u => u.Id == userTaskId);
@@ -159,6 +177,24 @@ namespace MadeHuman_Server.Service.Outbound
             await _context.SaveChangesAsync();
         }
 
+        private async Task<List<string>> AssignBasketToOutboundTaskAsync(Guid basketId, Guid outboundTaskId)
+        {
+            var basket = await _context.Baskets.FindAsync(basketId);
+            if (basket == null)
+                return new() { "❌ Không tìm thấy giỏ." };
 
+            if (basket.OutBoundTaskId != null && basket.OutBoundTaskId != outboundTaskId)
+                return new() { "❌ Giỏ này đã được sử dụng cho nhiệm vụ khác. Vui lòng quét giỏ khác." };
+
+            if (basket.OutBoundTaskId == null)
+            {
+                basket.OutBoundTaskId = outboundTaskId;
+                basket.Status = StatusBaskets.Selected;
+                _context.Baskets.Update(basket);
+                await _context.SaveChangesAsync();
+            }
+
+            return new(); // OK
+        }
     }
 }

@@ -11,6 +11,8 @@ namespace Madehuman_Share.ViewModel.Outbound
         public Guid PickTaskId { get; set; }
         public Guid PickTaskDetailId { get; set; }
         public string SKU { get; set; } = string.Empty;
+        public Guid? BasketId { get; set; } // ✅ mới thêm
+
     }
 
 }

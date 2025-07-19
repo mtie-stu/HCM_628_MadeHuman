@@ -240,14 +240,6 @@ namespace MadeHuman_Server.Service.Outbound
                         OutboundTaskItems = new List<OutboundTaskItems>()
                     };
 
-                    var pickTask = new PickTasks
-                    {
-                        Id = Guid.NewGuid(),
-                        CreateAt = DateTime.UtcNow,
-                        Status = StatusPickTask.Created,
-                        PickTaskDetails = new List<PickTaskDetails>()
-                    };
-
                     var usedLocationIds = new HashSet<Guid>();
                     var validOrders = new List<ShopOrder>();
 
@@ -265,7 +257,6 @@ namespace MadeHuman_Server.Service.Outbound
                         };
 
                         var detailList = new List<OutboundTaskItemDetails>();
-                        var pickList = new List<PickTaskDetails>();
                         bool isValid = true;
 
                         foreach (var kvp in groupedItems)
@@ -291,7 +282,7 @@ namespace MadeHuman_Server.Service.Outbound
 
                             usedLocationIds.Add(location.Id);
                             var inventory = location.Inventory;
-                            inventory.QuantityBooked = (inventory.QuantityBooked) + qty;
+                            inventory.QuantityBooked += qty;
                             inventory.LastUpdated = DateTime.UtcNow;
 
                             detailList.Add(new OutboundTaskItemDetails
@@ -301,33 +292,32 @@ namespace MadeHuman_Server.Service.Outbound
                                 Quantity = qty,
                                 OutboundTaskItemId = outboundTaskItem.Id
                             });
-
-                            pickList.Add(new PickTaskDetails
-                            {
-                                Id = Guid.NewGuid(),
-                                ProductSKUId = skuId,
-                                Quantity = qty,
-                                WarehouseLocationId = location.Id,
-                                PickTaskId = pickTask.Id
-                            });
                         }
 
                         if (!isValid) continue;
 
-                        outboundTaskItem.OutboundTaskItemDetails = detailList.First(); // bạn có thể mở rộng để dùng nhiều detail
+                        outboundTaskItem.OutboundTaskItemDetails = detailList.First(); // dùng 1 detail duy nhất
                         outboundTask.OutboundTaskItems.Add(outboundTaskItem);
-                        pickTask.PickTaskDetails.AddRange(pickList);
                         validOrders.Add(order);
                     }
 
                     if (!validOrders.Any()) continue;
 
+                    // ⬇️ BƯỚC 1: Lưu OutboundTask trước
                     _context.OutboundTasks.Add(outboundTask);
+                    await _context.SaveChangesAsync();
+
+                    // ⬇️ BƯỚC 2: Tạo PickTask liên kết đúng OutboundTaskId
+                    var pickTask = await CreatePickTaskAsync(outboundTask);
+
+                    if (!pickTask.PickTaskDetails.Any()) continue;
+
                     _context.PickTasks.Add(pickTask);
+
                     foreach (var order in validOrders)
                         order.Status = StatusOrder.Confirmed;
 
-                    await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync(); // Lưu PickTask + cập nhật trạng thái đơn hàng
                     createdTasks.Add(outboundTask);
                     anyCreated = true;
                 }
