@@ -17,15 +17,18 @@ namespace MadeHuman_Server.Service.Outbound
 
     public class PickTaskServices : IPickTaskServices
     {
+        private readonly ICheckTaskServices _checkTaskService;
+
         private readonly ApplicationDbContext _context;
         private readonly IUserTaskSvc _usertaskservice;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public PickTaskServices(ApplicationDbContext dbContext, IUserTaskSvc userTaskSvc, IHttpContextAccessor httpContextAccessor)
+        public PickTaskServices(ApplicationDbContext dbContext, IUserTaskSvc userTaskSvc, IHttpContextAccessor httpContextAccessor, ICheckTaskServices checkTaskService)
         {
             _context = dbContext;
             _usertaskservice = userTaskSvc;
             _httpContextAccessor = httpContextAccessor;
+            _checkTaskService = checkTaskService;
         }
 
         public async Task<PickTaskFullViewModel?> AssignPickTaskToCurrentUserAsync()
@@ -172,6 +175,8 @@ namespace MadeHuman_Server.Service.Outbound
                     userTask.TotalKPI += totalQty;
                     userTask.HourlyKPIs += totalQty;
                 }
+                // ✅ Gọi tạo CheckTask khi Pick hoàn tất
+                await _checkTaskService.CreateCheckTaskAsync(task.OutboundTaskId);
             }
 
             await _context.SaveChangesAsync();
