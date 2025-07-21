@@ -3,6 +3,7 @@ using System;
 using MadeHuman_Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MadeHuman_Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250718042525_removePickTaskId")]
+    partial class removePickTaskId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -396,10 +399,10 @@ namespace MadeHuman_Server.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<bool>("IsPicked")
-                        .HasColumnType("boolean");
+                    b.Property<Guid>("PickTasksId")
+                        .HasColumnType("uuid");
 
-                    b.Property<Guid>("PickTaskId")
+                    b.Property<Guid>("PicksTasksId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("ProductSKUId")
@@ -408,15 +411,12 @@ namespace MadeHuman_Server.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
-                    b.Property<int>("QuantityPicked")
-                        .HasColumnType("integer");
-
                     b.Property<Guid>("WarehouseLocationId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PickTaskId");
+                    b.HasIndex("PickTasksId");
 
                     b.HasIndex("ProductSKUId");
 
@@ -437,9 +437,6 @@ namespace MadeHuman_Server.Migrations
                     b.Property<DateTime>("FinishAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("OutboundTaskId")
-                        .HasColumnType("uuid");
-
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
@@ -447,9 +444,6 @@ namespace MadeHuman_Server.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("OutboundTaskId")
-                        .IsUnique();
 
                     b.HasIndex("UsersTasksId");
 
@@ -1372,9 +1366,9 @@ namespace MadeHuman_Server.Migrations
 
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.PickTaskDetails", b =>
                 {
-                    b.HasOne("MadeHuman_Server.Model.Outbound.PickTasks", "PickTask")
+                    b.HasOne("MadeHuman_Server.Model.Outbound.PickTasks", "PickTasks")
                         .WithMany("PickTaskDetails")
-                        .HasForeignKey("PickTaskId")
+                        .HasForeignKey("PickTasksId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1390,7 +1384,7 @@ namespace MadeHuman_Server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("PickTask");
+                    b.Navigation("PickTasks");
 
                     b.Navigation("ProductSKUs");
 
@@ -1399,17 +1393,9 @@ namespace MadeHuman_Server.Migrations
 
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.PickTasks", b =>
                 {
-                    b.HasOne("MadeHuman_Server.Model.Outbound.OutboundTask", "OutboundTask")
-                        .WithOne("PickTasks")
-                        .HasForeignKey("MadeHuman_Server.Model.Outbound.PickTasks", "OutboundTaskId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("MadeHuman_Server.Model.User_Task.UsersTasks", "UsersTasks")
                         .WithMany("PickTasks")
                         .HasForeignKey("UsersTasksId");
-
-                    b.Navigation("OutboundTask");
 
                     b.Navigation("UsersTasks");
                 });
@@ -1700,9 +1686,6 @@ namespace MadeHuman_Server.Migrations
                         .IsRequired();
 
                     b.Navigation("OutboundTaskItems");
-
-                    b.Navigation("PickTasks")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.OutboundTaskItems", b =>

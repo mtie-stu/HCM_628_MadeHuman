@@ -46,6 +46,7 @@ namespace MadeHuman_Server.Data
         public DbSet<OutboundTaskItemDetails> OutboundTaskItemDetails { get; set; }
         public DbSet<PickTasks> PickTasks { get; set; }
         public DbSet<PickTaskDetails> PickTaskDetails { get; set; }
+        public DbSet<Baskets> Baskets { get; set; }
 
 
 
