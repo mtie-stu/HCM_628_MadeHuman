@@ -93,17 +93,21 @@ namespace MadeHuman_Server.Service.Inbound
                         errors.Add($"❌ FromLocation không đủ hàng SKU {productSkuId}. Yêu cầu: {d.Quantity}, hiện có: {fromInventory.StockQuantity}");
                     }
 
-                    // ✅ 3. Kiểm tra ToLocation có đúng SKU
-                    var toInventory = await _context.Inventory.FirstOrDefaultAsync(i =>
-                        i.WarehouseLocationId == d.ToLocation && i.ProductSKUId == productSkuId);
+                // ✅ 3. Kiểm tra ToLocation có đúng SKU
+                var toInventory = await _context.Inventory.FirstOrDefaultAsync(i =>
+                    i.WarehouseLocationId == d.ToLocation);
 
-                    if (toInventory == null)
+                if (toInventory != null)
+                {
+                    if (toInventory.ProductSKUId != productSkuId)
                     {
-                        errors.Add($"❌ ToLocation không có SKU {productSkuId}. Vui lòng tạo tồn kho đích.");
+                        errors.Add($"❌ ToLocation '{d.ToLocation}' đã chứa sản phẩm khác (SKUId: {toInventory.ProductSKUId}).");
                     }
                 }
 
-                if (errors.Any())
+            }
+
+            if (errors.Any())
                     throw new InvalidOperationException(string.Join("\n", errors));
 
                 // ✅ Hợp lệ → tạo task
