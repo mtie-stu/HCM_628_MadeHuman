@@ -19,9 +19,13 @@ namespace MadeHuman_Server.Model.Outbound
        public Guid ShopOrderId { get; set; }
         [ForeignKey(nameof(ShopOrderId))]
         public ShopOrder ShopOrder { get; set; }
+
+        [ForeignKey(name: "OutboundTask")]
+        public Guid OutboundTaskId { get; set; }
         public OutboundTask OutboundTask   { get; set; }    
         public OutboundTaskItemDetails OutboundTaskItemDetails { get; set; }
 
+        public CheckTaskDetails CheckTaskDetails { get; set; }  // 1-1
 
     }
 }
