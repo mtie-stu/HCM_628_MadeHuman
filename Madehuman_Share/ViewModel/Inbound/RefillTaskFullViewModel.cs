@@ -12,6 +12,7 @@ namespace Madehuman_Share.ViewModel.Inbound
         public Guid Id { get; set; }
         public Guid? LowStockId { get; set; }
         public Guid? UserTaskId { get; set; }
+
         public DateTime CreateAt { get; set; } = DateTime.UtcNow;
         public string CreateBy { get; set; }
 
@@ -25,7 +26,7 @@ namespace Madehuman_Share.ViewModel.Inbound
             public string? SKU { get; set; }            // SKU dạng text
             public Guid FromLocation { get; set; }
             public Guid ToLocation { get; set; }
-            public int Quantity { get; set; }
+            public int Quantity { get; set; }   
         }
     }
 

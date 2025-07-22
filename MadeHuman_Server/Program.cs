@@ -3,6 +3,7 @@ using MadeHuman_Server.JwtMiddleware;
 using MadeHuman_Server.Model.User_Task;
 using MadeHuman_Server.Service;
 using MadeHuman_Server.Service.Inbound;
+using MadeHuman_Server.Service.Outbound;
 using MadeHuman_Server.Service.Shop;
 using MadeHuman_Server.Service.UserTask;
 using MadeHuman_Server.Service.WareHouse;
@@ -92,6 +93,10 @@ builder.Services.AddHostedService<ResetHourlyKPIsService>();
 builder.Services.AddSingleton<GoogleDriveService>();
 builder.Services.AddSingleton<GoogleDriveOAuthService>();
 builder.Services.AddHostedService<InventoryQuantityUpdateService>();
+builder.Services.AddHostedService<OutboundTaskBackgroundService>();
+builder.Services.AddScoped<OutboundTaskService>();
+builder.Services.AddScoped<IProductImageService, ProductImageService>();
+builder.Services.AddScoped<IBasketService, BasketService>();
 
 // (Tùy chọn) Cấu hình upload file lớn nếu cần
 builder.Services.Configure<FormOptions>(options =>

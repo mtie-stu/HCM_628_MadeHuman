@@ -154,13 +154,18 @@
                    class="@IsActive("Inbound","Import")">
                     <span><i class="fas fa-file-import"></i> Import</span>
                 </a>
+                <a asp-controller="Inbound" asp-action="ValidateScan"
+                   class="@IsActive("Inbound","ValidateScan")">
+                    <span><i class="bi bi-upc-scan me-2"></i> Validate Scan</span>
+                </a>
+
                 <a asp-controller="Inbound" asp-action="Export"
                    class="@IsActive("Inbound","Export")">
                     <span><i class="fas fa-file-export"></i> Export</span>
                 </a>
                 <a asp-controller="RefillTask" asp-action="Index"
                    class="@IsActive("RefillTask","Index")">
-                    <span><i class="fas fa-file-export"></i>Refill Task</span>
+                    <span><i class="fas fa-file-export"></i>Refill</span>
                 </a>
             </div>
 
