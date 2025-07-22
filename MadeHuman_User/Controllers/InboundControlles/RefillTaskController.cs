@@ -16,9 +16,10 @@ namespace MadeHuman_User.Controllers.InboundControlles
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var tasks = await _refillTaskService.GetAllRefillTasksAsync();
+            var tasks = await _refillTaskService.GetAllRefillTasksAsync(HttpContext);
             return View(tasks);
         }
+
 
         [HttpGet]
         public IActionResult Create()
@@ -34,15 +35,17 @@ namespace MadeHuman_User.Controllers.InboundControlles
         [HttpPost]
         public async Task<IActionResult> Create(RefillTaskFullViewModel model)
         {
-            var success = await _refillTaskService.CreateRefillTaskAsync(model);
+            var success = await _refillTaskService.CreateRefillTaskAsync(model, HttpContext);
+
             if (success)
             {
-                TempData["Success"] = "✅ Tạo nhiệm vụ bổ sung thành công!";
-                return RedirectToAction("Create");
+                TempData["Success"] = "✅ Tạo nhiệm vụ Refill thành công.";
+                return RedirectToAction("Index");
             }
 
-            TempData["Error"] = "❌ Lỗi khi tạo nhiệm vụ bổ sung!";
+            TempData["Error"] = "❌ Không thể tạo nhiệm vụ Refill.";
             return View(model);
         }
+
     }
 }
