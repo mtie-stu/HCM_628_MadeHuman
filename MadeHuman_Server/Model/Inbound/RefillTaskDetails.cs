@@ -21,6 +21,7 @@ namespace MadeHuman_Server.Model.Inbound
         [JsonIgnore]
         public ProductSKU ProductSKUs { get; set; }
 
+        public bool IsRefilled {  get; set; }   = false;    
 
     }
 }

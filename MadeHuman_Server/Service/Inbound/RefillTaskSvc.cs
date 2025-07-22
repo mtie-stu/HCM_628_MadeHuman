@@ -124,7 +124,8 @@ namespace MadeHuman_Server.Service.Inbound
                         ProductSKUId = d.ProductSKUId!.Value,
                         FromLocation = d.FromLocation,
                         ToLocation = d.ToLocation,
-                        Quantity = d.Quantity
+                        Quantity = d.Quantity,
+                        IsRefilled=false,
                     }).ToList()
                 };
 
@@ -226,7 +227,7 @@ namespace MadeHuman_Server.Service.Inbound
                 })
                 .ToListAsync();
         }
-        public async Task<RefillTaskFullViewModel?> AssignRefillTaskToCurrentUserAsync()
+        public async Task<RefillTaskFullViewModel?> AssignRefillTaskToCurrentUserAsync()   //Picker nhận nhiệm vụ (  Picker(Partime) ấn nhận nhiệm vụ sau đó hiện ra giao diện làm nhiệm vụ( chứa các thông tin hướng dẫn nhiệm vụ theo viewmodel)
         {
             // 1. Lấy userId hiện tại
             var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -270,7 +271,7 @@ namespace MadeHuman_Server.Service.Inbound
                 }).ToList()
             };
         }
-        public async Task<List<string>> ValidateRefillTaskScanAsync(ScanRefillTaskValidationRequest request)
+        public async Task<List<string>> ValidateRefillTaskScanAsync(ScanRefillTaskValidationRequest request)   //Picker quét từng luồn dữ liệu với "RefillTaskId và RefillTaskDetailId" người dùng k cần nhập, được gán lại từ nhiệm vụ do picker nhận (  AssignRefillTaskToCurrentUserAsync)
         {
             var errors = new List<string>();
 
@@ -284,6 +285,11 @@ namespace MadeHuman_Server.Service.Inbound
                 return errors;
             }
 
+            if (task.StatusRefillTasks == StatusRefillTasks.Canceled || task.StatusRefillTasks == StatusRefillTasks.Completed)
+            {
+                errors.Add("❌Nhiệm vụ đã được hoàn thành hoặc đã bị hủy.");
+                return errors;
+            }
             var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
             {
@@ -318,6 +324,9 @@ namespace MadeHuman_Server.Service.Inbound
                 errors.Add("❌ Không tìm thấy chi tiết nhiệm vụ.");
                 return errors;
             }
+            if (detail.IsRefilled)
+                throw new Exception("Chi tiết này đã được xử lý rồi.");
+
 
             // Kiểm tra vị trí
             if (!string.IsNullOrWhiteSpace(request.FromLocationName))
@@ -377,7 +386,7 @@ namespace MadeHuman_Server.Service.Inbound
 
             return errors;
         }
-        public async Task StoreRefillTaskDetailAsync(Guid refillTaskId, Guid detailId, Guid userTaskId)
+        public async Task StoreRefillTaskDetailAsync(Guid refillTaskId, Guid detailId, Guid userTaskId)       // Khi người dùng quét theo hướng dẫn nhiệm vụ thành công mới gọi, method này sẽ thực hiện chỉnh sửa dữ liệu giảm Fromlocation và tăng Tolocation( chỉnh sửa Inventory) tăng KPI sp với PartTime
         {
             var task = await _context.RefillTasks
                 .Include(t => t.RefillTaskDetails)
@@ -448,10 +457,14 @@ namespace MadeHuman_Server.Service.Inbound
                     _ => StatusLowStockAlerts.Normal
                 };
             }
+            //Xử lý RefillTaskDetails là hoàn thành 
+            detail.IsRefilled = true;
 
             // Nếu tất cả đã thực hiện → task hoàn thành
-            var isDone = task.RefillTaskDetails.All(d =>
-                _context.Inventory.Any(i => i.WarehouseLocationId == d.ToLocation && i.ProductSKUId == d.ProductSKUId && i.StockQuantity >= d.Quantity));
+            //var isDone = task.RefillTaskDetails.All(d =>
+            //    _context.Inventory.Any(i => i.WarehouseLocationId == d.ToLocation && i.ProductSKUId == d.ProductSKUId && i.StockQuantity >= d.Quantity));
+
+            var isDone = task.RefillTaskDetails.All(d => d.IsRefilled);
 
             if (isDone)
             {
