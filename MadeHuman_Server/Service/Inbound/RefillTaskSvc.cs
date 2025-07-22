@@ -99,7 +99,7 @@ namespace MadeHuman_Server.Service.Inbound
 
                 if (toInventory != null)
                 {
-                    if (toInventory.ProductSKUId != productSkuId)
+                    if (toInventory.ProductSKUId != null)
                     {
                         errors.Add($"❌ ToLocation '{d.ToLocation}' đã chứa sản phẩm khác (SKUId: {toInventory.ProductSKUId}).");
                     }

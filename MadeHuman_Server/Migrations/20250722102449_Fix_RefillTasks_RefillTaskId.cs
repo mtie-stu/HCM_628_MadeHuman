@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MadeHuman_Server.Migrations
 {
     /// <inheritdoc />
-    public partial class updb : Migration
+    public partial class Fix_RefillTasks_RefillTaskId : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -98,7 +98,20 @@ namespace MadeHuman_Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Part_Time_Company",
+                name: "OutboundTasks",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreateAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OutboundTasks", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PartTimeCompanies",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -108,7 +121,7 @@ namespace MadeHuman_Server.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Part_Time_Company", x => x.Id);
+                    table.PrimaryKey("PK_PartTimeCompanies", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -275,29 +288,25 @@ namespace MadeHuman_Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "InboundTasks",
+                name: "Baskets",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreateBy = table.Column<string>(type: "text", nullable: false),
-                    CreateAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    InboundReceiptId = table.Column<Guid>(type: "uuid", nullable: false)
+                    OutBoundTaskId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_InboundTasks", x => x.Id);
+                    table.PrimaryKey("PK_Baskets", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_InboundTasks_InboundReceipt_InboundReceiptId",
-                        column: x => x.InboundReceiptId,
-                        principalTable: "InboundReceipt",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        name: "FK_Baskets_OutboundTasks_OutBoundTaskId",
+                        column: x => x.OutBoundTaskId,
+                        principalTable: "OutboundTasks",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
-                name: "PartTime",
+                name: "PartTimes",
                 columns: table => new
                 {
                     PartTimeId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -309,11 +318,11 @@ namespace MadeHuman_Server.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PartTime", x => x.PartTimeId);
+                    table.PrimaryKey("PK_PartTimes", x => x.PartTimeId);
                     table.ForeignKey(
-                        name: "FK_PartTime_Part_Time_Company_CompanyId",
+                        name: "FK_PartTimes_PartTimeCompanies_CompanyId",
                         column: x => x.CompanyId,
-                        principalTable: "Part_Time_Company",
+                        principalTable: "PartTimeCompanies",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -334,6 +343,32 @@ namespace MadeHuman_Server.Migrations
                         column: x => x.WarehouseId,
                         principalTable: "WareHouses",
                         principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OutboundTaskItems",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    ShopOrderId = table.Column<Guid>(type: "uuid", nullable: false),
+                    OutboundTaskId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OutboundTaskItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OutboundTaskItems_OutboundTasks_OutboundTaskId",
+                        column: x => x.OutboundTaskId,
+                        principalTable: "OutboundTasks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_OutboundTaskItems_ShopOrders_ShopOrderId",
+                        column: x => x.ShopOrderId,
+                        principalTable: "ShopOrders",
+                        principalColumn: "ShopOrderId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -393,7 +428,6 @@ namespace MadeHuman_Server.Migrations
                 {
                     ProductItemId = table.Column<Guid>(type: "uuid", nullable: false),
                     SKU = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    QuantityInStock = table.Column<int>(type: "integer", nullable: false),
                     ProductId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
@@ -414,7 +448,8 @@ namespace MadeHuman_Server.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     SKU = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     ProductId = table.Column<Guid>(type: "uuid", nullable: true),
-                    ComboId = table.Column<Guid>(type: "uuid", nullable: true)
+                    ComboId = table.Column<Guid>(type: "uuid", nullable: true),
+                    QuantityInStock = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -448,7 +483,9 @@ namespace MadeHuman_Server.Migrations
                     OvertimeDuration = table.Column<TimeSpan>(type: "interval", nullable: true),
                     IsCompleted = table.Column<bool>(type: "boolean", nullable: false),
                     Note = table.Column<string>(type: "text", nullable: true),
-                    PartTimeId = table.Column<Guid>(type: "uuid", nullable: true)
+                    PartTimeId = table.Column<Guid>(type: "uuid", nullable: true),
+                    TotalKPI = table.Column<int>(type: "integer", nullable: false),
+                    HourlyKPIs = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -460,30 +497,10 @@ namespace MadeHuman_Server.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_UsersTasks_PartTime_PartTimeId",
+                        name: "FK_UsersTasks_PartTimes_PartTimeId",
                         column: x => x.PartTimeId,
-                        principalTable: "PartTime",
+                        principalTable: "PartTimes",
                         principalColumn: "PartTimeId");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "WarehouseLocations",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    NameLocation = table.Column<string>(type: "text", nullable: false),
-                    StatusWareHouse = table.Column<int>(type: "integer", nullable: false),
-                    ZoneId = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_WarehouseLocations", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_WarehouseLocations_WarehouseZones_ZoneId",
-                        column: x => x.ZoneId,
-                        principalTable: "WarehouseZones",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -521,7 +538,6 @@ namespace MadeHuman_Server.Migrations
                     UnitPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     ProductSKUsId = table.Column<Guid>(type: "uuid", nullable: false),
                     ShopOrderId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ProductSKU = table.Column<string>(type: "text", nullable: false),
                     ProductItemId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
@@ -547,6 +563,32 @@ namespace MadeHuman_Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "OutboundTaskItemDetails",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    ProductSKUId = table.Column<Guid>(type: "uuid", nullable: false),
+                    OutboundTaskItemId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OutboundTaskItemDetails", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OutboundTaskItemDetails_OutboundTaskItems_OutboundTaskItemId",
+                        column: x => x.OutboundTaskItemId,
+                        principalTable: "OutboundTaskItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_OutboundTaskItemDetails_ProductSKUs_ProductSKUId",
+                        column: x => x.ProductSKUId,
+                        principalTable: "ProductSKUs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CheckInCheckOutLog",
                 columns: table => new
                 {
@@ -555,6 +597,7 @@ namespace MadeHuman_Server.Migrations
                     UserId = table.Column<string>(type: "text", nullable: false),
                     Timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     IsCheckIn = table.Column<bool>(type: "boolean", nullable: false),
+                    IsOvertime = table.Column<bool>(type: "boolean", nullable: false),
                     Note = table.Column<string>(type: "text", nullable: true),
                     UsersTasksId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
@@ -575,17 +618,73 @@ namespace MadeHuman_Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CheckTasks",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreateAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    MadeAt = table.Column<string>(type: "text", nullable: true),
+                    StatusCheckTask = table.Column<int>(type: "integer", nullable: false),
+                    FinishAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UsersTasksId = table.Column<Guid>(type: "uuid", nullable: true),
+                    OutboundTaskId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CheckTasks", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CheckTasks_OutboundTasks_OutboundTaskId",
+                        column: x => x.OutboundTaskId,
+                        principalTable: "OutboundTasks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CheckTasks_UsersTasks_UsersTasksId",
+                        column: x => x.UsersTasksId,
+                        principalTable: "UsersTasks",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "InboundTasks",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreateBy = table.Column<string>(type: "text", nullable: false),
+                    CreateAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    InboundReceiptId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserTaskId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InboundTasks", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_InboundTasks_InboundReceipt_InboundReceiptId",
+                        column: x => x.InboundReceiptId,
+                        principalTable: "InboundReceipt",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_InboundTasks_UsersTasks_UserTaskId",
+                        column: x => x.UserTaskId,
+                        principalTable: "UsersTasks",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PartTimeAssignment",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     PartTimeId = table.Column<Guid>(type: "uuid", nullable: true),
-                    WorkDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    WorkDate = table.Column<DateOnly>(type: "date", nullable: false),
                     TaskType = table.Column<int>(type: "integer", nullable: false),
                     ShiftCode = table.Column<string>(type: "text", nullable: true),
                     IsConfirmed = table.Column<bool>(type: "boolean", nullable: false),
                     CheckInTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     CheckOutTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    OvertimeDuration = table.Column<TimeSpan>(type: "interval", nullable: true),
                     BreakDuration = table.Column<TimeSpan>(type: "interval", nullable: true),
                     Note = table.Column<string>(type: "text", nullable: true),
                     UserId = table.Column<string>(type: "text", nullable: true),
@@ -602,21 +701,21 @@ namespace MadeHuman_Server.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_PartTimeAssignment_PartTime_PartTimeId",
+                        name: "FK_PartTimeAssignment_PartTimeCompanies_CompanyId",
+                        column: x => x.CompanyId,
+                        principalTable: "PartTimeCompanies",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_PartTimeAssignment_PartTimes_PartTimeId",
                         column: x => x.PartTimeId,
-                        principalTable: "PartTime",
+                        principalTable: "PartTimes",
                         principalColumn: "PartTimeId",
                         onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
-                        name: "FK_PartTimeAssignment_PartTime_PartTimeId1",
+                        name: "FK_PartTimeAssignment_PartTimes_PartTimeId1",
                         column: x => x.PartTimeId1,
-                        principalTable: "PartTime",
+                        principalTable: "PartTimes",
                         principalColumn: "PartTimeId");
-                    table.ForeignKey(
-                        name: "FK_PartTimeAssignment_Part_Time_Company_CompanyId",
-                        column: x => x.CompanyId,
-                        principalTable: "Part_Time_Company",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_PartTimeAssignment_UsersTasks_UsersTasksId",
                         column: x => x.UsersTasksId,
@@ -625,12 +724,67 @@ namespace MadeHuman_Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PickTasks",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreateAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    FinishAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    UsersTasksId = table.Column<Guid>(type: "uuid", nullable: true),
+                    OutboundTaskId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PickTasks", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PickTasks_OutboundTasks_OutboundTaskId",
+                        column: x => x.OutboundTaskId,
+                        principalTable: "OutboundTasks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PickTasks_UsersTasks_UsersTasksId",
+                        column: x => x.UsersTasksId,
+                        principalTable: "UsersTasks",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CheckTaskDetails",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreateAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    StatusCheckDetailTask = table.Column<int>(type: "integer", nullable: false),
+                    FinishAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CheckTaskId = table.Column<Guid>(type: "uuid", nullable: false),
+                    OutboundTaskItemId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CheckTaskDetails", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CheckTaskDetails_CheckTasks_CheckTaskId",
+                        column: x => x.CheckTaskId,
+                        principalTable: "CheckTasks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CheckTaskDetails_OutboundTaskItems_OutboundTaskItemId",
+                        column: x => x.OutboundTaskItemId,
+                        principalTable: "OutboundTaskItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Inventory",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    StockQuantity = table.Column<int>(type: "integer", nullable: true),
-                    QuantityBooked = table.Column<int>(type: "integer", nullable: true),
+                    StockQuantity = table.Column<int>(type: "integer", nullable: false),
+                    QuantityBooked = table.Column<int>(type: "integer", nullable: false),
                     LastUpdated = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ProductSKUId = table.Column<Guid>(type: "uuid", nullable: true),
                     WarehouseLocationId = table.Column<Guid>(type: "uuid", nullable: false)
@@ -643,8 +797,155 @@ namespace MadeHuman_Server.Migrations
                         column: x => x.ProductSKUId,
                         principalTable: "ProductSKUs",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "InventoryLogs",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    StockQuantity = table.Column<int>(type: "integer", nullable: true),
+                    ChangeQuantity = table.Column<int>(type: "integer", nullable: false),
+                    ChangeBy = table.Column<string>(type: "text", nullable: false),
+                    ActionInventoryLogs = table.Column<int>(type: "integer", nullable: false),
+                    RemainingQuantity = table.Column<int>(type: "integer", nullable: true),
+                    Time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    InventoryId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InventoryLogs", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Inventory_WarehouseLocations_WarehouseLocationId",
+                        name: "FK_InventoryLogs_Inventory_InventoryId",
+                        column: x => x.InventoryId,
+                        principalTable: "Inventory",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "LowStockAlerts",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CurrentQuantity = table.Column<int>(type: "integer", nullable: false),
+                    StatusLowStockAlerts = table.Column<int>(type: "integer", nullable: false),
+                    WarehouseLocationId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LowStockAlerts", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RefillTasks",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    LowStockId = table.Column<Guid>(type: "uuid", nullable: true),
+                    UserTaskId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CreateAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    StatusRefillTasks = table.Column<int>(type: "integer", nullable: false),
+                    CreateBy = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefillTasks", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RefillTasks_LowStockAlerts_LowStockId",
+                        column: x => x.LowStockId,
+                        principalTable: "LowStockAlerts",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_RefillTasks_UsersTasks_UserTaskId",
+                        column: x => x.UserTaskId,
+                        principalTable: "UsersTasks",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WarehouseLocations",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    NameLocation = table.Column<string>(type: "text", nullable: false),
+                    StatusWareHouse = table.Column<int>(type: "integer", nullable: false),
+                    ZoneId = table.Column<Guid>(type: "uuid", nullable: false),
+                    LowStockId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WarehouseLocations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WarehouseLocations_LowStockAlerts_LowStockId",
+                        column: x => x.LowStockId,
+                        principalTable: "LowStockAlerts",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_WarehouseLocations_WarehouseZones_ZoneId",
+                        column: x => x.ZoneId,
+                        principalTable: "WarehouseZones",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RefillTaskDetails",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    FromLocation = table.Column<Guid>(type: "uuid", nullable: false),
+                    ToLocation = table.Column<Guid>(type: "uuid", nullable: false),
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    RefillTaskId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProductSKUId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefillTaskDetails", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RefillTaskDetails_ProductSKUs_ProductSKUId",
+                        column: x => x.ProductSKUId,
+                        principalTable: "ProductSKUs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_RefillTaskDetails_RefillTasks_RefillTaskId",
+                        column: x => x.RefillTaskId,
+                        principalTable: "RefillTasks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PickTaskDetails",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    WarehouseLocationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsPicked = table.Column<bool>(type: "boolean", nullable: false),
+                    ProductSKUId = table.Column<Guid>(type: "uuid", nullable: false),
+                    QuantityPicked = table.Column<int>(type: "integer", nullable: false),
+                    PickTaskId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PickTaskDetails", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PickTaskDetails_PickTasks_PickTaskId",
+                        column: x => x.PickTaskId,
+                        principalTable: "PickTasks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PickTaskDetails_ProductSKUs_ProductSKUId",
+                        column: x => x.ProductSKUId,
+                        principalTable: "ProductSKUs",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PickTaskDetails_WarehouseLocations_WarehouseLocationId",
                         column: x => x.WarehouseLocationId,
                         principalTable: "WarehouseLocations",
                         principalColumn: "Id",
@@ -659,7 +960,6 @@ namespace MadeHuman_Server.Migrations
                     Quantity = table.Column<int>(type: "integer", nullable: false),
                     StatusProductBatches = table.Column<int>(type: "integer", nullable: false),
                     ProductSKUId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ProductSKU = table.Column<string>(type: "text", nullable: false),
                     InboundTaskId = table.Column<Guid>(type: "uuid", nullable: false),
                     WarehouseLocationId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
@@ -682,28 +982,6 @@ namespace MadeHuman_Server.Migrations
                         name: "FK_ProductBatches_WarehouseLocations_WarehouseLocationId",
                         column: x => x.WarehouseLocationId,
                         principalTable: "WarehouseLocations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "InventoryLogs",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    StockQuantity = table.Column<int>(type: "integer", nullable: false),
-                    ChangeBy = table.Column<string>(type: "text", nullable: false),
-                    ActionInventoryLogs = table.Column<int>(type: "integer", nullable: false),
-                    RemainingQuantity = table.Column<int>(type: "integer", nullable: false),
-                    InventoryId = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_InventoryLogs", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_InventoryLogs_Inventory_InventoryId",
-                        column: x => x.InventoryId,
-                        principalTable: "Inventory",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -746,6 +1024,12 @@ namespace MadeHuman_Server.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Baskets_OutBoundTaskId",
+                table: "Baskets",
+                column: "OutBoundTaskId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CheckInCheckOutLog_UserId",
                 table: "CheckInCheckOutLog",
                 column: "UserId");
@@ -753,6 +1037,27 @@ namespace MadeHuman_Server.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_CheckInCheckOutLog_UsersTasksId",
                 table: "CheckInCheckOutLog",
+                column: "UsersTasksId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CheckTaskDetails_CheckTaskId",
+                table: "CheckTaskDetails",
+                column: "CheckTaskId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CheckTaskDetails_OutboundTaskItemId",
+                table: "CheckTaskDetails",
+                column: "OutboundTaskItemId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CheckTasks_OutboundTaskId",
+                table: "CheckTasks",
+                column: "OutboundTaskId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CheckTasks_UsersTasksId",
+                table: "CheckTasks",
                 column: "UsersTasksId");
 
             migrationBuilder.CreateIndex(
@@ -782,6 +1087,11 @@ namespace MadeHuman_Server.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_InboundTasks_UserTaskId",
+                table: "InboundTasks",
+                column: "UserTaskId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Inventory_ProductSKUId",
                 table: "Inventory",
                 column: "ProductSKUId");
@@ -796,6 +1106,11 @@ namespace MadeHuman_Server.Migrations
                 name: "IX_InventoryLogs_InventoryId",
                 table: "InventoryLogs",
                 column: "InventoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LowStockAlerts_WarehouseLocationId",
+                table: "LowStockAlerts",
+                column: "WarehouseLocationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrderItems_ProductItemId",
@@ -813,9 +1128,26 @@ namespace MadeHuman_Server.Migrations
                 column: "ShopOrderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PartTime_CompanyId",
-                table: "PartTime",
-                column: "CompanyId");
+                name: "IX_OutboundTaskItemDetails_OutboundTaskItemId",
+                table: "OutboundTaskItemDetails",
+                column: "OutboundTaskItemId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OutboundTaskItemDetails_ProductSKUId",
+                table: "OutboundTaskItemDetails",
+                column: "ProductSKUId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OutboundTaskItems_OutboundTaskId",
+                table: "OutboundTaskItems",
+                column: "OutboundTaskId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OutboundTaskItems_ShopOrderId",
+                table: "OutboundTaskItems",
+                column: "ShopOrderId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_PartTimeAssignment_CompanyId",
@@ -843,6 +1175,37 @@ namespace MadeHuman_Server.Migrations
                 column: "UsersTasksId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PartTimes_CompanyId",
+                table: "PartTimes",
+                column: "CompanyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PickTaskDetails_PickTaskId",
+                table: "PickTaskDetails",
+                column: "PickTaskId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PickTaskDetails_ProductSKUId",
+                table: "PickTaskDetails",
+                column: "ProductSKUId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PickTaskDetails_WarehouseLocationId",
+                table: "PickTaskDetails",
+                column: "WarehouseLocationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PickTasks_OutboundTaskId",
+                table: "PickTasks",
+                column: "OutboundTaskId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PickTasks_UsersTasksId",
+                table: "PickTasks",
+                column: "UsersTasksId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_product_Combo_Imgs_ComboId",
                 table: "product_Combo_Imgs",
                 column: "ComboId");
@@ -855,8 +1218,7 @@ namespace MadeHuman_Server.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_ProductBatches_InboundTaskId",
                 table: "ProductBatches",
-                column: "InboundTaskId",
-                unique: true);
+                column: "InboundTaskId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductBatches_ProductSKUId",
@@ -892,6 +1254,27 @@ namespace MadeHuman_Server.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_RefillTaskDetails_ProductSKUId",
+                table: "RefillTaskDetails",
+                column: "ProductSKUId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefillTaskDetails_RefillTaskId",
+                table: "RefillTaskDetails",
+                column: "RefillTaskId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefillTasks_LowStockId",
+                table: "RefillTasks",
+                column: "LowStockId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefillTasks_UserTaskId",
+                table: "RefillTasks",
+                column: "UserTaskId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ShopOrders_AppUserId",
                 table: "ShopOrders",
                 column: "AppUserId");
@@ -907,6 +1290,11 @@ namespace MadeHuman_Server.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_WarehouseLocations_LowStockId",
+                table: "WarehouseLocations",
+                column: "LowStockId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_WarehouseLocations_ZoneId",
                 table: "WarehouseLocations",
                 column: "ZoneId");
@@ -915,11 +1303,31 @@ namespace MadeHuman_Server.Migrations
                 name: "IX_WarehouseZones_WarehouseId",
                 table: "WarehouseZones",
                 column: "WarehouseId");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Inventory_WarehouseLocations_WarehouseLocationId",
+                table: "Inventory",
+                column: "WarehouseLocationId",
+                principalTable: "WarehouseLocations",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_LowStockAlerts_WarehouseLocations_WarehouseLocationId",
+                table: "LowStockAlerts",
+                column: "WarehouseLocationId",
+                principalTable: "WarehouseLocations",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_LowStockAlerts_WarehouseLocations_WarehouseLocationId",
+                table: "LowStockAlerts");
+
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
@@ -936,7 +1344,13 @@ namespace MadeHuman_Server.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "Baskets");
+
+            migrationBuilder.DropTable(
                 name: "CheckInCheckOutLog");
+
+            migrationBuilder.DropTable(
+                name: "CheckTaskDetails");
 
             migrationBuilder.DropTable(
                 name: "ComboItems");
@@ -951,7 +1365,13 @@ namespace MadeHuman_Server.Migrations
                 name: "OrderItems");
 
             migrationBuilder.DropTable(
+                name: "OutboundTaskItemDetails");
+
+            migrationBuilder.DropTable(
                 name: "PartTimeAssignment");
+
+            migrationBuilder.DropTable(
+                name: "PickTaskDetails");
 
             migrationBuilder.DropTable(
                 name: "product_Combo_Imgs");
@@ -960,7 +1380,13 @@ namespace MadeHuman_Server.Migrations
                 name: "ProductBatches");
 
             migrationBuilder.DropTable(
+                name: "RefillTaskDetails");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "CheckTasks");
 
             migrationBuilder.DropTable(
                 name: "Inventory");
@@ -969,28 +1395,31 @@ namespace MadeHuman_Server.Migrations
                 name: "ProductItems");
 
             migrationBuilder.DropTable(
-                name: "ShopOrders");
+                name: "OutboundTaskItems");
 
             migrationBuilder.DropTable(
-                name: "UsersTasks");
+                name: "PickTasks");
 
             migrationBuilder.DropTable(
                 name: "InboundTasks");
 
             migrationBuilder.DropTable(
+                name: "RefillTasks");
+
+            migrationBuilder.DropTable(
                 name: "ProductSKUs");
 
             migrationBuilder.DropTable(
-                name: "WarehouseLocations");
+                name: "ShopOrders");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
-
-            migrationBuilder.DropTable(
-                name: "PartTime");
+                name: "OutboundTasks");
 
             migrationBuilder.DropTable(
                 name: "InboundReceipt");
+
+            migrationBuilder.DropTable(
+                name: "UsersTasks");
 
             migrationBuilder.DropTable(
                 name: "Combos");
@@ -999,13 +1428,25 @@ namespace MadeHuman_Server.Migrations
                 name: "Products");
 
             migrationBuilder.DropTable(
-                name: "WarehouseZones");
+                name: "AspNetUsers");
 
             migrationBuilder.DropTable(
-                name: "Part_Time_Company");
+                name: "PartTimes");
 
             migrationBuilder.DropTable(
                 name: "Categories");
+
+            migrationBuilder.DropTable(
+                name: "PartTimeCompanies");
+
+            migrationBuilder.DropTable(
+                name: "WarehouseLocations");
+
+            migrationBuilder.DropTable(
+                name: "LowStockAlerts");
+
+            migrationBuilder.DropTable(
+                name: "WarehouseZones");
 
             migrationBuilder.DropTable(
                 name: "WareHouses");

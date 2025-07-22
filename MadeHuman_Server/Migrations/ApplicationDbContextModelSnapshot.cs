@@ -253,9 +253,6 @@ namespace MadeHuman_Server.Migrations
                     b.Property<Guid>("RefillTaskId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("RefillTasksId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("ToLocation")
                         .HasColumnType("uuid");
 
@@ -263,7 +260,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("ProductSKUId");
 
-                    b.HasIndex("RefillTasksId");
+                    b.HasIndex("RefillTaskId");
 
                     b.ToTable("RefillTaskDetails");
                 });
@@ -287,9 +284,6 @@ namespace MadeHuman_Server.Migrations
                     b.Property<int>("StatusRefillTasks")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid?>("UserTaskId")
                         .HasColumnType("uuid");
 
@@ -298,7 +292,7 @@ namespace MadeHuman_Server.Migrations
                     b.HasIndex("LowStockId")
                         .IsUnique();
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserTaskId");
 
                     b.ToTable("RefillTasks");
                 });
@@ -1361,7 +1355,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasOne("MadeHuman_Server.Model.Inbound.RefillTasks", "RefillTasks")
                         .WithMany("RefillTaskDetails")
-                        .HasForeignKey("RefillTasksId")
+                        .HasForeignKey("RefillTaskId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1377,10 +1371,8 @@ namespace MadeHuman_Server.Migrations
                         .HasForeignKey("MadeHuman_Server.Model.Inbound.RefillTasks", "LowStockId");
 
                     b.HasOne("MadeHuman_Server.Model.User_Task.UsersTasks", "UsersTasks")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany("RefillTasks")
+                        .HasForeignKey("UserTaskId");
 
                     b.Navigation("LowStockAlerts");
 
@@ -1886,6 +1878,8 @@ namespace MadeHuman_Server.Migrations
                     b.Navigation("InboundTasks");
 
                     b.Navigation("PickTasks");
+
+                    b.Navigation("RefillTasks");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.WareHouse.LowStockAlerts", b =>
