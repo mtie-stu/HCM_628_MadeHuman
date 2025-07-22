@@ -1,6 +1,7 @@
 ﻿using MadeHuman_User.ServicesTask.Services.InboundService;
 using MadeHuman_User.Models;
 using Microsoft.AspNetCore.Mvc;
+using Madehuman_Share.ViewModel.Inbound;
 
 
 namespace MadeHuman_User.Controllers.InboundControlles
@@ -26,14 +27,33 @@ namespace MadeHuman_User.Controllers.InboundControlles
 
             if (!success)
             {
-                TempData["Error"] = "Tạo nhiệm vụ thất bại.";
-                return RedirectToAction("Import");
+                ViewBag.Error = "❌ Tạo nhiệm vụ thất bại.";
+                return View(); // Không redirect
             }
 
-            TempData["Success"] = "Tạo nhiệm vụ nhập kho thành công.";
-            return RedirectToAction("Index", "InboundReceipt");
+            ViewBag.Success = "✅ Tạo nhiệm vụ nhập kho thành công.";
+            ViewBag.ReceiptId = receiptId; // Gửi ID nếu muốn sử dụng sau này
+            return View(); // Giữ nguyên tại trang
         }
 
+        [HttpGet]
+        public IActionResult ValidateScan()
+        {
+            return View(new ScanInboundTaskValidationRequest());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ValidateScan(ScanInboundTaskValidationRequest request)
+        {
+            var (success, message, errors) = await _inboundTaskService.ValidateScanAsync(request, HttpContext);
+
+            if (success)
+                ViewBag.Success = message;
+            else
+                ViewBag.Errors = errors;
+
+            return View(request);
+        }
 
 
 

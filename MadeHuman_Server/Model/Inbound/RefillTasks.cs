@@ -21,7 +21,7 @@ namespace MadeHuman_Server.Model.Inbound
         public StatusRefillTasks StatusRefillTasks { get; set; }    
         public string CreateBy { get; set; }    //UserId
 
-        [ForeignKey("UserId")]
+        [ForeignKey("UserTaskId")]
         public UsersTasks UsersTasks { get; set; }
      
         [JsonIgnore]

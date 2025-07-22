@@ -8,6 +8,17 @@
 <div class="container mt-4">
     <div class="card shadow-sm">
         <div class="card-body">
+            @if (ViewBag.Success != null)
+            {
+                <div class="alert alert-success d-flex justify-content-between align-items-center">
+                    <span>@ViewBag.Success</span>  
+                </div>
+            }
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger">@ViewBag.Error</div>
+            }
+
             <form asp-action="Import" method="post" id="scanForm" class="row g-4">
                 <!-- Nhập mã phiếu nhập -->
                 <div class="col-md-6">
@@ -48,7 +59,7 @@
 @section Scripts {
     <script>
         let timeout;
-
+       
         $('#receiptIdInput').on('input', function () {
             clearTimeout(timeout);
             const id = $(this).val().trim();
@@ -100,6 +111,12 @@
                     });
             }, 500);
         });
+
+         if ('@ViewBag.Success' !== '') {
+            $('html, body').animate({
+                scrollTop: $('#receiptInfo').offset().top
+            }, 500);
+        }   
 
     </script>
 }
