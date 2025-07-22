@@ -4,10 +4,12 @@
 @{
     ViewData["Title"] = "Tạo nhiệm vụ bổ sung kho";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var currentUser = Context.Request.Cookies["EmailOrId"];
+    Model.CreateBy = currentUser ?? "";
 }
 
 <div class="container mt-4">
-    <h2 class="text-primary mb-3">Tạo nhiệm vụ bổ sung kho</h2>
+    <h2 class="text-primary mb-4">📦 Tạo nhiệm vụ bổ sung kho</h2>
 
     @if (TempData["Success"] != null)
     {
@@ -18,33 +20,33 @@
         <div class="alert alert-danger">@TempData["Error"]</div>
     }
 
-    <form asp-action="Create" method="post" id="refillForm" class="card p-4 shadow-sm">
+    <form asp-action="Create" method="post" class="card shadow p-4">
         <div class="mb-3">
-            <label class="form-label">Người tạo</label>
+            <label class="form-label">👤 Người tạo</label>
             <input asp-for="CreateBy" class="form-control" readonly />
         </div>
 
         <hr />
-        <h5>Danh sách chi tiết bổ sung</h5>
+        <h5 class="mb-3">📋 Danh sách chi tiết bổ sung</h5>
 
-        <table class="table table-bordered" id="detailsTable">
-            <thead>
+        <table class="table table-bordered align-middle" id="detailsTable">
+            <thead class="table-light">
                 <tr>
                     <th>SKU (text)</th>
                     <th>From Location</th>
                     <th>To Location</th>
                     <th>Số lượng</th>
-                    <th></th>
+                    <th class="text-center">Xoá</th>
                 </tr>
             </thead>
             <tbody id="detailsBody">
                 <tr>
-                    <td><input name="Details[0].SKU" class="form-control" /></td>
-                    <td><input name="Details[0].FromLocation" class="form-control" /></td>
-                    <td><input name="Details[0].ToLocation" class="form-control" /></td>
-                    <td><input name="Details[0].Quantity" type="number" class="form-control" /></td>
-                    <td>
-                        <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">🗑</button>
+                    <td><input name="Details[0].SKU" class="form-control" placeholder="VD: SKU123" autofocus /></td>
+                    <td><input name="Details[0].FromLocation" class="form-control" placeholder="GUID từ" /></td>
+                    <td><input name="Details[0].ToLocation" class="form-control" placeholder="GUID đến" /></td>
+                    <td><input name="Details[0].Quantity" type="number" class="form-control" min="1" placeholder="Số lượng" /></td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)">🗑</button>
                     </td>
                 </tr>
             </tbody>
@@ -54,6 +56,7 @@
 
         <div>
             <button type="submit" class="btn btn-success">✅ Tạo nhiệm vụ</button>
+            <a asp-action="Index" class="btn btn-outline-dark ms-2">⬅️ Quay lại</a>
         </div>
     </form>
 </div>
@@ -65,18 +68,25 @@
         function addDetail() {
             const newRow = `
                 <tr>
-                    <td><input name="Details[${rowIndex}].SKU" class="form-control" /></td>
-                    <td><input name="Details[${rowIndex}].FromLocation" class="form-control" /></td>
-                    <td><input name="Details[${rowIndex}].ToLocation" class="form-control" /></td>
-                    <td><input name="Details[${rowIndex}].Quantity" type="number" class="form-control" /></td>
-                    <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">🗑</button></td>
+                    <td><input name="Details[${rowIndex}].SKU" class="form-control" placeholder="VD: SKU123" /></td>
+                    <td><input name="Details[${rowIndex}].FromLocation" class="form-control" placeholder="GUID từ" /></td>
+                    <td><input name="Details[${rowIndex}].ToLocation" class="form-control" placeholder="GUID đến" /></td>
+                    <td><input name="Details[${rowIndex}].Quantity" type="number" min="1" class="form-control" placeholder="Số lượng" /></td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)">🗑</button>
+                    </td>
                 </tr>`;
             document.getElementById('detailsBody').insertAdjacentHTML('beforeend', newRow);
             rowIndex++;
         }
 
         function removeRow(button) {
-            button.closest('tr').remove();
+            const tbody = document.getElementById('detailsBody');
+            if (tbody.rows.length > 1) {
+                button.closest('tr').remove();
+            } else {
+                alert("⚠️ Phải có ít nhất 1 dòng chi tiết.");
+            }
         }
     </script>
 }

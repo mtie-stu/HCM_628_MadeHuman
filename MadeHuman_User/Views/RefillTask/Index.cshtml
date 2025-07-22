@@ -7,7 +7,7 @@
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="text-primary">Danh sách nhiệm vụ bổ sung kho</h2>
+        <h2 class="text-primary">📦 Danh sách nhiệm vụ bổ sung kho</h2>
         <a class="btn btn-success" asp-action="Create">
             ➕ Tạo nhiệm vụ
         </a>
@@ -33,13 +33,13 @@
                 @foreach (var task in Model)
                 {
                     <tr>
-                        <td>@task.Id</td>
+                        <td class="text-break">@task.Id</td>
                         <td>@task.CreateBy</td>
                         <td>@task.CreateAt.ToString("dd/MM/yyyy HH:mm")</td>
                         <td>@task.Details.Count</td>
                         <td>
                             <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="collapse" data-bs-target="#details-@task.Id">
-                                👁 Chi tiết
+                                👁 Xem
                             </button>
                         </td>
                     </tr>
@@ -48,6 +48,7 @@
                             <table class="table table-sm table-striped mb-0">
                                 <thead>
                                     <tr>
+                                        <th>SKU</th>
                                         <th>From</th>
                                         <th>To</th>
                                         <th>Số lượng</th>
@@ -57,6 +58,7 @@
                                     @foreach (var d in task.Details)
                                     {
                                         <tr>
+                                            <td>@(d.SKU ?? "N/A")</td>
                                             <td>@d.FromLocation</td>
                                             <td>@d.ToLocation</td>
                                             <td>@d.Quantity</td>
