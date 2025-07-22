@@ -22,8 +22,8 @@ namespace MadeHuman_Server.Model.Outbound
 
         [ForeignKey(name: "OutboundTask")]
         public Guid OutboundTaskId { get; set; }
-        public OutboundTask OutboundTask   { get; set; }    
-        public OutboundTaskItemDetails OutboundTaskItemDetails { get; set; }
+        public OutboundTask OutboundTask   { get; set; }
+        public ICollection<OutboundTaskItemDetails> OutboundTaskItemDetails { get; set; }
 
         public CheckTaskDetails CheckTaskDetails { get; set; }  // 1-1
 

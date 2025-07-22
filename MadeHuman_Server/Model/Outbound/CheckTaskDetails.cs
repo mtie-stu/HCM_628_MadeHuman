@@ -7,7 +7,6 @@ namespace MadeHuman_Server.Model.Outbound
     public enum StatusCheckDetailTask
     {
         Created,
-        recived,
         finished
     }
     public class CheckTaskDetails

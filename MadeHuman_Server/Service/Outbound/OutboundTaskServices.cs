@@ -1,8 +1,14 @@
-﻿using MadeHuman_Server.Data;
+﻿// File: OutboundTaskService.cs
+
+using MadeHuman_Server.Data;
 using MadeHuman_Server.Model.Outbound;
 using MadeHuman_Server.Model.Shop;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MadeHuman_Server.Service.Outbound
 {
@@ -12,7 +18,8 @@ namespace MadeHuman_Server.Service.Outbound
         Task<List<OutboundTask>> CreateOutboundTaskSingleMixProductAsync();
         Task<List<OutboundTask>> CreateOutboundTaskSingleProductAsync();
     }
-    public class OutboundTaskService
+
+    public class OutboundTaskService : IOutboundTaskServices
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<OutboundTaskService> _logger;
@@ -22,6 +29,7 @@ namespace MadeHuman_Server.Service.Outbound
             _context = context;
             _logger = logger;
         }
+
         public async Task<int> RunAllOutboundTaskProcessingAsync()
         {
             int totalCreated = 0;
@@ -40,16 +48,15 @@ namespace MadeHuman_Server.Service.Outbound
                     break;
             }
 
-            _logger.LogInformation($"✅ Tổng số OutboundTask đã xử lý: {totalCreated}");
+            _logger.LogInformation($"\u2705 Tổng số OutboundTask đã xử lý: {totalCreated}");
             return totalCreated;
         }
 
         private bool IsValidSingleProductSKU(ProductSKU sku)
         {
-            // SKU hợp lệ khi chỉ có ProductId hoặc ComboId, không phải cả hai
             bool hasProductId = sku.ProductId != null;
             bool hasComboId = sku.ComboId != null;
-            return hasProductId ^ hasComboId; // XOR
+            return hasProductId ^ hasComboId;
         }
 
         public async Task<List<OutboundTask>> CreateOutboundTaskSingleProductAsync()
@@ -100,11 +107,14 @@ namespace MadeHuman_Server.Service.Outbound
                             Id = Guid.NewGuid(),
                             ShopOrderId = order.ShopOrderId,
                             Status = StatusOutboundTaskItems.Created,
-                            OutboundTaskItemDetails = new OutboundTaskItemDetails
+                            OutboundTaskItemDetails = new List<OutboundTaskItemDetails>
                             {
-                                Id = Guid.NewGuid(),
-                                Quantity = item.Quantity,
-                                ProductSKUId = item.ProductSKUsId
+                                new OutboundTaskItemDetails
+                                {
+                                    Id = Guid.NewGuid(),
+                                    Quantity = item.Quantity,
+                                    ProductSKUId = item.ProductSKUsId
+                                }
                             }
                         };
 
@@ -130,6 +140,7 @@ namespace MadeHuman_Server.Service.Outbound
 
             return createdOutboundTasks;
         }
+
         public async Task<List<OutboundTask>> CreateOutboundTaskSingleMixProductAsync()
         {
             var createdOutboundTasks = new List<OutboundTask>();
@@ -179,11 +190,14 @@ namespace MadeHuman_Server.Service.Outbound
                             Id = Guid.NewGuid(),
                             ShopOrderId = order.ShopOrderId,
                             Status = StatusOutboundTaskItems.Created,
-                            OutboundTaskItemDetails = new OutboundTaskItemDetails
+                            OutboundTaskItemDetails = new List<OutboundTaskItemDetails>
                             {
-                                Id = Guid.NewGuid(),
-                                Quantity = item.Quantity,
-                                ProductSKUId = item.ProductSKUsId
+                                new OutboundTaskItemDetails
+                                {
+                                    Id = Guid.NewGuid(),
+                                    Quantity = item.Quantity,
+                                    ProductSKUId = item.ProductSKUsId
+                                }
                             }
                         };
 
@@ -209,6 +223,7 @@ namespace MadeHuman_Server.Service.Outbound
 
             return createdOutboundTasks;
         }
+
         public async Task<List<OutboundTask>> CreateOutboundTaskMultiProductAsync()
         {
             var createdTasks = new List<OutboundTask>();
@@ -253,10 +268,10 @@ namespace MadeHuman_Server.Service.Outbound
                         {
                             Id = Guid.NewGuid(),
                             ShopOrderId = order.ShopOrderId,
-                            Status = StatusOutboundTaskItems.Created
+                            Status = StatusOutboundTaskItems.Created,
+                            OutboundTaskItemDetails = new List<OutboundTaskItemDetails>()
                         };
 
-                        var detailList = new List<OutboundTaskItemDetails>();
                         bool isValid = true;
 
                         foreach (var kvp in groupedItems)
@@ -285,7 +300,7 @@ namespace MadeHuman_Server.Service.Outbound
                             inventory.QuantityBooked += qty;
                             inventory.LastUpdated = DateTime.UtcNow;
 
-                            detailList.Add(new OutboundTaskItemDetails
+                            outboundTaskItem.OutboundTaskItemDetails.Add(new OutboundTaskItemDetails
                             {
                                 Id = Guid.NewGuid(),
                                 ProductSKUId = skuId,
@@ -296,18 +311,15 @@ namespace MadeHuman_Server.Service.Outbound
 
                         if (!isValid) continue;
 
-                        outboundTaskItem.OutboundTaskItemDetails = detailList.First(); // dùng 1 detail duy nhất
                         outboundTask.OutboundTaskItems.Add(outboundTaskItem);
                         validOrders.Add(order);
                     }
 
                     if (!validOrders.Any()) continue;
 
-                    // ⬇️ BƯỚC 1: Lưu OutboundTask trước
                     _context.OutboundTasks.Add(outboundTask);
                     await _context.SaveChangesAsync();
 
-                    // ⬇️ BƯỚC 2: Tạo PickTask liên kết đúng OutboundTaskId
                     var pickTask = await CreatePickTaskAsync(outboundTask);
 
                     if (!pickTask.PickTaskDetails.Any()) continue;
@@ -317,7 +329,7 @@ namespace MadeHuman_Server.Service.Outbound
                     foreach (var order in validOrders)
                         order.Status = StatusOrder.Confirmed;
 
-                    await _context.SaveChangesAsync(); // Lưu PickTask + cập nhật trạng thái đơn hàng
+                    await _context.SaveChangesAsync();
                     createdTasks.Add(outboundTask);
                     anyCreated = true;
                 }
@@ -328,8 +340,6 @@ namespace MadeHuman_Server.Service.Outbound
             return createdTasks;
         }
 
-
-
         private async Task<PickTasks> CreatePickTaskAsync(OutboundTask task)
         {
             var pickTask = new PickTasks
@@ -337,14 +347,14 @@ namespace MadeHuman_Server.Service.Outbound
                 Id = Guid.NewGuid(),
                 CreateAt = DateTime.UtcNow,
                 Status = StatusPickTask.Created,
-                UsersTasksId = null, // Có thể gán null hoặc real UserTaskId nếu có
-                OutboundTaskId = task.Id, // ⚠️ GÁN BẮT BUỘC
+                UsersTasksId = null,
+                OutboundTaskId = task.Id,
                 PickTaskDetails = new List<PickTaskDetails>()
             };
 
             var usedLocationIds = new HashSet<Guid>();
 
-            foreach (var detail in task.OutboundTaskItems.Select(i => i.OutboundTaskItemDetails))
+            foreach (var detail in task.OutboundTaskItems.SelectMany(i => i.OutboundTaskItemDetails))
             {
                 var location = await _context.WarehouseLocations
                     .Include(l => l.WarehouseZones)
@@ -374,10 +384,5 @@ namespace MadeHuman_Server.Service.Outbound
 
             return pickTask;
         }
-
-
-
-
     }
-
 }
