@@ -93,8 +93,8 @@ builder.Services.AddHostedService<ResetHourlyKPIsService>();
 builder.Services.AddSingleton<GoogleDriveService>();
 builder.Services.AddSingleton<GoogleDriveOAuthService>();
 builder.Services.AddHostedService<InventoryQuantityUpdateService>();
-//builder.Services.AddHostedService<OutboundTaskBackgroundService>();
-//builder.Services.AddScoped<OutboundTaskService>();
+builder.Services.AddHostedService<OutboundTaskBackgroundService>();
+builder.Services.AddScoped<OutboundTaskService>();
 builder.Services.AddScoped<IProductImageService, ProductImageService>();
 builder.Services.AddScoped<IBasketService, BasketService>();
 
