@@ -95,7 +95,7 @@ namespace MadeHuman_Server.Service.Inbound
 
                     // ✅ 3. Kiểm tra ToLocation có đúng SKU
                     var toInventory = await _context.Inventory.FirstOrDefaultAsync(i =>
-                        i.WarehouseLocationId == d.ToLocation && i.ProductSKUId == productSkuId);
+                        i.WarehouseLocationId == d.ToLocation/* && i.ProductSKUId == productSkuId*/);
 
                     if (toInventory == null)
                     {
@@ -105,11 +105,17 @@ namespace MadeHuman_Server.Service.Inbound
 
                 if (errors.Any())
                     throw new InvalidOperationException(string.Join("\n", errors));
+//                var userTaskExists = await _context.UsersTasks
+//    .AnyAsync(x => x.Id == vm.UserTaskId);
+
+//if (!userTaskExists)
+//    throw new InvalidOperationException("❌ UserTaskId không tồn tại.");
 
                 // ✅ Hợp lệ → tạo task
                 var task = new RefillTasks
                 {
                     Id = Guid.NewGuid(),
+                    //UserTaskId = vm.UserTaskId!.Value, // ✅ BỔ SUNG DÒNG NÀY
                     StatusRefillTasks = StatusRefillTasks.Incomplete,
                     CreateAt = DateTime.UtcNow,
                     CreateBy = UserId,
