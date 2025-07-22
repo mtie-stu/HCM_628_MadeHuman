@@ -48,7 +48,7 @@ namespace MadeHuman_Server.Service.Outbound
                     break;
             }
 
-            _logger.LogInformation($"\u2705 Tổng số OutboundTask đã xử lý: {totalCreated}");
+            _logger.LogInformation($"✅ Tổng số OutboundTask đã xử lý: {totalCreated}");
             return totalCreated;
         }
 
@@ -121,11 +121,15 @@ namespace MadeHuman_Server.Service.Outbound
                         outboundTask.OutboundTaskItems.Add(outboundTaskItem);
                     }
 
-                    var pickTask = await CreatePickTaskAsync(outboundTask);
-                    if (!pickTask.PickTaskDetails.Any()) continue;
-
                     _context.OutboundTasks.Add(outboundTask);
-                    _context.PickTasks.Add(pickTask);
+                    await _context.SaveChangesAsync();
+
+                    foreach (var outboundTaskItem in outboundTask.OutboundTaskItems)
+                    {
+                        var pickTask = await CreatePickTaskAsync(outboundTaskItem);
+                        if (!pickTask.PickTaskDetails.Any()) continue;
+                        _context.PickTasks.Add(pickTask);
+                    }
 
                     foreach (var order in selectedOrders)
                         order.Status = StatusOrder.Confirmed;
@@ -204,11 +208,15 @@ namespace MadeHuman_Server.Service.Outbound
                         outboundTask.OutboundTaskItems.Add(outboundTaskItem);
                     }
 
-                    var pickTask = await CreatePickTaskAsync(outboundTask);
-                    if (!pickTask.PickTaskDetails.Any()) continue;
-
                     _context.OutboundTasks.Add(outboundTask);
-                    _context.PickTasks.Add(pickTask);
+                    await _context.SaveChangesAsync();
+
+                    foreach (var outboundTaskItem in outboundTask.OutboundTaskItems)
+                    {
+                        var pickTask = await CreatePickTaskAsync(outboundTaskItem);
+                        if (!pickTask.PickTaskDetails.Any()) continue;
+                        _context.PickTasks.Add(pickTask);
+                    }
 
                     foreach (var order in selectedOrders)
                         order.Status = StatusOrder.Confirmed;
@@ -255,7 +263,6 @@ namespace MadeHuman_Server.Service.Outbound
                         OutboundTaskItems = new List<OutboundTaskItems>()
                     };
 
-                    var usedLocationIds = new HashSet<Guid>();
                     var validOrders = new List<ShopOrder>();
 
                     foreach (var order in selectedOrders)
@@ -272,59 +279,29 @@ namespace MadeHuman_Server.Service.Outbound
                             OutboundTaskItemDetails = new List<OutboundTaskItemDetails>()
                         };
 
-                        bool isValid = true;
-
                         foreach (var kvp in groupedItems)
                         {
-                            var skuId = kvp.Key;
-                            var qty = kvp.Value;
-
-                            var location = await _context.WarehouseLocations
-                                .Include(l => l.WarehouseZones)
-                                .Include(l => l.Inventory)
-                                .Where(l => l.WarehouseZones.Name == "Outbound"
-                                    && l.Inventory != null
-                                    && l.Inventory.ProductSKUId == skuId
-                                    && !usedLocationIds.Contains(l.Id))
-                                .OrderByDescending(l => l.Inventory.StockQuantity)
-                                .FirstOrDefaultAsync();
-
-                            if (location == null)
-                            {
-                                isValid = false;
-                                break;
-                            }
-
-                            usedLocationIds.Add(location.Id);
-                            var inventory = location.Inventory;
-                            inventory.QuantityBooked += qty;
-                            inventory.LastUpdated = DateTime.UtcNow;
-
                             outboundTaskItem.OutboundTaskItemDetails.Add(new OutboundTaskItemDetails
                             {
                                 Id = Guid.NewGuid(),
-                                ProductSKUId = skuId,
-                                Quantity = qty,
-                                OutboundTaskItemId = outboundTaskItem.Id
+                                ProductSKUId = kvp.Key,
+                                Quantity = kvp.Value
                             });
                         }
-
-                        if (!isValid) continue;
 
                         outboundTask.OutboundTaskItems.Add(outboundTaskItem);
                         validOrders.Add(order);
                     }
 
-                    if (!validOrders.Any()) continue;
-
                     _context.OutboundTasks.Add(outboundTask);
                     await _context.SaveChangesAsync();
 
-                    var pickTask = await CreatePickTaskAsync(outboundTask);
-
-                    if (!pickTask.PickTaskDetails.Any()) continue;
-
-                    _context.PickTasks.Add(pickTask);
+                    foreach (var outboundTaskItem in outboundTask.OutboundTaskItems)
+                    {
+                        var pickTask = await CreatePickTaskAsync(outboundTaskItem);
+                        if (!pickTask.PickTaskDetails.Any()) continue;
+                        _context.PickTasks.Add(pickTask);
+                    }
 
                     foreach (var order in validOrders)
                         order.Status = StatusOrder.Confirmed;
@@ -340,7 +317,7 @@ namespace MadeHuman_Server.Service.Outbound
             return createdTasks;
         }
 
-        private async Task<PickTasks> CreatePickTaskAsync(OutboundTask task)
+        private async Task<PickTasks> CreatePickTaskAsync(OutboundTaskItems outboundTaskItem)
         {
             var pickTask = new PickTasks
             {
@@ -348,13 +325,14 @@ namespace MadeHuman_Server.Service.Outbound
                 CreateAt = DateTime.UtcNow,
                 Status = StatusPickTask.Created,
                 UsersTasksId = null,
-                OutboundTaskId = task.Id,
+                OutboundTaskItemId = outboundTaskItem.Id,
+                OutboundTaskId = outboundTaskItem.OutboundTaskId,
                 PickTaskDetails = new List<PickTaskDetails>()
             };
 
             var usedLocationIds = new HashSet<Guid>();
 
-            foreach (var detail in task.OutboundTaskItems.SelectMany(i => i.OutboundTaskItemDetails))
+            foreach (var detail in outboundTaskItem.OutboundTaskItemDetails)
             {
                 var location = await _context.WarehouseLocations
                     .Include(l => l.WarehouseZones)
@@ -386,3 +364,4 @@ namespace MadeHuman_Server.Service.Outbound
         }
     }
 }
+

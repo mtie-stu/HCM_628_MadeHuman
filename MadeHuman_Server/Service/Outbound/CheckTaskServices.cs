@@ -22,9 +22,10 @@ namespace MadeHuman_Server.Service.Outbound
 
         public CheckTaskServices(ApplicationDbContext context, IUserTaskSvc userTaskSvc, IHttpContextAccessor httpContextAccessor)
         {
-             context= _context;
-            userTaskSvc = _usertaskservice;
-            httpContextAccessor = _httpContextAccessor;
+_context = context;
+_usertaskservice = userTaskSvc;
+_httpContextAccessor = httpContextAccessor;
+
         }
         public async Task<CheckTasks> CreateCheckTaskAsync(Guid outboundTaskId  )
         {
@@ -134,7 +135,13 @@ namespace MadeHuman_Server.Service.Outbound
                     }
                 }).ToList()
             };
+
+
+
         }
+
+
+
 
 
     }
