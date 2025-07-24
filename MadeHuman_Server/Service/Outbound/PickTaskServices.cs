@@ -97,6 +97,11 @@ namespace MadeHuman_Server.Service.Outbound
 
             if (detail.IsPicked)
                 return new() { "❌ Chi tiết này đã hoàn tất." };
+            // ✅ Gán OutboundTaskId vào basket
+            var assignResult = await AssignBasketToOutboundTaskAsync(request.BasketId.Value, task.OutboundTaskId);
+            if (assignResult.Any())
+                return assignResult;
+
 
             var sku = await _context.ProductSKUs
                 .Where(p => p.Id == detail.ProductSKUId)
@@ -109,11 +114,7 @@ namespace MadeHuman_Server.Service.Outbound
             if (request.BasketId == null)
                 return new() { "❌ Bạn chưa quét giỏ." };
 
-            // ✅ Gán OutboundTaskId vào basket
-            var assignResult = await AssignBasketToOutboundTaskAsync(request.BasketId.Value, task.OutboundTaskId);
-            if (assignResult.Any())
-                return assignResult;
-
+         
             // ✅ Ghi nhận pick
             await StorePickTaskDetailAsync(task, detail, userTaskId.Value, request.BasketId.Value);
 
