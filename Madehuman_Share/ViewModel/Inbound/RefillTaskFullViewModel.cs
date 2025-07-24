@@ -15,6 +15,8 @@ namespace Madehuman_Share.ViewModel.Inbound
 
         public DateTime CreateAt { get; set; } = DateTime.UtcNow;
         public string CreateBy { get; set; }
+        public string? CreateByName { get; set; }
+
 
         // Danh sách chi tiết Refill
         public List<RefillTaskDetailItem> Details { get; set; } = new();

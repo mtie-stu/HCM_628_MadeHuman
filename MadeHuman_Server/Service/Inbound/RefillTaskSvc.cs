@@ -166,6 +166,8 @@ namespace MadeHuman_Server.Service.Inbound
         {
             return await _context.RefillTasks
                 .Include(x => x.RefillTaskDetails)
+                .ThenInclude(d => d.ProductSKUs)
+
                 .Select(x => new RefillTaskFullViewModel
                 {
                     Id = x.Id,
@@ -176,6 +178,7 @@ namespace MadeHuman_Server.Service.Inbound
                     Details = x.RefillTaskDetails.Select(d => new RefillTaskFullViewModel.RefillTaskDetailItem
                     {
                         Id = d.Id,
+                        SKU = d.ProductSKUs.SKU, // ✅ lấy SKU từ đây
                         FromLocation = d.FromLocation,
                         ToLocation = d.ToLocation,
                         Quantity = d.Quantity
