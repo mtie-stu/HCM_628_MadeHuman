@@ -410,7 +410,7 @@ namespace MadeHuman_Server.Service.Inbound
 
             // Cộng hàng vào ToLocation
             var toInventory = await _context.Inventory.FirstOrDefaultAsync(i =>
-                i.WarehouseLocationId == detail.ToLocation && i.ProductSKUId == skuId);
+                i.WarehouseLocationId == detail.ToLocation);
 
             if (toInventory == null)
             {
