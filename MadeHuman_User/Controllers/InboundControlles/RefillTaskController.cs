@@ -58,5 +58,10 @@ namespace MadeHuman_User.Controllers.InboundControlles
 
             return View(task);
         }
+        public async Task<IActionResult> DetailFlat()
+        {
+            var data = await _refillTaskService.GetAllDetailsAsync(HttpContext);
+            return View(data);
+        }
     }
 }

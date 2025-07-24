@@ -3,6 +3,7 @@ using Madehuman_Share.ViewModel.Inbound;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace MadeHuman_Server.Controllers.Inbound
@@ -39,6 +40,7 @@ namespace MadeHuman_Server.Controllers.Inbound
         }
 
         // POST: api/RefillTask
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] RefillTaskFullViewModel model)
         {
@@ -61,7 +63,7 @@ namespace MadeHuman_Server.Controllers.Inbound
             var result = await _refillTaskService.UpdateAsync(id, model);
             return Ok(result);
         }
-        [HttpGet("details")]
+        [HttpGet("Alldetails")]
         public async Task<IActionResult> GetAllDetails()
         {
             var result = await _refillTaskService.GetAllDetailsAsync();
@@ -77,7 +79,7 @@ namespace MadeHuman_Server.Controllers.Inbound
                 if (task == null)
                     return NotFound("🎉 Hiện không còn nhiệm vụ nào chưa được nhận.");
 
-                return Ok(task);
+                return Ok(new { taskId = task.Id }); // 🔁 CHỈ TRẢ ID
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -92,6 +94,27 @@ namespace MadeHuman_Server.Controllers.Inbound
                 return StatusCode(500, $"🚨 Lỗi hệ thống: {ex.Message}");
             }
         }
+        [HttpPost("validate-scan")]
+        public async Task<IActionResult> ValidateScan([FromBody] ScanRefillTaskValidationRequest request)
+        {
+            try
+            {
+                if (request == null)
+                    return BadRequest("Yêu cầu không hợp lệ.");
+
+                var result = await _refillTaskService.ValidateRefillTaskScanAsync(request);
+                return Ok(result);
+            }
+            catch (DbUpdateException dbEx)
+            {
+                return StatusCode(500, new { message = dbEx.InnerException?.Message ?? dbEx.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
 
 
     }

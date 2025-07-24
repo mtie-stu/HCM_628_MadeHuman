@@ -191,6 +191,7 @@ namespace MadeHuman_Server.Service.Inbound
         {
             return await _context.RefillTasks
                 .Include(x => x.RefillTaskDetails)
+                    .ThenInclude(d => d.ProductSKUs) // <-- Include ProductSKU
                 .Where(x => x.Id == id)
                 .Select(x => new RefillTaskFullViewModel
                 {
@@ -204,11 +205,14 @@ namespace MadeHuman_Server.Service.Inbound
                         Id = d.Id,
                         FromLocation = d.FromLocation,
                         ToLocation = d.ToLocation,
-                        Quantity = d.Quantity
+                        Quantity = d.Quantity,
+                        ProductSKUId = d.ProductSKUId,
+                        SKU = d.ProductSKUs.SKU // <-- Thêm SKU tại đây
                     }).ToList()
                 })
                 .FirstOrDefaultAsync();
         }
+
         public async Task<List<RefillTaskDetailWithHeaderViewModel>> GetAllDetailsAsync()
         {
             return await _context.RefillTaskDetails
@@ -252,7 +256,6 @@ namespace MadeHuman_Server.Service.Inbound
 
             // 4. Gán UserTaskId cho RefillTask
             task.UserTaskId = userTaskId;
-
             await _context.SaveChangesAsync();
 
             // 5. Trả về ViewModel
@@ -390,7 +393,7 @@ namespace MadeHuman_Server.Service.Inbound
                 ?? throw new Exception("Không tìm thấy chi tiết.");
 
             var skuId = detail.ProductSKUId;
-
+            
             // Trừ hàng từ FromLocation
             var fromInventory = await _context.Inventory.FirstOrDefaultAsync(i =>
                 i.WarehouseLocationId == detail.FromLocation && i.ProductSKUId == skuId);
@@ -403,7 +406,7 @@ namespace MadeHuman_Server.Service.Inbound
 
             // Cộng hàng vào ToLocation
             var toInventory = await _context.Inventory.FirstOrDefaultAsync(i =>
-                i.WarehouseLocationId == detail.ToLocation && i.ProductSKUId == skuId);
+                i.WarehouseLocationId == detail.ToLocation);
 
             if (toInventory == null)
             {
