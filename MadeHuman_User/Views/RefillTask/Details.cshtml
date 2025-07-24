@@ -1,0 +1,80 @@
+﻿@using Madehuman_Share.ViewModel.Inbound
+@model RefillTaskFullViewModel
+
+@{
+    ViewData["Title"] = "Chi tiết nhiệm vụ bổ sung kho";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+
+<div class="container mt-4">
+    <h2 class="text-primary mb-4">
+        <i class="bi bi-clipboard-data"></i> Chi tiết nhiệm vụ bổ sung kho
+    </h2>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3"><i class="bi bi-hash"></i> Mã nhiệm vụ</dt>
+                <dd class="col-sm-9">@Model.Id</dd>
+
+                <dt class="col-sm-3"><i class="bi bi-person-circle"></i> Người tạo</dt>
+                <dd class="col-sm-9">@Model.CreateBy</dd>
+
+                <dt class="col-sm-3"><i class="bi bi-calendar-event"></i> Ngày tạo</dt>
+                <dd class="col-sm-9">@Model.CreateAt.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                @if (Model.LowStockId != null)
+                {
+                    <dt class="col-sm-3"><i class="bi bi-exclamation-circle"></i> LowStock ID</dt>
+                    <dd class="col-sm-9">@Model.LowStockId</dd>
+                }
+
+                @if (Model.UserTaskId != null)
+                {
+                    <dt class="col-sm-3"><i class="bi bi-person-workspace"></i> UserTask ID</dt>
+                    <dd class="col-sm-9">@Model.UserTaskId</dd>
+                }
+            </dl>
+        </div>
+    </div>
+
+    <h5 class="mb-3"><i class="bi bi-list-check"></i> Danh sách chi tiết</h5>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+            <tr>
+                <th><i class="bi bi-upc-scan"></i> SKU</th>
+                <th><i class="bi bi-box-arrow-in-left"></i> From Location</th>
+                <th><i class="bi bi-box-arrow-right"></i> To Location</th>
+                <th><i class="bi bi-hash"></i> Số lượng</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var d in Model.Details)
+            {
+                <tr>
+                    <td>@(d.SKU ?? d.ProductSKUId.ToString())</td>
+                    <td>@d.FromLocation</td>
+                    <td>@d.ToLocation</td>
+                    <td>@d.Quantity</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+        <a href="/RefillTask/DetailFlat" class="btn btn-success mt-3 me-2" role="button">
+            <i class="bi bi-person-check-fill"></i> Bắt đầu nhiệm vụ
+        </a>
+
+
+    <a asp-action="Index" class="btn btn-outline-dark mt-3">
+        <i class="bi bi-arrow-left-circle"></i> Quay lại danh sách
+    </a>
+    @section Scripts {
+        <script>
+            
+        </script>
+    }
+
+</div>
