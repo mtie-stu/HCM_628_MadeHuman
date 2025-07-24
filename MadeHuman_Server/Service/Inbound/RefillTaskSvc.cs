@@ -397,7 +397,7 @@ namespace MadeHuman_Server.Service.Inbound
                 ?? throw new Exception("Không tìm thấy chi tiết.");
 
             var skuId = detail.ProductSKUId;
-
+            detail.IsRefilled = true;
             // Trừ hàng từ FromLocation
             var fromInventory = await _context.Inventory.FirstOrDefaultAsync(i =>
                 i.WarehouseLocationId == detail.FromLocation && i.ProductSKUId == skuId);
