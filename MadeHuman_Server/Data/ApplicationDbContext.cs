@@ -49,6 +49,8 @@ namespace MadeHuman_Server.Data
         public DbSet<Baskets> Baskets { get; set; }
         public DbSet<CheckTasks> CheckTasks { get; set; }
         public DbSet<CheckTaskDetails> CheckTaskDetails { get; set; }
+        public DbSet<CheckTaskLogs> CheckTaskLogs { get; set; }
+        public DbSet<PendingSKU> PendingSKU { get; set; }
 
 
 
@@ -113,7 +115,20 @@ namespace MadeHuman_Server.Data
                 .HasForeignKey(p => p.PartTimeId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-   
+            // Fluent API config (OnModelCreating)
+            modelBuilder.Entity<PendingSKU>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.HasIndex(e => new { e.UserId, e.CheckTaskId });
+
+                entity.Property(e => e.SKU).HasMaxLength(64);
+
+                entity.HasOne(e => e.CheckTask)
+                    .WithMany()
+                    .HasForeignKey(e => e.CheckTaskId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
         }
 
         public static async Task SeedPartTimeAsync(ApplicationDbContext context)
@@ -144,53 +159,5 @@ namespace MadeHuman_Server.Data
             await context.SaveChangesAsync();
         }
 
-      /*  public static async Task SeedPartTimeAssignmentAsync(ApplicationDbContext context)
-        {
-            if (await context.PartTimeAssignment.AnyAsync()) return;
-
-            var today = DateTime.UtcNow.Date;
-            var partTimes = await context.PartTimes.Take(3).ToListAsync();
-            if (partTimes.Count < 3) return;
-
-            var data = new List<PartTimeAssignment>
-            {
-                new PartTimeAssignment
-                {
-                    Id = Guid.NewGuid(),
-                    PartTimeId = partTimes[0].PartTimeId,
-                    WorkDate = today,
-                    TaskType = TaskType.Picker,
-                    ShiftCode = "Sáng",
-                    IsConfirmed = true,
-                    Note = "Có mặt đúng giờ",
-                    CompanyId = partTimes[0].CompanyId
-                },
-                new PartTimeAssignment
-                {
-                    Id = Guid.NewGuid(),
-                    PartTimeId = partTimes[1].PartTimeId,
-                    WorkDate = today,
-                    TaskType = TaskType.Packer,
-                    ShiftCode = "Chiều",
-                    IsConfirmed = false,
-                    Note = "Chưa xác nhận",
-                    CompanyId = partTimes[1].CompanyId
-                },
-                new PartTimeAssignment
-                {
-                    Id = Guid.NewGuid(),
-                    PartTimeId = partTimes[2].PartTimeId,
-                    WorkDate = today.AddDays(1),
-                    TaskType = TaskType.Dispatcher,
-                    ShiftCode = "Tối",
-                    IsConfirmed = true,
-                    Note = "Ca tăng cường",
-                    CompanyId = partTimes[2].CompanyId
-                }
-            };
-
-            context.PartTimeAssignment.AddRange(data);
-            await context.SaveChangesAsync();
-        }*/
     }
 }

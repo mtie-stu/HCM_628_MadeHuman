@@ -27,7 +27,7 @@ namespace MadeHuman_Server.Model.Outbound
         public Guid OutboundTaskId { get; set; } // ⚠️ THÊM KHÓA NGOẠI RÕ RÀNG
         [ForeignKey(nameof(OutboundTaskId))]
         public OutboundTask OutboundTask { get; set; }
-        public Guid OutboundTaskItemId { get; set; } // ⚠️ THÊM KHÓA NGOẠI RÕ RÀNG
+        public Guid? OutboundTaskItemId { get; set; } // ⚠️ THÊM KHÓA NGOẠI RÕ RÀNG
         [ForeignKey(nameof(OutboundTaskItemId))]
         public OutboundTaskItems OutboundTaskItems { get; set; }
 

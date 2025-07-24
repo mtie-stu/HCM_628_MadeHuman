@@ -3,6 +3,7 @@ using System;
 using MadeHuman_Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MadeHuman_Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250723094221_addCheckTaskLogsAndStatusCheckTaskDetails")]
+    partial class addCheckTaskLogsAndStatusCheckTaskDetails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -57,7 +60,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("UsersTasksId");
 
-                    b.ToTable("CheckInCheckOutLog", (string)null);
+                    b.ToTable("CheckInCheckOutLog");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Inbound.InboundReceiptItems", b =>
@@ -81,7 +84,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("ProductSKUId");
 
-                    b.ToTable("InboundReceiptItems", (string)null);
+                    b.ToTable("InboundReceiptItems");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Inbound.InboundReceipts", b =>
@@ -101,7 +104,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("InboundReceipt", (string)null);
+                    b.ToTable("InboundReceipt");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Inbound.InboundTasks", b =>
@@ -133,7 +136,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("UserTaskId");
 
-                    b.ToTable("InboundTasks", (string)null);
+                    b.ToTable("InboundTasks");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Inbound.Inventory", b =>
@@ -164,7 +167,7 @@ namespace MadeHuman_Server.Migrations
                     b.HasIndex("WarehouseLocationId")
                         .IsUnique();
 
-                    b.ToTable("Inventory", (string)null);
+                    b.ToTable("Inventory");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Inbound.InventoryLogs", b =>
@@ -199,7 +202,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("InventoryId");
 
-                    b.ToTable("InventoryLogs", (string)null);
+                    b.ToTable("InventoryLogs");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Inbound.ProductBatches", b =>
@@ -232,7 +235,7 @@ namespace MadeHuman_Server.Migrations
                     b.HasIndex("WarehouseLocationId")
                         .IsUnique();
 
-                    b.ToTable("ProductBatches", (string)null);
+                    b.ToTable("ProductBatches");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Inbound.RefillTaskDetails", b =>
@@ -265,7 +268,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("RefillTaskId");
 
-                    b.ToTable("RefillTaskDetails", (string)null);
+                    b.ToTable("RefillTaskDetails");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Inbound.RefillTasks", b =>
@@ -297,7 +300,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("UserTaskId");
 
-                    b.ToTable("RefillTasks", (string)null);
+                    b.ToTable("RefillTasks");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.Baskets", b =>
@@ -317,7 +320,7 @@ namespace MadeHuman_Server.Migrations
                     b.HasIndex("OutBoundTaskId")
                         .IsUnique();
 
-                    b.ToTable("Baskets", (string)null);
+                    b.ToTable("Baskets");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.CheckTaskDetails", b =>
@@ -338,9 +341,6 @@ namespace MadeHuman_Server.Migrations
                     b.Property<bool>("IsChecked")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("OrderIndex")
-                        .HasColumnType("integer");
-
                     b.Property<Guid>("OutboundTaskItemId")
                         .HasColumnType("uuid");
 
@@ -360,39 +360,7 @@ namespace MadeHuman_Server.Migrations
                     b.HasIndex("OutboundTaskItemId")
                         .IsUnique();
 
-                    b.ToTable("CheckTaskDetails", (string)null);
-                });
-
-            modelBuilder.Entity("MadeHuman_Server.Model.Outbound.CheckTaskLogs", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("CheckTaskId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Note")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PerformedBy")
-                        .HasColumnType("text");
-
-                    b.Property<int>("QuantityChanged")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("SKU")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("Time")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CheckTaskId");
-
-                    b.ToTable("CheckTaskLogs", (string)null);
+                    b.ToTable("CheckTaskDetails");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.CheckTasks", b =>
@@ -425,7 +393,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("UsersTasksId");
 
-                    b.ToTable("CheckTasks", (string)null);
+                    b.ToTable("CheckTasks");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.OutboundTask", b =>
@@ -442,7 +410,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("OutboundTasks", (string)null);
+                    b.ToTable("OutboundTasks");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.OutboundTaskItemDetails", b =>
@@ -466,7 +434,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("ProductSKUId");
 
-                    b.ToTable("OutboundTaskItemDetails", (string)null);
+                    b.ToTable("OutboundTaskItemDetails");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.OutboundTaskItems", b =>
@@ -491,37 +459,7 @@ namespace MadeHuman_Server.Migrations
                     b.HasIndex("ShopOrderId")
                         .IsUnique();
 
-                    b.ToTable("OutboundTaskItems", (string)null);
-                });
-
-            modelBuilder.Entity("MadeHuman_Server.Model.Outbound.PendingSKU", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("CheckTaskId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("SKU")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CheckTaskId");
-
-                    b.HasIndex("UserId", "CheckTaskId");
-
-                    b.ToTable("PendingSKU", (string)null);
+                    b.ToTable("OutboundTaskItems");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.PickTaskDetails", b =>
@@ -556,7 +494,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("WarehouseLocationId");
 
-                    b.ToTable("PickTaskDetails", (string)null);
+                    b.ToTable("PickTaskDetails");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.PickTasks", b =>
@@ -592,7 +530,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("UsersTasksId");
 
-                    b.ToTable("PickTasks", (string)null);
+                    b.ToTable("PickTasks");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.Category", b =>
@@ -613,7 +551,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasKey("CategoryId");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.Combo", b =>
@@ -637,7 +575,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasKey("ComboId");
 
-                    b.ToTable("Combos", (string)null);
+                    b.ToTable("Combos");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.ComboItem", b =>
@@ -661,7 +599,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ComboItems", (string)null);
+                    b.ToTable("ComboItems");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.OrderItem", b =>
@@ -693,7 +631,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("ShopOrderId");
 
-                    b.ToTable("OrderItems", (string)null);
+                    b.ToTable("OrderItems");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.Product", b =>
@@ -722,7 +660,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.ProductItem", b =>
@@ -743,7 +681,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductItems", (string)null);
+                    b.ToTable("ProductItems");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.ProductSKU", b =>
@@ -774,7 +712,7 @@ namespace MadeHuman_Server.Migrations
                     b.HasIndex("ProductId")
                         .IsUnique();
 
-                    b.ToTable("ProductSKUs", null, t =>
+                    b.ToTable("ProductSKUs", t =>
                         {
                             t.HasCheckConstraint("CK_ProductSKU_Owner", "(\"ProductId\" IS NOT NULL AND \"ComboId\" IS NULL) OR (\"ProductId\" IS NULL AND \"ComboId\" IS NOT NULL)");
                         });
@@ -803,7 +741,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("product_Combo_Imgs", (string)null);
+                    b.ToTable("product_Combo_Imgs");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Shop.ShopOrder", b =>
@@ -829,7 +767,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("AppUserId");
 
-                    b.ToTable("ShopOrders", (string)null);
+                    b.ToTable("ShopOrders");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.User_Task.PartTime", b =>
@@ -860,7 +798,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("CompanyId");
 
-                    b.ToTable("PartTimes", (string)null);
+                    b.ToTable("PartTimes");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.User_Task.PartTimeAssignment", b =>
@@ -923,7 +861,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("UsersTasksId");
 
-                    b.ToTable("PartTimeAssignment", (string)null);
+                    b.ToTable("PartTimeAssignment");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.User_Task.Part_Time_Company", b =>
@@ -944,7 +882,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PartTimeCompanies", (string)null);
+                    b.ToTable("PartTimeCompanies");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.User_Task.UsersTasks", b =>
@@ -996,7 +934,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UsersTasks", (string)null);
+                    b.ToTable("UsersTasks");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.WareHouse.LowStockAlerts", b =>
@@ -1018,7 +956,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("WarehouseLocationId");
 
-                    b.ToTable("LowStockAlerts", (string)null);
+                    b.ToTable("LowStockAlerts");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.WareHouse.WareHouse", b =>
@@ -1043,7 +981,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("WareHouses", (string)null);
+                    b.ToTable("WareHouses");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.WareHouse.WarehouseLocations", b =>
@@ -1071,7 +1009,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("ZoneId");
 
-                    b.ToTable("WarehouseLocations", (string)null);
+                    b.ToTable("WarehouseLocations");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.WareHouse.WarehouseZones", b =>
@@ -1091,7 +1029,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("WarehouseId");
 
-                    b.ToTable("WarehouseZones", (string)null);
+                    b.ToTable("WarehouseZones");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -1488,17 +1426,6 @@ namespace MadeHuman_Server.Migrations
                     b.Navigation("OutboundTaskItems");
                 });
 
-            modelBuilder.Entity("MadeHuman_Server.Model.Outbound.CheckTaskLogs", b =>
-                {
-                    b.HasOne("MadeHuman_Server.Model.Outbound.CheckTasks", "CheckTask")
-                        .WithMany()
-                        .HasForeignKey("CheckTaskId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CheckTask");
-                });
-
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.CheckTasks", b =>
                 {
                     b.HasOne("MadeHuman_Server.Model.Outbound.OutboundTask", "OutboundTask")
@@ -1552,17 +1479,6 @@ namespace MadeHuman_Server.Migrations
                     b.Navigation("OutboundTask");
 
                     b.Navigation("ShopOrder");
-                });
-
-            modelBuilder.Entity("MadeHuman_Server.Model.Outbound.PendingSKU", b =>
-                {
-                    b.HasOne("MadeHuman_Server.Model.Outbound.CheckTasks", "CheckTask")
-                        .WithMany()
-                        .HasForeignKey("CheckTaskId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CheckTask");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.PickTaskDetails", b =>

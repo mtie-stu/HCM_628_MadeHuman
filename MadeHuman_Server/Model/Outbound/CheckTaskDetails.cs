@@ -7,12 +7,16 @@ namespace MadeHuman_Server.Model.Outbound
     public enum StatusCheckDetailTask
     {
         Created,
-        finished
+        finished,
+        PendingSupport,
+        Error
     }
     public class CheckTaskDetails
     {
         public Guid Id { get; set; }
         public DateTime CreateAt { get; set; }
+        public int OrderIndex { get; set; } // để map với #1...#8
+
         public StatusCheckDetailTask StatusCheckDetailTask { get; set; } = StatusCheckDetailTask.Created;
         public DateTime FinishAt { get; set; }
         public Guid CheckTaskId { get; set; } // KHÔNG phải PicksTasksId
@@ -24,6 +28,9 @@ namespace MadeHuman_Server.Model.Outbound
         [ForeignKey(nameof(OutboundTaskItemId))]
         public OutboundTaskItems OutboundTaskItems { get; set; }
 
+        public int QuantityChecked { get; set; } = 0;
+        public bool IsChecked { get; set; } = false;
 
+        public string? Reason { get; set; }
     }
 }

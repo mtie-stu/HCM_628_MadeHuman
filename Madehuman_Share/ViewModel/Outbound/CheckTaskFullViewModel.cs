@@ -22,6 +22,8 @@ namespace Madehuman_Share.ViewModel.Outbound
             public Guid Id { get; set; }
             public DateTime CreateAt { get; set; }
             public int Status { get; set; }
+            public int OrderIndex { get; set; } // ✅ thêm dòng này
+
             public OutboundTaskItemVm OutboundTaskItem { get; set; } = new();
         }
     }
