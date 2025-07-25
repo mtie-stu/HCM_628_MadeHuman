@@ -9,6 +9,8 @@ namespace MadeHuman_User.ServicesTask.Services.InboundService
         Task<List<RefillTaskFullViewModel>> GetAllRefillTasksAsync(HttpContext httpContext);
         Task<RefillTaskFullViewModel?> GetByIdAsync(Guid id, HttpContext httpContext);
         Task<List<RefillTaskDetailWithHeaderViewModel>> GetAllDetailsAsync(HttpContext httpContext);
+        Task<List<string>> ValidateRefillScanAsync(ScanRefillTaskValidationRequest request, HttpContext httpContext);
+
 
 
     }
@@ -162,6 +164,33 @@ namespace MadeHuman_User.ServicesTask.Services.InboundService
             {
                 _logger.LogError(ex, "❌ Exception khi gọi GetAllDetailsAsync");
                 return new();
+            }
+        }
+        public async Task<List<string>> ValidateRefillScanAsync(ScanRefillTaskValidationRequest request, HttpContext httpContext)
+        {
+            var jwt = httpContext.Request.Cookies["JWTToken"];
+            if (string.IsNullOrEmpty(jwt))
+            {
+                _logger.LogWarning("❌ Không tìm thấy JWTToken.");
+                return new() { "❌ Chưa đăng nhập." };
+            }
+
+            var requestMsg = new HttpRequestMessage(HttpMethod.Post, "/api/RefillTask/validate-scan")
+            {
+                Content = JsonContent.Create(request)
+            };
+            requestMsg.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwt);
+
+            try
+            {
+                var response = await _client.SendAsync(requestMsg);
+                var result = await response.Content.ReadFromJsonAsync<List<string>>();
+                return result ?? new() { "❌ Lỗi không xác định từ server." };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Lỗi khi gọi ValidateRefillScanAsync");
+                return new() { "❌ Lỗi kết nối tới server." };
             }
         }
 

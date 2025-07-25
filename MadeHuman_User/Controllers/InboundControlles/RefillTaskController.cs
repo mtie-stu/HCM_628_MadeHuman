@@ -63,5 +63,33 @@ namespace MadeHuman_User.Controllers.InboundControlles
             var data = await _refillTaskService.GetAllDetailsAsync(HttpContext);
             return View(data);
         }
+        [HttpGet]
+        public IActionResult ValidateScan()
+        {
+            // Trả về view với model rỗng để hiển thị form nhập
+            return View(new ScanRefillTaskValidationRequest());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ValidateScan(ScanRefillTaskValidationRequest request)
+        {
+            // Gọi service xử lý xác nhận bổ sung
+            var messages = await _refillTaskService.ValidateRefillScanAsync(request, HttpContext);
+
+            // Phân loại kết quả: thành công hay lỗi
+            if (messages.Any(m => m.Contains("✅")))
+            {
+                ViewBag.Success = string.Join("<br/>", messages);
+            }
+            else
+            {
+                ViewBag.Errors = messages;
+            }
+
+            // Trả lại view với model đã nhập
+            return View(request);
+        }
+
+
     }
 }

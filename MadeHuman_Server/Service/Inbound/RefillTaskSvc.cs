@@ -223,7 +223,8 @@ namespace MadeHuman_Server.Service.Inbound
                     DetailId = d.Id,
                     FromLocation = d.FromLocation,
                     ToLocation = d.ToLocation,
-                    Quantity = d.Quantity
+                    Quantity = d.Quantity,
+                    IsRefilled = d.IsRefilled
                 })
                 .ToListAsync();
         }
