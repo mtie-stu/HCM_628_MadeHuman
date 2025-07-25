@@ -48,7 +48,13 @@ namespace MadeHuman_Server.Model.User_Task
         public ICollection<PickTasks> PickTasks { get; set; }
         [JsonIgnore]
         public ICollection<RefillTasks> RefillTasks { get; set; }
-        public int TotalKPI { get; set; } = default!;
-        public int HourlyKPIs { get; set; } = default!;
+        [JsonIgnore]
+        public ICollection<CheckTasks> CheckTasks { get; set; }
+        [JsonIgnore]
+        public ICollection<PackTask> PackTask { get; set; }
+        [JsonIgnore]
+        public ICollection<DispatchTasks> DispatchTasks { get; set; }
+        public int TotalKPI { get; set; } = 0;
+        public int HourlyKPIs { get; set; } = 0;
     }
 }

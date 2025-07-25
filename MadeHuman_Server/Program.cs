@@ -97,6 +97,10 @@ builder.Services.AddHostedService<OutboundTaskBackgroundService>();
 builder.Services.AddScoped<OutboundTaskService>();
 builder.Services.AddScoped<IProductImageService, ProductImageService>();
 builder.Services.AddScoped<IBasketService, BasketService>();
+builder.Services.AddScoped<ICheckTaskServices, CheckTaskServices>();
+builder.Services.AddScoped<IPackTaskService, PackTaskServices>();
+builder.Services.AddScoped<IPickTaskServices, PickTaskServices>();
+builder.Services.AddScoped<IDispatchTaskServices, DispatchTaskServices>();
 
 // (Tùy chọn) Cấu hình upload file lớn nếu cần
 builder.Services.Configure<FormOptions>(options =>

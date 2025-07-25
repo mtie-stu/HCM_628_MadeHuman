@@ -51,6 +51,8 @@ namespace MadeHuman_Server.Data
         public DbSet<CheckTaskDetails> CheckTaskDetails { get; set; }
         public DbSet<CheckTaskLogs> CheckTaskLogs { get; set; }
         public DbSet<PendingSKU> PendingSKU { get; set; }
+        public DbSet<PackTask> PackTask { get; set; }
+        public DbSet<DispatchTasks> DispatchTasks { get; set; }
 
 
 

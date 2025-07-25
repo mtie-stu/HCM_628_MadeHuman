@@ -9,6 +9,7 @@ namespace MadeHuman_Server.Model.Outbound
         Created,
         Picked,
         Checked,
+        Packed,
         Dispatched,
         Finished
     }
@@ -26,6 +27,9 @@ namespace MadeHuman_Server.Model.Outbound
         public ICollection<OutboundTaskItemDetails> OutboundTaskItemDetails { get; set; }
 
         public CheckTaskDetails CheckTaskDetails { get; set; }  // 1-1
+        public PackTask PackTask { get; set; }  // 1-1
+        public DispatchTasks DispatchTasks { get; set; }  // 1-1
+
 
     }
 }

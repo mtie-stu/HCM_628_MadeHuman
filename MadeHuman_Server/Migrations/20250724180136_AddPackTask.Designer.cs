@@ -3,6 +3,7 @@ using System;
 using MadeHuman_Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MadeHuman_Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250724180136_AddPackTask")]
+    partial class AddPackTask
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -426,34 +429,6 @@ namespace MadeHuman_Server.Migrations
                     b.HasIndex("UsersTasksId");
 
                     b.ToTable("CheckTasks");
-                });
-
-            modelBuilder.Entity("MadeHuman_Server.Model.Outbound.DispatchTasks", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("FinishAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("OutboundTaskItemId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("StatusDispatchTasks")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid?>("UsersTasksId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OutboundTaskItemId")
-                        .IsUnique();
-
-                    b.HasIndex("UsersTasksId");
-
-                    b.ToTable("DispatchTasks");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.OutboundTask", b =>
@@ -1568,25 +1543,10 @@ namespace MadeHuman_Server.Migrations
                         .IsRequired();
 
                     b.HasOne("MadeHuman_Server.Model.User_Task.UsersTasks", "UsersTasks")
-                        .WithMany("CheckTasks")
+                        .WithMany()
                         .HasForeignKey("UsersTasksId");
 
                     b.Navigation("OutboundTask");
-
-                    b.Navigation("UsersTasks");
-                });
-
-            modelBuilder.Entity("MadeHuman_Server.Model.Outbound.DispatchTasks", b =>
-                {
-                    b.HasOne("MadeHuman_Server.Model.Outbound.OutboundTaskItems", "OutboundTaskItems")
-                        .WithOne("DispatchTasks")
-                        .HasForeignKey("MadeHuman_Server.Model.Outbound.DispatchTasks", "OutboundTaskItemId");
-
-                    b.HasOne("MadeHuman_Server.Model.User_Task.UsersTasks", "UsersTasks")
-                        .WithMany("DispatchTasks")
-                        .HasForeignKey("UsersTasksId");
-
-                    b.Navigation("OutboundTaskItems");
 
                     b.Navigation("UsersTasks");
                 });
@@ -1636,7 +1596,7 @@ namespace MadeHuman_Server.Migrations
                         .HasForeignKey("MadeHuman_Server.Model.Outbound.PackTask", "OutboundTaskItemId");
 
                     b.HasOne("MadeHuman_Server.Model.User_Task.UsersTasks", "UsersTasks")
-                        .WithMany("PackTask")
+                        .WithMany()
                         .HasForeignKey("UsersTasksId");
 
                     b.Navigation("OutboundTaskItems");
@@ -2006,9 +1966,6 @@ namespace MadeHuman_Server.Migrations
                     b.Navigation("CheckTaskDetails")
                         .IsRequired();
 
-                    b.Navigation("DispatchTasks")
-                        .IsRequired();
-
                     b.Navigation("OutboundTaskItemDetails");
 
                     b.Navigation("PackTask")
@@ -2079,13 +2036,7 @@ namespace MadeHuman_Server.Migrations
 
             modelBuilder.Entity("MadeHuman_Server.Model.User_Task.UsersTasks", b =>
                 {
-                    b.Navigation("CheckTasks");
-
-                    b.Navigation("DispatchTasks");
-
                     b.Navigation("InboundTasks");
-
-                    b.Navigation("PackTask");
 
                     b.Navigation("PickTasks");
 

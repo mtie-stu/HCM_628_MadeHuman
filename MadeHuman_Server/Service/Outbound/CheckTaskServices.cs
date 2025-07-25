@@ -15,7 +15,7 @@ namespace MadeHuman_Server.Service.Outbound
         Task<CheckTaskFullViewModel> AssignUserTaskToCheckTaskByBasketAsync(Guid basketId);
         Task<List<string>> ValidateCheckTaskScanAsync(ScanCheckTaskRequest request);
         Task<CheckTaskResultViewModel> AssignSlotAsync(AssignSlotRequest request);
-
+        Task<List<string>> ValidateSingleSKUCheckTaskAsync(SingleSKUCheckTaskRequest request);
     }
 
     public class CheckTaskServices : ICheckTaskServices
@@ -23,12 +23,14 @@ namespace MadeHuman_Server.Service.Outbound
         private readonly ApplicationDbContext _context;
         private readonly IUserTaskSvc _usertaskservice;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IPackTaskService _packTaskService;
 
-        public CheckTaskServices(ApplicationDbContext context, IUserTaskSvc userTaskSvc, IHttpContextAccessor httpContextAccessor)
+        public CheckTaskServices(ApplicationDbContext context, IUserTaskSvc userTaskSvc, IHttpContextAccessor httpContextAccessor, IPackTaskService packTaskService)
         {
             _context = context;
             _usertaskservice = userTaskSvc;
             _httpContextAccessor = httpContextAccessor;
+            _packTaskService = packTaskService; 
         }
 
         public async Task<CheckTasks> CreateCheckTaskAsync(Guid outboundTaskId)
@@ -198,6 +200,8 @@ namespace MadeHuman_Server.Service.Outbound
                     userTask.TotalKPI += totalRequired;
                     userTask.HourlyKPIs += totalRequired;
                 }
+                await _packTaskService.CreatePackTaskAsync(matchingDetail.OutboundTaskItemId);
+
             }
 
             if (checkTask.CheckTaskDetails.All(d => d.StatusCheckDetailTask == StatusCheckDetailTask.finished))
@@ -269,7 +273,7 @@ namespace MadeHuman_Server.Service.Outbound
             if (detail == null)
             {
                 result.Success = false;
-                result.Messages.Add($"❌ Không tìm thấy đơn hàng #️⃣{request.SlotIndex} trong nhiệm vụ.");
+                result.Messages.Add($"❌ Không tìm thấy đơn hàng #️{request.SlotIndex} trong nhiệm vụ.");
                 return result;
             }
 
@@ -304,6 +308,8 @@ namespace MadeHuman_Server.Service.Outbound
                     userTask.TotalKPI += required;
                     userTask.HourlyKPIs += required;
                 }
+                await _packTaskService.CreatePackTaskAsync(detail.OutboundTaskItemId);
+
             }
 
             if (checkTask.CheckTaskDetails.All(x => x.StatusCheckDetailTask == StatusCheckDetailTask.finished))
