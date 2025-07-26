@@ -150,7 +150,7 @@ namespace MadeHuman_Server.Service.Inbound
                 errors.Add("❌ Không tìm thấy InboundTask.");
                 return errors;
             }
-
+             
             // 2. Lấy userId hiện tại
             var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
@@ -188,6 +188,11 @@ namespace MadeHuman_Server.Service.Inbound
             if (batch == null)
             {
                 errors.Add($"❌ Không tìm thấy ProductBatchId: {request.ProductBatchId} trong InboundTask.");
+                return errors;
+            }
+            if (batch.StatusProductBatches == StatusProductBatches.Stored)
+            {
+                errors.Add($"❌ Lô hàng {request.ProductBatchId}  đã được nhập trong InboundTask.");
                 return errors;
             }
 
@@ -278,6 +283,7 @@ namespace MadeHuman_Server.Service.Inbound
                     ProductSKUId = batch.ProductSKUId,
                     WarehouseLocationId = batch.WarehouseLocationId,
                     StockQuantity = batch.Quantity,
+                    QuantityBooked = 0,
                     LastUpdated = DateTime.UtcNow
                 };
                 _context.Inventory.Add(inventory);
@@ -287,10 +293,13 @@ namespace MadeHuman_Server.Service.Inbound
                 if (inventory.StockQuantity == null)
                 {
                     inventory.StockQuantity = batch.Quantity;
+                    inventory.ProductSKUId = batch.ProductSKUId;    
                 }
                 else
                 {
                     inventory.StockQuantity += batch.Quantity;
+                    inventory.ProductSKUId = batch.ProductSKUId;
+
                 }
                 inventory.LastUpdated = DateTime.UtcNow;
             }

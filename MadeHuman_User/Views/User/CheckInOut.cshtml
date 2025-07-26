@@ -1,0 +1,97 @@
+﻿@model Madehuman_Share.ViewModel.PartTime_Task.Checkin_Checkout_Viewmodel
+
+@{
+    ViewData["Title"] = "Chấm công";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="mb-0"><i class="bi bi-fingerprint me-2"></i>Chấm công: Check In / Out</h4>
+                </div>
+                <div class="card-body">
+
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success d-flex align-items-center" role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            @TempData["Success"]
+                        </div>
+                    }
+
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger d-flex align-items-center" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            @TempData["Error"]
+                        </div>
+                    }
+
+                    <form asp-action="CheckInOut" method="post" id="checkForm">
+                        <div class="mb-3">
+                            <label asp-for="UserId" class="form-label fw-semibold">👤 User ID</label>
+                            <input asp-for="UserId" id="userIdInput" class="form-control" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="PartTimeId" class="form-label fw-semibold">🆔 PartTime ID</label>
+                            <input asp-for="PartTimeId" class="form-control" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="regime" class="form-label fw-semibold">📌 Hoạt động</label>
+                            <select asp-for="regime" id="regimeSelect" class="form-select">
+                                <option value="">-- Chọn hành động --</option>
+                                <option value="Checkin">✅ Check In</option>
+                                <option value="Checkout">⏱️ Check Out</option>
+                                <option value="Break">☕ Nghỉ giải lao</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3" id="breakDurationWrapper" style="display:none;">
+                            <label asp-for="BreakDuration" class="form-label fw-semibold">🕒 Thời gian nghỉ (hh:mm:ss)</label>
+                            <input asp-for="BreakDuration" placeholder="00:10:00" class="form-control" />
+                        </div>
+
+                        @* <div class="mb-3">
+                            <label asp-for="Note" class="form-label fw-semibold">📝 Ghi chú (tuỳ chọn)</label>
+                            <input asp-for="Note" class="form-control" />
+                        </div> *@
+
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-success w-50 me-2">
+                                <i class="bi bi-send-check"></i> Gửi
+                            </button>
+                            <a href="@Url.Action("AllTodayLogs", "User")" class="btn btn-outline-primary w-50">
+                                <i class="bi bi-clock-history"></i> Xem lịch sử hôm nay
+                            </a>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const regimeSelect = document.getElementById("regimeSelect");
+            const breakDurationWrapper = document.getElementById("breakDurationWrapper");
+
+            function toggleBreakField() {
+                const selected = regimeSelect.value;
+                breakDurationWrapper.style.display = (selected === "Break") ? "block" : "none";
+            }
+
+            regimeSelect.addEventListener("change", toggleBreakField);
+            toggleBreakField(); // gọi ban đầu
+        });
+    </script>
+}

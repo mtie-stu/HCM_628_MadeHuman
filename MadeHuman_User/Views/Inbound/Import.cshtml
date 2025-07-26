@@ -8,6 +8,17 @@
 <div class="container mt-4">
     <div class="card shadow-sm">
         <div class="card-body">
+            @if (ViewBag.Success != null)
+            {
+                <div class="alert alert-success d-flex justify-content-between align-items-center">
+                    <span>@ViewBag.Success</span>  
+                </div>
+            }
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger">@ViewBag.Error</div>
+            }
+
             <form asp-action="Import" method="post" id="scanForm" class="row g-4">
                 <!-- Nhập mã phiếu nhập -->
                 <div class="col-md-6">
@@ -16,19 +27,25 @@
                 </div>
 
                 <!-- Thông tin phiếu nhập -->
-                <div class="col-12" id="receiptInfo" style="display:none;">
-                    <h5 class="mt-3">Thông tin phiếu nhập</h5>
-                    <ul class="list-group">
-                        <li class="list-group-item"><strong>Ngày tạo:</strong> <span id="createAt"></span></li>
-                        <li class="list-group-item"><strong>Ngày nhận:</strong> <span id="receivedAt"></span></li>
-                        <li class="list-group-item"><strong>Trạng thái:</strong> <span id="status"></span></li>
-                        <li class="list-group-item"><strong>Số lượng sản phẩm:</strong> <span id="itemCount"></span></li>
-                        <li class="list-group-item">
-                            <strong>Danh sách sản phẩm:</strong>
-                            <ul class="mt-2" id="receiptItemsList" style="padding-left: 1.2rem;"></ul>
-                        </li>
-                    </ul>
+               <div class="col-12" id="receiptInfo" style="display:none;">
+                    <div class="card mt-3 border-primary">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Thông tin phiếu nhập</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Ngày tạo:</strong> <span id="createAt" class="text-muted"></span></p>
+                            <p><strong>Ngày nhận:</strong> <span id="receivedAt" class="text-muted"></span></p>
+                            <p><strong>Trạng thái:</strong> <span id="status" class="badge bg-info text-dark"></span></p>
+                            <p><strong>Số lượng sản phẩm:</strong> <span id="itemCount" class="badge bg-secondary"></span></p>
+
+                            <div class="mt-3">
+                                <h6 class="fw-bold">Danh sách sản phẩm</h6>
+                                <ul class="list-group" id="receiptItemsList" style="max-height: 300px; overflow-y: auto;"></ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
 
                 <!-- Xác nhận -->
                 <div class="col-12 text-end mt-4">
@@ -42,7 +59,7 @@
 @section Scripts {
     <script>
         let timeout;
-
+       
         $('#receiptIdInput').on('input', function () {
             clearTimeout(timeout);
             const id = $(this).val().trim();
@@ -56,28 +73,34 @@
             if (!id || id.length < 10) return;
 
             timeout = setTimeout(() => {
-                $.get(`https://localhost:7204/api/InboundReceipt/${id}`)
+                $.get(`https://hcm-628-madehuman-api.onrender.com/api/InboundReceipt/${id}`)
                     .done(function (data) {
                         console.log("✅ Phiếu nhập tìm thấy:", data);
 
                         // Hiển thị thông tin cơ bản
                         $('#createAt').text(new Date(data.createAt).toLocaleString());
                         $('#receivedAt').text(data.receivedAt ? new Date(data.receivedAt).toLocaleDateString() : 'Chưa nhận');
-                        $('#status').text(data.status);
+                        $('#status')
+                            .removeClass()
+                            .addClass('badge')
+                            .addClass(data.status === 'Received' ? 'bg-success' : 'bg-warning text-dark')
+                            .text(data.status);
                         $('#itemCount').text(data.items.length);
 
                         // Hiển thị danh sách sản phẩm
                         data.items.forEach(item => {
                             $('#receiptItemsList').append(`
-                                <li class="list-group-item">
-                                    <strong>SKU:</strong> ${item.productSKUId} |
-                                    <strong>Tên:</strong> ${item.productSKUName} |
-                                    <strong>Số lượng:</strong> ${item.quantity}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div><strong>SKU:</strong> ${item.productSKUId}</div>
+                                        <div><strong>Tên:</strong> ${item.productSKUName}</div>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill">${item.quantity}</span>
                                 </li>
                             `);
                         });
 
-                        $('#receiptInfo').show();
+                        $('#receiptInfo').fadeIn();
                         $('#receiptIdInput').prop('readonly', true);
                         $('#btnSubmit').prop('disabled', false);
                     })
@@ -88,5 +111,12 @@
                     });
             }, 500);
         });
+
+         if ('@ViewBag.Success' !== '') {
+            $('html, body').animate({
+                scrollTop: $('#receiptInfo').offset().top
+            }, 500);
+        }   
+
     </script>
 }

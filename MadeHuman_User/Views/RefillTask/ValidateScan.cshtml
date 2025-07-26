@@ -1,0 +1,74 @@
+﻿@model Madehuman_Share.ViewModel.Inbound.ScanRefillTaskValidationRequest
+
+@{
+    ViewData["Title"] = "Refill";
+}
+
+<div class="container mt-4">
+    <h3 class="text-primary">🛠️ Xác nhận nhiệm vụ bổ sung kho</h3>
+
+    <form asp-action="ValidateScan" method="post" class="card shadow-sm p-4 mt-3">
+        @Html.AntiForgeryToken()
+
+        <div class="mb-3">
+            <label asp-for="RefillTaskId" class="form-label"></label>
+            <input asp-for="RefillTaskId" class="form-control" required />
+            <span asp-validation-for="RefillTaskId" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="RefillTaskDetailId" class="form-label"></label>
+            <input asp-for="RefillTaskDetailId" class="form-control" required />
+            <span asp-validation-for="RefillTaskDetailId" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="FromLocationName" class="form-label"></label>
+            <input asp-for="FromLocationName" class="form-control" />
+            <span asp-validation-for="FromLocationName" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="ToLocationName" class="form-label"></label>
+            <input asp-for="ToLocationName" class="form-control" />
+            <span asp-validation-for="ToLocationName" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="SKU" class="form-label"></label>
+            <input asp-for="SKU" class="form-control" />
+            <span asp-validation-for="SKU" class="text-danger small"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Quantity" class="form-label"></label>
+            <input asp-for="Quantity" class="form-control" type="number" />
+            <span asp-validation-for="Quantity" class="text-danger small"></span>
+        </div>
+
+        <button type="submit" class="btn btn-success">✅ Xác nhận bổ sung</button>
+    </form>
+
+    @if (ViewBag.Success != null)
+    {
+        <div class="alert alert-success mt-3" role="alert">
+            @Html.Raw(ViewBag.Success)
+        </div>
+    }
+
+    @if (ViewBag.Errors != null)
+    {
+        <div class="alert alert-danger mt-3" role="alert">
+            <ul class="mb-0">
+                @foreach (var err in (List<string>)ViewBag.Errors)
+                {
+                    <li>@err</li>
+                }
+            </ul>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

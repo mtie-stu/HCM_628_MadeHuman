@@ -50,8 +50,8 @@ namespace MadeHuman_Server.Service.WareHouse
             {
                 Id = Guid.NewGuid(),
                 ProductSKUId = null,
-                StockQuantity = null,
-                QuantityBooked = null,
+                StockQuantity = 0,
+                QuantityBooked = 0,
                 LastUpdated = DateTime.Now,
                 WarehouseLocationId = newId // sửa tại đây
             };
@@ -174,8 +174,8 @@ namespace MadeHuman_Server.Service.WareHouse
                         {
                             Id = Guid.NewGuid(),
                             ProductSKUId = null,
-                            StockQuantity = null,
-                            QuantityBooked = null,
+                            StockQuantity = 0,
+                            QuantityBooked = 0,
                             LastUpdated = DateTime.UtcNow,
                             WarehouseLocationId = location.Id
                         };

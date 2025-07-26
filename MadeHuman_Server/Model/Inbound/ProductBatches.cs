@@ -12,8 +12,6 @@ namespace MadeHuman_Server.Model.Inbound
     {
         UnStored,
         Stored
-
-
     }
     public class ProductBatches
     {

@@ -1,0 +1,57 @@
+﻿@model List<Madehuman_Share.ViewModel.Inbound.RefillTaskDetailWithHeaderViewModel>
+
+@{
+    ViewData["Title"] = "Refill";
+}
+
+<div class="container mt-4">
+    <h2 class="text-primary mb-3">
+        <i class="bi bi-table"></i> Danh sách chi tiết nhiệm vụ bổ sung kho
+    </h2>
+
+    <a href="@Url.Action("ValidateScan", "RefillTask")" class="btn btn-sm btn-success">
+        <i class="bi bi-upc-scan"></i> Chuyển đến trang quét xác nhận
+    </a>
+    <p class="text-muted">📦 Tổng số bản ghi: <strong>@(Model?.Count ?? 0)</strong></p>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i> Không có chi tiết nhiệm vụ nào.
+        </div>
+    }
+    else
+    {
+        <table class="table table-bordered table-striped table-hover table-sm">
+            <thead class="table-light">
+                <tr>
+                    <th>Mã nhiệm vụ</th>
+                    <th>Người tạo</th>
+                    <th>Thời gian tạo</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Số lượng</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    if (item.IsRefilled)
+                    {
+                        continue; // ❌ Bỏ qua dòng này nếu đã bổ sung
+                    }
+
+                    <tr>
+                        <td>@item.RefillTaskId</td>
+                        <td>@item.CreateBy</td>
+                        <td>@item.CreateAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@item.FromLocation</td>
+                        <td>@item.ToLocation</td>
+                        <td>@item.Quantity</td>
+                    </tr>
+                }
+
+            </tbody>
+        </table>
+    }
+</div>

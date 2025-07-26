@@ -1,5 +1,5 @@
 ﻿using Madehuman_Share.ViewModel;
-
+//using MadeHuman_Share.ViewModel;
 using System.Net.Http;
 
 namespace MadeHuman_User.ServicesTask.Services
@@ -49,7 +49,7 @@ namespace MadeHuman_User.ServicesTask.Services
             // Token: HttpOnly để tránh bị JS đọc
             var tokenOptions = new CookieOptions
             {
-                HttpOnly = true,
+                HttpOnly = false,
                 Secure = true,
                 SameSite = SameSiteMode.None,
                 Expires = commonOptions.Expires

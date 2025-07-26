@@ -148,10 +148,10 @@ namespace MadeHuman_Server.Migrations
                     b.Property<Guid?>("ProductSKUId")
                         .HasColumnType("uuid");
 
-                    b.Property<int?>("QuantityBooked")
+                    b.Property<int>("QuantityBooked")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("StockQuantity")
+                    b.Property<int>("StockQuantity")
                         .HasColumnType("integer");
 
                     b.Property<Guid>("WarehouseLocationId")
@@ -244,6 +244,9 @@ namespace MadeHuman_Server.Migrations
                     b.Property<Guid>("FromLocation")
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("IsRefilled")
+                        .HasColumnType("boolean");
+
                     b.Property<Guid>("ProductSKUId")
                         .HasColumnType("uuid");
 
@@ -253,9 +256,6 @@ namespace MadeHuman_Server.Migrations
                     b.Property<Guid>("RefillTaskId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("RefillTasksId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("ToLocation")
                         .HasColumnType("uuid");
 
@@ -263,7 +263,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasIndex("ProductSKUId");
 
-                    b.HasIndex("RefillTasksId");
+                    b.HasIndex("RefillTaskId");
 
                     b.ToTable("RefillTaskDetails");
                 });
@@ -287,9 +287,6 @@ namespace MadeHuman_Server.Migrations
                     b.Property<int>("StatusRefillTasks")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid?>("UserTaskId")
                         .HasColumnType("uuid");
 
@@ -298,7 +295,7 @@ namespace MadeHuman_Server.Migrations
                     b.HasIndex("LowStockId")
                         .IsUnique();
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserTaskId");
 
                     b.ToTable("RefillTasks");
                 });
@@ -321,6 +318,142 @@ namespace MadeHuman_Server.Migrations
                         .IsUnique();
 
                     b.ToTable("Baskets");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.Outbound.CheckTaskDetails", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CheckTaskId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreateAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("FinishAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsChecked")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("OrderIndex")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("OutboundTaskItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("QuantityChecked")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("text");
+
+                    b.Property<int>("StatusCheckDetailTask")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CheckTaskId");
+
+                    b.HasIndex("OutboundTaskItemId")
+                        .IsUnique();
+
+                    b.ToTable("CheckTaskDetails");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.Outbound.CheckTaskLogs", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CheckTaskId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PerformedBy")
+                        .HasColumnType("text");
+
+                    b.Property<int>("QuantityChanged")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SKU")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("Time")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CheckTaskId");
+
+                    b.ToTable("CheckTaskLogs");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.Outbound.CheckTasks", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreateAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FinishAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("MadeAt")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("OutboundTaskId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("StatusCheckTask")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("UsersTasksId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OutboundTaskId");
+
+                    b.HasIndex("UsersTasksId");
+
+                    b.ToTable("CheckTasks");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.Outbound.DispatchTasks", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("FinishAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("OutboundTaskItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("StatusDispatchTasks")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("UsersTasksId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OutboundTaskItemId")
+                        .IsUnique();
+
+                    b.HasIndex("UsersTasksId");
+
+                    b.ToTable("DispatchTasks");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.OutboundTask", b =>
@@ -357,8 +490,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OutboundTaskItemId")
-                        .IsUnique();
+                    b.HasIndex("OutboundTaskItemId");
 
                     b.HasIndex("ProductSKUId");
 
@@ -390,16 +522,78 @@ namespace MadeHuman_Server.Migrations
                     b.ToTable("OutboundTaskItems");
                 });
 
+            modelBuilder.Entity("MadeHuman_Server.Model.Outbound.PackTask", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("FinishAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("MadeAt")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("OutboundTaskItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("StatusPackTask")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("UsersTasksId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OutboundTaskItemId")
+                        .IsUnique();
+
+                    b.HasIndex("UsersTasksId");
+
+                    b.ToTable("PackTask");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.Outbound.PendingSKU", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CheckTaskId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SKU")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CheckTaskId");
+
+                    b.HasIndex("UserId", "CheckTaskId");
+
+                    b.ToTable("PendingSKU");
+                });
+
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.PickTaskDetails", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("PickTaskId")
-                        .HasColumnType("uuid");
+                    b.Property<bool>("IsPicked")
+                        .HasColumnType("boolean");
 
-                    b.Property<Guid>("PickTasksId")
+                    b.Property<Guid>("PickTaskId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("ProductSKUId")
@@ -408,12 +602,15 @@ namespace MadeHuman_Server.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
+                    b.Property<int>("QuantityPicked")
+                        .HasColumnType("integer");
+
                     b.Property<Guid>("WarehouseLocationId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PickTasksId");
+                    b.HasIndex("PickTaskId");
 
                     b.HasIndex("ProductSKUId");
 
@@ -434,16 +631,24 @@ namespace MadeHuman_Server.Migrations
                     b.Property<DateTime>("FinishAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("OutboundTaskId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("OutboundTaskItemId")
+                        .HasColumnType("uuid");
+
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("UserTaskId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UsersTasksId")
+                    b.Property<Guid?>("UsersTasksId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OutboundTaskId")
+                        .IsUnique();
+
+                    b.HasIndex("OutboundTaskItemId");
 
                     b.HasIndex("UsersTasksId");
 
@@ -1291,7 +1496,7 @@ namespace MadeHuman_Server.Migrations
 
                     b.HasOne("MadeHuman_Server.Model.Inbound.RefillTasks", "RefillTasks")
                         .WithMany("RefillTaskDetails")
-                        .HasForeignKey("RefillTasksId")
+                        .HasForeignKey("RefillTaskId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1307,10 +1512,8 @@ namespace MadeHuman_Server.Migrations
                         .HasForeignKey("MadeHuman_Server.Model.Inbound.RefillTasks", "LowStockId");
 
                     b.HasOne("MadeHuman_Server.Model.User_Task.UsersTasks", "UsersTasks")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany("RefillTasks")
+                        .HasForeignKey("UserTaskId");
 
                     b.Navigation("LowStockAlerts");
 
@@ -1326,11 +1529,73 @@ namespace MadeHuman_Server.Migrations
                     b.Navigation("OutboundTask");
                 });
 
+            modelBuilder.Entity("MadeHuman_Server.Model.Outbound.CheckTaskDetails", b =>
+                {
+                    b.HasOne("MadeHuman_Server.Model.Outbound.CheckTasks", "CheckTasks")
+                        .WithMany("CheckTaskDetails")
+                        .HasForeignKey("CheckTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MadeHuman_Server.Model.Outbound.OutboundTaskItems", "OutboundTaskItems")
+                        .WithOne("CheckTaskDetails")
+                        .HasForeignKey("MadeHuman_Server.Model.Outbound.CheckTaskDetails", "OutboundTaskItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CheckTasks");
+
+                    b.Navigation("OutboundTaskItems");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.Outbound.CheckTaskLogs", b =>
+                {
+                    b.HasOne("MadeHuman_Server.Model.Outbound.CheckTasks", "CheckTask")
+                        .WithMany()
+                        .HasForeignKey("CheckTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CheckTask");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.Outbound.CheckTasks", b =>
+                {
+                    b.HasOne("MadeHuman_Server.Model.Outbound.OutboundTask", "OutboundTask")
+                        .WithMany()
+                        .HasForeignKey("OutboundTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MadeHuman_Server.Model.User_Task.UsersTasks", "UsersTasks")
+                        .WithMany("CheckTasks")
+                        .HasForeignKey("UsersTasksId");
+
+                    b.Navigation("OutboundTask");
+
+                    b.Navigation("UsersTasks");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.Outbound.DispatchTasks", b =>
+                {
+                    b.HasOne("MadeHuman_Server.Model.Outbound.OutboundTaskItems", "OutboundTaskItems")
+                        .WithOne("DispatchTasks")
+                        .HasForeignKey("MadeHuman_Server.Model.Outbound.DispatchTasks", "OutboundTaskItemId");
+
+                    b.HasOne("MadeHuman_Server.Model.User_Task.UsersTasks", "UsersTasks")
+                        .WithMany("DispatchTasks")
+                        .HasForeignKey("UsersTasksId");
+
+                    b.Navigation("OutboundTaskItems");
+
+                    b.Navigation("UsersTasks");
+                });
+
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.OutboundTaskItemDetails", b =>
                 {
                     b.HasOne("MadeHuman_Server.Model.Outbound.OutboundTaskItems", "OutboundTaskItems")
-                        .WithOne("OutboundTaskItemDetails")
-                        .HasForeignKey("MadeHuman_Server.Model.Outbound.OutboundTaskItemDetails", "OutboundTaskItemId")
+                        .WithMany("OutboundTaskItemDetails")
+                        .HasForeignKey("OutboundTaskItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1364,11 +1629,37 @@ namespace MadeHuman_Server.Migrations
                     b.Navigation("ShopOrder");
                 });
 
+            modelBuilder.Entity("MadeHuman_Server.Model.Outbound.PackTask", b =>
+                {
+                    b.HasOne("MadeHuman_Server.Model.Outbound.OutboundTaskItems", "OutboundTaskItems")
+                        .WithOne("PackTask")
+                        .HasForeignKey("MadeHuman_Server.Model.Outbound.PackTask", "OutboundTaskItemId");
+
+                    b.HasOne("MadeHuman_Server.Model.User_Task.UsersTasks", "UsersTasks")
+                        .WithMany("PackTask")
+                        .HasForeignKey("UsersTasksId");
+
+                    b.Navigation("OutboundTaskItems");
+
+                    b.Navigation("UsersTasks");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.Outbound.PendingSKU", b =>
+                {
+                    b.HasOne("MadeHuman_Server.Model.Outbound.CheckTasks", "CheckTask")
+                        .WithMany()
+                        .HasForeignKey("CheckTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CheckTask");
+                });
+
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.PickTaskDetails", b =>
                 {
-                    b.HasOne("MadeHuman_Server.Model.Outbound.PickTasks", "PickTasks")
+                    b.HasOne("MadeHuman_Server.Model.Outbound.PickTasks", "PickTask")
                         .WithMany("PickTaskDetails")
-                        .HasForeignKey("PickTasksId")
+                        .HasForeignKey("PickTaskId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1384,7 +1675,7 @@ namespace MadeHuman_Server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("PickTasks");
+                    b.Navigation("PickTask");
 
                     b.Navigation("ProductSKUs");
 
@@ -1393,11 +1684,23 @@ namespace MadeHuman_Server.Migrations
 
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.PickTasks", b =>
                 {
-                    b.HasOne("MadeHuman_Server.Model.User_Task.UsersTasks", "UsersTasks")
-                        .WithMany("PickTasks")
-                        .HasForeignKey("UsersTasksId")
+                    b.HasOne("MadeHuman_Server.Model.Outbound.OutboundTask", "OutboundTask")
+                        .WithOne("PickTasks")
+                        .HasForeignKey("MadeHuman_Server.Model.Outbound.PickTasks", "OutboundTaskId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("MadeHuman_Server.Model.Outbound.OutboundTaskItems", "OutboundTaskItems")
+                        .WithMany()
+                        .HasForeignKey("OutboundTaskItemId");
+
+                    b.HasOne("MadeHuman_Server.Model.User_Task.UsersTasks", "UsersTasks")
+                        .WithMany("PickTasks")
+                        .HasForeignKey("UsersTasksId");
+
+                    b.Navigation("OutboundTask");
+
+                    b.Navigation("OutboundTaskItems");
 
                     b.Navigation("UsersTasks");
                 });
@@ -1682,17 +1985,33 @@ namespace MadeHuman_Server.Migrations
                     b.Navigation("RefillTaskDetails");
                 });
 
+            modelBuilder.Entity("MadeHuman_Server.Model.Outbound.CheckTasks", b =>
+                {
+                    b.Navigation("CheckTaskDetails");
+                });
+
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.OutboundTask", b =>
                 {
                     b.Navigation("Baskets")
                         .IsRequired();
 
                     b.Navigation("OutboundTaskItems");
+
+                    b.Navigation("PickTasks")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.OutboundTaskItems", b =>
                 {
-                    b.Navigation("OutboundTaskItemDetails")
+                    b.Navigation("CheckTaskDetails")
+                        .IsRequired();
+
+                    b.Navigation("DispatchTasks")
+                        .IsRequired();
+
+                    b.Navigation("OutboundTaskItemDetails");
+
+                    b.Navigation("PackTask")
                         .IsRequired();
                 });
 
@@ -1760,9 +2079,17 @@ namespace MadeHuman_Server.Migrations
 
             modelBuilder.Entity("MadeHuman_Server.Model.User_Task.UsersTasks", b =>
                 {
+                    b.Navigation("CheckTasks");
+
+                    b.Navigation("DispatchTasks");
+
                     b.Navigation("InboundTasks");
 
+                    b.Navigation("PackTask");
+
                     b.Navigation("PickTasks");
+
+                    b.Navigation("RefillTasks");
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.WareHouse.LowStockAlerts", b =>

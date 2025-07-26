@@ -116,7 +116,7 @@
             <!-- Dropdown -->
             <a class="text-dark text-decoration-none fs-5 fw-bold d-inline-flex align-items-center">
                 <i class="fas fa-user text-purple me-1"></i>
-                @Context.Request.Cookies["EmailOrId"]
+                @Context.Request.Cookies["EmailOrId"] (@Context.Request.Cookies["UserRole"])
             </a>
 
 
@@ -217,24 +217,16 @@
                 </a>
             </div>
 
-            <a asp-controller="Support" asp-action="Help"
-               class="@IsActive("Support","Help")">
-                <span><i class="fas fa-question-circle"></i> Help</span>
-            </a>
-
             <!-- Manager Dropdown -->
             <button type="button" data-bs-toggle="collapse" data-bs-target="#managerMenu" aria-expanded="false">
               <span><i class="fas fa-building"></i> Manager</span>
               <i class="fas fa-chevron-down chevron"></i>
             </button>
             <div class="collapse" id="managerMenu">
-                <a asp-controller="Staff" asp-action="ZoneManagement">Zone Management</a>
+              <a asp-controller="Staff" asp-action="ZoneManagement">Zone Management</a>
               <a asp-controller="Staff" asp-action="InboundTask">Inbound Task Management</a>
-              <a asp-controller="Staff" asp-action="SetId">Set Part-Time ID</a>
               <a asp-controller="Admin" asp-action="Permission">Account and Permission</a>
             </div>
-
-
             <a asp-controller="Staff" asp-action="CheckInOut"
                class="@IsActive("Staff","CheckInOut")">
                 <span><i class="fas fa-hourglass-half"></i> Check In/Out</span>
@@ -245,10 +237,6 @@
                 <span><i class="fas fa-briefcase"></i> Reports</span>
             </a>
 
-            <a asp-controller="Support" asp-action="Help"
-               class="@IsActive("Support","Help")">
-                <span><i class="fas fa-question-circle"></i> Help</span>
-            </a>
             <div class="bg-white rounded text-center py-3 mt-4 border-top">
                 <p class="small fw-bold text-dark mb-0">MADEHUMAN</p>
                 <p class="text-muted small mt-1">Version: 1.0.0</p>

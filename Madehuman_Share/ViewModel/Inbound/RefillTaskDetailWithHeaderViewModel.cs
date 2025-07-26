@@ -18,5 +18,6 @@ namespace Madehuman_Share.ViewModel.Inbound
         public Guid FromLocation { get; set; }
         public Guid ToLocation { get; set; }
         public int Quantity { get; set; }
+        public bool IsRefilled { get; set; } // ✅ Thêm dòng này
     }
 }
