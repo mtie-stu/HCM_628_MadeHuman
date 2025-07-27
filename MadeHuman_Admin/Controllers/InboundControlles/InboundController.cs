@@ -2,9 +2,10 @@
 using MadeHuman_Admin.Models;
 using Microsoft.AspNetCore.Mvc;
 using Madehuman_Share.ViewModel.Inbound;
+using MadeHuman_Admin.Models.Inbound;
 
 
-namespace MadeHuman_Admin.Controllers.InboundControlles
+namespace MadeHuman_User.Controllers.InboundControlles
 {
     public class InboundController : Controller
     {
@@ -151,64 +152,5 @@ namespace MadeHuman_Admin.Controllers.InboundControlles
             ViewBag.Success = "Xuất kho thành công!";
             return View(model);
         }
-
-        //[HttpGet]
-        //public IActionResult Import()
-        //{
-        //    return View(new ImportTaskViewModel());
-        //}
-
-        //[HttpPost]
-        //public IActionResult Import(ImportTaskViewModel model)
-        //{
-        //    // Tìm danh sách sản phẩm thuộc nhiệm vụ được quét
-        //    model.Products = taskProducts
-        //        .Where(p => p.TaskCode == model.TaskCode)
-        //        .ToList();
-
-        //    if (!model.Products.Any())
-        //    {
-        //        ModelState.AddModelError("", "Không tìm thấy nhiệm vụ nhập hàng.");
-        //        return View(model);
-        //    }
-
-        //    // Nếu người dùng quét mã sản phẩm
-        //    if (!string.IsNullOrWhiteSpace(model.ScannedProductCode))
-        //    {
-        //        var matched = model.Products
-        //            .FirstOrDefault(p => p.ProductItemId == model.ScannedProductCode);
-
-        //        if (matched == null)
-        //        {
-        //            ModelState.AddModelError("", "Không tìm thấy sản phẩm trong nhiệm vụ.");
-        //            return View(model);
-        //        }
-
-        //        model.SelectedProduct = matched;
-
-        //        // Nếu có nhập số lượng
-        //        if (model.ScannedQuantity.HasValue)
-        //        {
-        //            if (model.ScannedQuantity <= 0 || model.ScannedQuantity > matched.Quantity)
-        //            {
-        //                ModelState.AddModelError("", $"Số lượng không hợp lệ. Tối đa: {matched.Quantity}");
-        //                return View(model);
-        //            }
-
-        //            // Trừ số lượng (giả lập)
-        //            matched.Quantity -= model.ScannedQuantity.Value;
-
-        //            ViewBag.Success = $"✅ Nhập thành công {model.ScannedQuantity.Value} sản phẩm: {matched.ProductName}";
-
-        //            // Reset form cho lượt tiếp theo
-        //            model.ScannedProductCode = "";
-        //            model.ScannedQuantity = null;
-        //            model.SelectedProduct = null;
-        //        }
-        //    }
-
-        //    return View(model);
-        //}
-
     }
 }
