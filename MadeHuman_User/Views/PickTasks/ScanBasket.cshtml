@@ -1,0 +1,38 @@
+﻿@model Madehuman_Share.ViewModel.Outbound.ConfirmBasketRequest
+
+@{
+    ViewData["Title"] = "Quét Basket";
+}
+
+<div class="container mt-5">
+    <h2 class="text-primary">🧺 Quét mã Basket</h2>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @Html.Raw(TempData["Error"])
+        </div>
+    }
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success" role="alert">
+            @Html.Raw(TempData["Success"])
+        </div>
+    }
+    <form method="post" action="/PickTasks/scan-basket" class="mt-4">
+        <input type="hidden" name="PickTaskId" value="@Model.PickTaskId" />
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Mã Basket</label>
+            <input name="BasketId" class="form-control" placeholder="Dán mã hoặc quét QR vào đây..." />
+        </div>
+
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-upc-scan"></i> Xác nhận Basket
+        </button>
+    </form>
+
+
+
+</div>

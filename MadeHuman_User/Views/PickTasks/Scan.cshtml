@@ -1,0 +1,89 @@
+﻿@model Madehuman_Share.ViewModel.Outbound.PickTaskFullViewModel
+
+@{
+    ViewData["Title"] = "Thực hiện nhiệm vụ Pick";
+    var showBasketForm = TempData["NullBasket"] != null;
+}
+
+<div class="container mt-4">
+    <h4 class="text-primary">
+        🧺 Nhiệm vụ Pick: <code>@Model.Id</code>
+
+    </h4>
+
+    @if (showBasketForm)
+    {
+        <div class="container mt-5">
+            <h2 class="text-primary">🧺 Quét mã Basket</h2>
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger" role="alert">
+                    @Html.Raw(TempData["Error"])
+                </div>
+            }
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success" role="alert">
+                    @Html.Raw(TempData["Success"])
+                </div>
+            }
+
+            <form method="post" action="/PickTasks/scan-basket" class="mt-4">
+                <input type="hidden" name="PickTaskId" value="@Model.Id" />
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Mã Basket</label>
+                    <input name="BasketId" class="form-control" placeholder="Nhập mã hoặc quét QR giỏ hàng..." />
+                </div>
+
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-upc-scan"></i> Xác nhận Basket
+                </button>
+            </form>
+        </div>
+    }
+
+    <p><strong>Trạng thái:</strong> @Model.Status</p>
+
+    @if (!showBasketForm)
+    {
+        <p><strong>Basket:</strong> @Model.BasketId</p>
+        @if (Model.BasketId != null)
+        {
+            <form method="get" asp-controller="PickTasks" asp-action="ScanPickDetail" asp-route-id="@Model.Id">
+                <button type="submit" class="btn btn-primary mt-3">
+                    <i class="bi bi-play-fill"></i> Thực hiện nhiệm vụ
+                </button>
+            </form>
+        }
+
+    }
+
+    <hr />
+    <h5>Số nơi cần Pick (@Model.Details.Count)</h5>
+
+    <table class="table table-bordered table-sm">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>SKU</th>
+                <th>Quantity</th>
+                <th>Location</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Details.Count; i++)
+            {
+                var d = Model.Details[i];
+                <tr>
+                    <td>@(i + 1)</td>
+                    <td>@d.ProductSKUId</td>
+                    <td>@d.Quantity</td>
+                    <td>@d.WarehouseLocationId</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

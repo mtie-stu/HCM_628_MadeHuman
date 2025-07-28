@@ -66,7 +66,16 @@ namespace MadeHuman_Server.Controllers.WareHouse
             return Ok(result);
         }
 
+        [HttpGet("location/{id}")]
+        public async Task<IActionResult> GetLocationInfo(Guid id)
+        {
+            var result = await _service.GetLocationInfoAsync(id);
 
+            if (result == null)
+                return NotFound(new { message = "❌ Không tìm thấy vị trí kho." });
+
+            return Ok(result);
+        }
 
 
     }

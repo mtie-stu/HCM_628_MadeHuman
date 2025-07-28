@@ -1,4 +1,6 @@
-﻿using MadeHuman_Server.Data;
+﻿// File: PickTaskServices.cs
+
+using MadeHuman_Server.Data;
 using MadeHuman_Server.Model.Inbound;
 using MadeHuman_Server.Model.Outbound;
 using MadeHuman_Server.Service.UserTask;
@@ -10,28 +12,74 @@ namespace MadeHuman_Server.Service.Outbound
 {
     public interface IPickTaskServices
     {
-        Task<PickTaskFullViewModel?> AssignPickTaskToCurrentUserAsync();
+        Task<List<PickTaskViewModelForIndexView>> GetPickTasksByUserTaskIdAsync();
+        Task<Guid?> AssignPickTaskToCurrentUserAsync();
         Task<List<string>> ValidatePickTaskScanAsync(ScanPickTaskValidationRequest request);
-        Task StorePickTaskDetailAsync(PickTasks task, PickTaskDetails detail, Guid userTaskId, Guid basketId);
+        Task<List<string>> ConfirmPickDetailToBasketAsync(Guid pickTaskId, Guid pickTaskDetailId, Guid basketId);
+        Task<PickTaskFullViewModel?> GetPickTaskDetailByIdAsync(Guid pickTaskId);
+        Task<List<string>> AssignBasketToOutboundTaskAsync(Guid basketId, Guid outboundTaskId);
     }
 
     public class PickTaskServices : IPickTaskServices
     {
         private readonly ICheckTaskServices _checkTaskService;
-
+        private readonly ILogger<PickTaskServices> _logger;
         private readonly ApplicationDbContext _context;
         private readonly IUserTaskSvc _usertaskservice;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public PickTaskServices(ApplicationDbContext dbContext, IUserTaskSvc userTaskSvc, IHttpContextAccessor httpContextAccessor, ICheckTaskServices checkTaskService)
+        public PickTaskServices(ApplicationDbContext dbContext, IUserTaskSvc userTaskSvc, IHttpContextAccessor httpContextAccessor, ICheckTaskServices checkTaskService, ILogger<PickTaskServices> logger)
         {
             _context = dbContext;
             _usertaskservice = userTaskSvc;
             _httpContextAccessor = httpContextAccessor;
             _checkTaskService = checkTaskService;
+            _logger = logger;
         }
 
-        public async Task<PickTaskFullViewModel?> AssignPickTaskToCurrentUserAsync()
+        //public async Task<PickTaskFullViewModel?> AssignPickTaskToCurrentUserAsync()
+        //{
+        //    var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        //    if (string.IsNullOrEmpty(userId))
+        //        throw new UnauthorizedAccessException("❌ Không xác định được người dùng hiện tại.");
+
+        //    var userTaskId = await _usertaskservice.GetUserTaskIdAsync(userId, DateOnly.FromDateTime(DateTime.UtcNow));
+        //    if (userTaskId == null)
+        //        throw new InvalidOperationException("❌ Không tìm thấy phân công công việc hôm nay cho người dùng.");
+
+        //    var task = await _context.PickTasks
+        //        .Include(p => p.PickTaskDetails)
+        //        .Where(p => p.UsersTasksId == null || p.UsersTasksId == Guid.Empty)
+        //        .OrderBy(p => p.CreateAt)
+        //        .FirstOrDefaultAsync();
+
+        //    if (task == null)
+        //        return null;
+
+        //    task.UsersTasksId = userTaskId;
+        //    task.Status = StatusPickTask.Recived;
+        //    await _context.SaveChangesAsync();
+
+        //    return new PickTaskFullViewModel
+        //    {
+        //        Id = task.Id,
+        //        CreateAt = task.CreateAt,
+        //        FinishAt = task.FinishAt,
+        //        Status = (StatusPickTaskvm)task.Status,
+        //        UsersTasksId = task.UsersTasksId,
+        //        BasketId = _context.Baskets.FirstOrDefault(b => b.OutBoundTaskId == task.OutboundTaskId)?.Id,
+        //        Details = task.PickTaskDetails.Select(d => new PickTaskFullViewModel.PickTaskDetailItem
+        //        {
+        //            Id = d.Id,
+        //            Quantity = d.Quantity,
+        //            ProductSKUId = d.ProductSKUId,
+        //            WarehouseLocationId = d.WarehouseLocationId
+        //        }).ToList()
+        //    };
+        //}
+
+
+        public async Task<Guid?> AssignPickTaskToCurrentUserAsync()
         {
             var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
@@ -42,7 +90,6 @@ namespace MadeHuman_Server.Service.Outbound
                 throw new InvalidOperationException("❌ Không tìm thấy phân công công việc hôm nay cho người dùng.");
 
             var task = await _context.PickTasks
-                .Include(p => p.PickTaskDetails)
                 .Where(p => p.UsersTasksId == null || p.UsersTasksId == Guid.Empty)
                 .OrderBy(p => p.CreateAt)
                 .FirstOrDefaultAsync();
@@ -54,100 +101,68 @@ namespace MadeHuman_Server.Service.Outbound
             task.Status = StatusPickTask.Recived;
             await _context.SaveChangesAsync();
 
-            return new PickTaskFullViewModel
-            {
-                Id = task.Id,
-                CreateAt = task.CreateAt,
-                FinishAt = task.FinishAt,
-                Status = (StatusPickTaskvm)task.Status,
-                UsersTasksId = task.UsersTasksId,
-                Details = task.PickTaskDetails.Select(d => new PickTaskFullViewModel.PickTaskDetailItem
-                {
-                    Id = d.Id,
-                    Quantity = d.Quantity,
-                    ProductSKUId = d.ProductSKUId,
-                    WarehouseLocationId = d.WarehouseLocationId
-                }).ToList()
-            };
+            return task.Id;
         }
 
         public async Task<List<string>> ValidatePickTaskScanAsync(ScanPickTaskValidationRequest request)
         {
-            var task = await _context.PickTasks
-                .Include(t => t.PickTaskDetails)
-                .FirstOrDefaultAsync(t => t.Id == request.PickTaskId);
-
-            if (task == null)
-                return new() { "❌ Không tìm thấy PickTask." };
+            var task = await _context.PickTasks.Include(t => t.PickTaskDetails).FirstOrDefaultAsync(t => t.Id == request.PickTaskId);
+            if (task == null) return new() { "❌ Không tìm thấy PickTask." };
 
             var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return new() { "❌ Không xác định được người dùng." };
+            if (string.IsNullOrEmpty(userId)) return new() { "❌ Không xác định được người dùng." };
 
             var userTaskId = await _usertaskservice.GetUserTaskIdAsync(userId, DateOnly.FromDateTime(DateTime.UtcNow));
-            if (userTaskId == null)
-                return new() { "❌ Không tìm thấy phân công công việc hôm nay." };
+            if (userTaskId == null) return new() { "❌ Không tìm thấy phân công công việc hôm nay." };
 
-            if (task.UsersTasksId != userTaskId)
-                return new() { "❌ PickTask này không được gán cho bạn." };
+            if (task.UsersTasksId != userTaskId) return new() { "❌ PickTask này không được gán cho bạn." };
 
             var detail = task.PickTaskDetails.FirstOrDefault(d => d.Id == request.PickTaskDetailId);
-            if (detail == null)
-                return new() { "❌ Không tìm thấy chi tiết Pick." };
+            if (detail == null) return new() { "❌ Không tìm thấy chi tiết Pick." };
+            if (detail.IsPicked) return new() { "❌ Chi tiết này đã hoàn tất." };
 
-            if (detail.IsPicked)
-                return new() { "❌ Chi tiết này đã hoàn tất." };
-            // ✅ Gán OutboundTaskId vào basket
-            var assignResult = await AssignBasketToOutboundTaskAsync(request.BasketId.Value, task.OutboundTaskId);
-            if (assignResult.Any())
-                return assignResult;
+            if (string.IsNullOrEmpty(request.WareHouseLocation)) return new() { "❌ Vị trí không hợp lệ." };
 
+            var locationId = await _context.WarehouseLocations.Where(t => t.NameLocation == request.WareHouseLocation).Select(t => t.Id).FirstOrDefaultAsync();
+            if (locationId != detail.WarehouseLocationId) return new() { "❌ Vị trí không khớp." };
 
-            var sku = await _context.ProductSKUs
-                .Where(p => p.Id == detail.ProductSKUId)
-                .Select(p => p.SKU)
-                .FirstOrDefaultAsync() ?? "(null)";
-
+            var sku = await _context.ProductSKUs.Where(p => p.Id == detail.ProductSKUId).Select(p => p.SKU).FirstOrDefaultAsync();
             if (!string.Equals(request.SKU, sku, StringComparison.OrdinalIgnoreCase))
                 return new() { $"❌ SKU không khớp. Hệ thống: {sku}, bạn nhập: {request.SKU}" };
 
-            if (request.BasketId == null)
-                return new() { "❌ Bạn chưa quét giỏ." };
+            detail.QuantityPicked += 1;
+            await _context.SaveChangesAsync();
 
-         
-            // ✅ Ghi nhận pick
-            await StorePickTaskDetailAsync(task, detail, userTaskId.Value, request.BasketId.Value);
-
-            return new() { "✅ Đã ghi nhận 1 lần pick thành công." };
+            return new() { $"✅ Đã pick {detail.QuantityPicked}/{detail.Quantity}." };
         }
 
-        public async Task StorePickTaskDetailAsync(PickTasks task, PickTaskDetails detail, Guid userTaskId, Guid basketId)
+        public async Task<List<string>> ConfirmPickDetailToBasketAsync(Guid pickTaskId, Guid pickTaskDetailId, Guid basketId)
         {
-            detail.QuantityPicked += 1;
+            var task = await _context.PickTasks.Include(t => t.PickTaskDetails).FirstOrDefaultAsync(t => t.Id == pickTaskId);
+            if (task == null) return new() { "❌ Không tìm thấy nhiệm vụ." };
 
-            if (detail.QuantityPicked < detail.Quantity)
-            {
-                await _context.SaveChangesAsync();
-                return;
-            }
+            var detail = task.PickTaskDetails.FirstOrDefault(d => d.Id == pickTaskDetailId);
+            if (detail == null) return new() { "❌ Không tìm thấy chi tiết nhiệm vụ." };
+            if (detail.IsPicked) return new() { "✅ Chi tiết này đã hoàn tất rồi." };
+            if (detail.QuantityPicked < detail.Quantity) return new() { $"❌ Bạn mới pick {detail.QuantityPicked}/{detail.Quantity}. Hãy hoàn tất trước khi xác nhận." };
+
+            var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId)) return new() { "❌ Không xác định được người dùng." };
+
+            var userTaskId = await _usertaskservice.GetUserTaskIdAsync(userId, DateOnly.FromDateTime(DateTime.UtcNow));
+            if (userTaskId == null) return new() { "❌ Không tìm thấy phân công công việc hôm nay." };
+
+            var assignResult = await AssignBasketToOutboundTaskAsync(basketId, task.OutboundTaskId);
+            if (assignResult.Any()) return assignResult;
 
             detail.IsPicked = true;
 
-            // ✅ Kiểm tra giỏ có khớp với OutboundTask hay không
-            var basket = await _context.Baskets.FindAsync(basketId);
-            if (basket == null)
-                throw new Exception("❌ Không tìm thấy giỏ hàng đã quét.");
-
-            if (basket.OutBoundTaskId != task.OutboundTaskId)
-                throw new Exception("❌ Giỏ hàng không khớp với nhiệm vụ pick hiện tại.");
-
-            // ✅ Trừ tồn kho và ghi log
             var inventory = await _context.Inventory.FirstOrDefaultAsync(i =>
                 i.ProductSKUId == detail.ProductSKUId &&
                 i.WarehouseLocationId == detail.WarehouseLocationId);
 
             if (inventory == null || inventory.StockQuantity < detail.Quantity)
-                throw new Exception("❌ Không đủ tồn kho để hoàn tất pick. Vui lòng nhờ staff hỗ trợ.");
+                return new() { "❌ Không đủ tồn kho để hoàn tất pick. Vui lòng nhờ staff hỗ trợ." };
 
             inventory.StockQuantity -= detail.Quantity;
             inventory.LastUpdated = DateTime.UtcNow;
@@ -176,18 +191,18 @@ namespace MadeHuman_Server.Service.Outbound
                     userTask.TotalKPI += totalQty;
                     userTask.HourlyKPIs += totalQty;
                 }
-                // ✅ Gọi tạo CheckTask khi Pick hoàn tất
+
                 await _checkTaskService.CreateCheckTaskAsync(task.OutboundTaskId);
             }
 
             await _context.SaveChangesAsync();
+            return new() { "✅ Đã xác nhận rổ và hoàn tất chi tiết pick." };
         }
 
-        private async Task<List<string>> AssignBasketToOutboundTaskAsync(Guid basketId, Guid outboundTaskId)
+        public async Task<List<string>> AssignBasketToOutboundTaskAsync(Guid basketId, Guid outboundTaskId)
         {
             var basket = await _context.Baskets.FindAsync(basketId);
-            if (basket == null)
-                return new() { "❌ Không tìm thấy giỏ." };
+            if (basket == null) return new() { "❌ Không tìm thấy giỏ." };
 
             if (basket.OutBoundTaskId != null && basket.OutBoundTaskId != outboundTaskId)
                 return new() { "❌ Giỏ này đã được sử dụng cho nhiệm vụ khác. Vui lòng quét giỏ khác." };
@@ -200,7 +215,157 @@ namespace MadeHuman_Server.Service.Outbound
                 await _context.SaveChangesAsync();
             }
 
-            return new(); // OK
+            return new();
         }
+
+        public async Task<List<PickTaskViewModelForIndexView>> GetPickTasksByUserTaskIdAsync()
+        {
+            var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId)) throw new UnauthorizedAccessException("❌ Không xác định được người dùng hiện tại.");
+
+            var userTaskId = await _usertaskservice.GetUserTaskIdAsync(userId, DateOnly.FromDateTime(DateTime.UtcNow));
+            if (userTaskId == null) throw new InvalidOperationException("❌ Không tìm thấy phân công công việc hôm nay cho người dùng.");
+
+            var tasks = await _context.PickTasks
+                .Include(p => p.OutboundTask)
+                .Include(p => p.OutboundTaskItems)
+                .Include(p => p.PickTaskDetails)
+                .Where(p => p.UsersTasksId == userTaskId)
+                .ToListAsync();
+
+            return tasks.Select(task => new PickTaskViewModelForIndexView
+            {
+                Id = task.Id,
+                CreateAt = task.CreateAt,
+                FinishAt = task.FinishAt,
+                Status = task.Status.ToString(),
+                OutboundTaskId = task.OutboundTaskId,
+                TotalQuantity = task.PickTaskDetails.Sum(d => d.Quantity)
+            }).ToList();
+        }
+        public async Task<PickTaskFullViewModel?> GetPickTaskDetailByIdAsync(Guid pickTaskId)
+        {
+            var outboundTaskId = await _context.PickTasks
+                .Where(b => b.Id == pickTaskId)
+                .Select(b => b.OutboundTaskId)
+                .FirstOrDefaultAsync();
+
+            var basketid = await _context.Baskets
+                 .Where(b => b.OutBoundTaskId == outboundTaskId)
+                 .Select(b => (Guid?)b.Id) // <- Nullable
+                 .FirstOrDefaultAsync();
+
+
+            var entity = await _context.PickTasks
+                .Include(p => p.PickTaskDetails)
+                .AsNoTracking()
+                .Where(p => p.Id == pickTaskId)
+                .ToListAsync();
+
+            var data = entity.Select(p => new PickTaskFullViewModel
+            {
+                Id = p.Id,
+                CreateAt = p.CreateAt,
+                Status = (StatusPickTaskvm)Enum.Parse(typeof(StatusPickTaskvm), p.Status.ToString()),
+                UsersTasksId = p.UsersTasksId,
+                BasketId = basketid,
+                Details = p.PickTaskDetails.Select(d => new PickTaskFullViewModel.PickTaskDetailItem
+                {
+                    Id = d.Id,
+                    Quantity = d.Quantity,
+                    WarehouseLocationId = d.WarehouseLocationId,
+                    ProductSKUId = d.ProductSKUId
+                }).OrderBy(d => d.Id).ToList()
+            }).FirstOrDefault();
+
+            return data;
+        }
+
+
     }
 }
+
+
+//🔄 1.Nhận nhiệm vụ Pick: AssignPickTaskToCurrentUserAsync()
+//✅ Xác định UserId từ token và lấy UsersTasksId theo ngày hiện tại.
+
+//🔍 Tìm PickTask chưa được gán người dùng.
+
+//🖋️ Gán UsersTasksId, đổi trạng thái sang Recived.
+
+//Trả về PickTaskFullViewModel gồm:
+
+//PickTaskId, CreateAt, Status
+
+//BasketId (nếu đã có giỏ)
+
+//Danh sách PickTaskDetails (mỗi detail gồm: Id, Quantity, SKUId, LocationId)
+
+//📌 Giai đoạn này là khởi tạo và hiển thị nhiệm vụ trên View ScanPickDetails.
+
+//📦 2. Quét SKU và xác nhận: ValidatePickTaskScanAsync(request)
+//Xác thực:
+
+//PickTask tồn tại, được gán đúng UserTask.
+
+//PickTaskDetail tồn tại, chưa hoàn tất.
+
+//SKU và vị trí đúng.
+
+//Nếu đúng:
+
+//Tăng QuantityPicked thêm 1.
+
+//Nếu sai: trả lỗi để thông báo trên View.
+
+//📌 Mỗi lần quét đúng thì tăng tiến dần cho tới khi đạt Quantity.
+
+//🧺 3. Xác nhận đã cho hàng vào rổ: ConfirmPickDetailToBasketAsync(pickTaskId, pickTaskDetailId, basketId)
+//Kiểm tra PickTaskDetail:
+
+//Đã quét đủ QuantityPicked thì mới cho xác nhận.
+
+//Kiểm tra BasketId:
+
+//Nếu đã gán cho nhiệm vụ khác → báo lỗi.
+
+//Nếu chưa gán → gán vào nhiệm vụ hiện tại.
+
+//Đánh dấu PickTaskDetail là IsPicked = true.
+
+//Trừ tồn kho từ Inventory.
+
+//Ghi log vào InventoryLogs.
+
+//✅ Nếu tất cả các PickTaskDetails đã hoàn tất:
+
+//Cập nhật Status = Finished.
+
+//Ghi FinishAt
+
+//Cộng KPI cho Picker
+
+//Tạo tiếp CheckTask cho nhiệm vụ kế tiếp (Kiểm hàng).
+
+//📋 4. Lấy danh sách nhiệm vụ đã được gán: GetPickTasksByUserTaskIdAsync()
+//Lấy tất cả các PickTask gán cho UsersTasksId hôm nay.
+
+//Trả về danh sách view model gồm:
+
+//Id, CreateAt, FinishAt, Status
+
+//Tổng Quantity từ các PickTaskDetail.
+
+//📌 Dùng để hiển thị danh sách nhiệm vụ Pick của tôi trong view Index.
+
+//🔁 Hỗ trợ nội bộ: AssignBasketToOutboundTaskAsync
+//Đảm bảo 1 Basket chỉ gán cho duy nhất 1 nhiệm vụ (OutboundTask).
+
+//Nếu chưa gán → sẽ gán ngay và đổi trạng thái Basket thành Selected.
+
+//✅ Tổng Kết Flow Thực Tế
+//Giai đoạn	Mô tả	Giao diện
+//1️⃣ Nhận nhiệm vụ	AssignPickTaskToCurrentUserAsync()	Index View → Scan View
+//2️⃣ Quét SKU & vị trí	ValidatePickTaskScanAsync()	Scan View (1 SKU 1 lần)
+//3️⃣ Xác nhận bỏ vào rổ	ConfirmPickDetailToBasketAsync()	Scan View (Quét Basket)
+//4️⃣ Hoàn tất	Ghi tồn kho, cộng KPI, tạo CheckTask	Chuyển về Index View

@@ -1,5 +1,6 @@
 ﻿
 using Madehuman_Share.ViewModel.Shop;
+using System.Net.Http;
 using System.Net.Http.Headers;
 
 namespace MadeHuman_User.ServicesTask.Services.ShopService
@@ -10,6 +11,7 @@ namespace MadeHuman_User.ServicesTask.Services.ShopService
         Task<ProductDetailViewModel?> GetProductDetailAsync(Guid id);
         Task<bool> CreateAsync(CreateProduct_ProdcutSKU_ViewModel model);
         Task<bool> UpdateAsync(Guid id, CreateProduct_ProdcutSKU_ViewModel model);
+        Task<ProductSKUInfoViewmodel?> GetSKUInfoAsync(Guid productSKUId);
     }
     public class ProductService : IProductService
     {
@@ -67,7 +69,17 @@ namespace MadeHuman_User.ServicesTask.Services.ShopService
             return response.IsSuccessStatusCode;
         }
 
+        public async Task<ProductSKUInfoViewmodel?> GetSKUInfoAsync(Guid productSKUId)
+        {
+            var response = await _client.GetAsync($"api/product/sku/{productSKUId}");
 
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<ProductSKUInfoViewmodel>();
+            }
+
+            return null;
+        }
 
         public async Task<bool> UpdateAsync(Guid id, CreateProduct_ProdcutSKU_ViewModel model)
         {

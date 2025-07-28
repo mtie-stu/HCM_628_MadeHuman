@@ -19,7 +19,7 @@ namespace Madehuman_Share.ViewModel.Outbound
         public DateTime FinishAt { get; set; }
         public StatusPickTaskvm Status { get; set; }
         public Guid? UsersTasksId { get; set; }
-
+        public Guid? BasketId { get; set; }
         public List<PickTaskDetailItem> Details { get; set; }
 
         public class PickTaskDetailItem
@@ -27,8 +27,13 @@ namespace Madehuman_Share.ViewModel.Outbound
             public Guid Id { get; set; }
             public int Quantity { get; set; }
             public Guid WarehouseLocationId { get; set; }
+            public string WarehouseLocationCode { get; set; } // Mã vị trí
             public Guid ProductSKUId { get; set; }
+            public string ProductName { get; set; }
+            public string SkuCode { get; set; }
+            public List<string> ImageUrls { get; set; } = new();  // ✅ hỗ trợ nhiều ảnh
         }
+
     }
 
 }
