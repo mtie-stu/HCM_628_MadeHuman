@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Nhiệm vụ Pick";
-    var currentDetail = Model.Details.FirstOrDefault(); // 👉 Tạm thời hiển thị item đầu tiên
+    var currentDetail = Model.Details.FirstOrDefault();
 }
 
 <div class="container mt-4">
@@ -10,28 +10,24 @@
 
     @if (currentDetail != null)
     {
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <h5>📦 Sản phẩm cần lấy</h5>
-                <p><strong>Tên sản phẩm:</strong> @currentDetail.ProductName</p>
-                <p><strong>SKU:</strong> @currentDetail.SkuCode</p>
-                <p><strong>Số lượng cần lấy:</strong> @currentDetail.Quantity</p>
-                <p><strong>Vị trí cần lấy hàng:</strong> @currentDetail.WarehouseLocationCode</p>
-                <p><strong>Mã giỏ hàng:</strong> @Model.BasketId</p>
-
-                <div class="mt-3">
-                    <h6>🖼️ Hình ảnh sản phẩm</h6>
+        <div class="card shadow mb-4">
+            <div class="row g-0">
+                <!-- Ảnh sản phẩm -->
+                <div class="col-md-5">
                     @if (currentDetail.ImageUrls != null && currentDetail.ImageUrls.Any())
                     {
                         var carouselId = "carousel_" + currentDetail.Id;
-
-                        <div id="@carouselId" class="carousel slide" data-bs-ride="carousel" style="max-width: 300px;">
+                        <div id="@carouselId" class="carousel slide h-100" data-bs-ride="carousel">
                             <div class="carousel-inner">
                                 @for (int i = 0; i < currentDetail.ImageUrls.Count; i++)
                                 {
                                     var img = currentDetail.ImageUrls[i];
                                     <div class="carousel-item @(i == 0 ? "active" : "")">
-                                        <img src="@img" class="d-block w-100 rounded" alt="Ảnh sản phẩm">
+                                       <img src="/proxy-image?url=@Uri.EscapeDataString(img)" 
+                                                 class="img-thumbnail d-block mx-auto" 
+                                                 style="max-height: 250px; object-fit: contain;" 
+                                                 alt="Ảnh sản phẩm">
+
                                     </div>
                                 }
                             </div>
@@ -50,29 +46,43 @@
                     }
                     else
                     {
-                        <p class="text-muted fst-italic">Không có ảnh.</p>
+                        <div class="d-flex align-items-center justify-content-center bg-light h-100 text-muted">
+                            <p class="text-center m-3">Không có ảnh.</p>
+                        </div>
                     }
                 </div>
 
+                <!-- Thông tin sản phẩm -->
+                <div class="col-md-7">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">📦 Sản phẩm cần lấy</h5>
+                        <p><strong>Tên sản phẩm:</strong> @currentDetail.ProductName</p>
+                        <p><strong>SKU:</strong> @currentDetail.SkuCode</p>
+                        <p><strong>Số lượng cần lấy:</strong> @currentDetail.Quantity</p>
+                        <p><strong>Vị trí cần lấy hàng:</strong> @currentDetail.WarehouseLocationCode</p>
+                        <p><strong>Mã giỏ hàng:</strong> @Model.BasketId</p>
+                    </div>
+                </div>
             </div>
         </div>
     }
 
+    <!-- Quét mã -->
     <div class="mb-4">
         <label for="scanInput" class="form-label fw-bold">🔍 Ô nhập dữ liệu quét</label>
         <input type="text" id="scanInput" class="form-control form-control-lg" placeholder="Quét mã vị trí, sản phẩm, giỏ..." autofocus />
     </div>
+
+    <!-- Kết quả -->
+    <div id="result" class="alert d-none mt-3"></div>
 </div>
-
-
-
 
 @section Scripts {
     <script>
         let step = 1;
         let picked = 0;
         const qtyNeed = parseInt("@currentDetail.Quantity");
-        const qtyPickedEl = document.getElementById("qty-picked");
+        const qtyPickedEl = document.getElementById("qty-picked"); // nếu muốn hiển thị số lượng đã pick
         const resultBox = document.getElementById("result");
 
         document.getElementById("scanInput").addEventListener("keypress", async function (e) {
@@ -80,11 +90,9 @@
 
             const value = e.target.value.trim();
             e.target.value = "";
-
             if (!value) return;
 
             if (step === 1) {
-                // B1: Quét vị trí
                 if (value === "@currentDetail.WarehouseLocationId") {
                     step = 2;
                     showSuccess("✅ Vị trí chính xác. Quét SKU tiếp theo.");
@@ -92,10 +100,9 @@
                     showError("❌ Sai vị trí. Hãy thử lại.");
                 }
             } else if (step === 2) {
-                // B2: Quét SKU
                 if (value === "@currentDetail.ProductSKUId") {
                     picked++;
-                    qtyPickedEl.textContent = picked;
+                    if (qtyPickedEl) qtyPickedEl.textContent = picked;
                     if (picked < qtyNeed) {
                         showSuccess(`✅ Đã Pick ${picked}/${qtyNeed}. Tiếp tục quét.`);
                     } else {
@@ -106,7 +113,6 @@
                     showError("❌ Sai SKU. Vui lòng thử lại.");
                 }
             } else if (step === 3) {
-                // B3: Quét giỏ
                 if (value === "@Model.BasketId") {
                     const data = {
                         pickTaskId: "@Model.Id",
@@ -131,7 +137,7 @@
 
                     step = 1;
                     picked = 0;
-                    qtyPickedEl.textContent = 0;
+                    if (qtyPickedEl) qtyPickedEl.textContent = 0;
                 } else {
                     showError("❌ Sai giỏ. Hãy thử lại.");
                 }
@@ -151,4 +157,3 @@
         }
     </script>
 }
-
