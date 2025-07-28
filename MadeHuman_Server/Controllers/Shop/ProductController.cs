@@ -10,10 +10,11 @@ namespace MadeHuman_Server.Controllers.Shop
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
-
-        public ProductController(IProductService productService)
+        private readonly IProductLookupService _productLookupService;   
+        public ProductController(IProductService productService,IProductLookupService productLookupService)
         {
             _productService = productService;
+            _productLookupService = productLookupService;
         }
 
         // GET: api/product
@@ -82,6 +83,15 @@ namespace MadeHuman_Server.Controllers.Shop
                 return NotFound(new { message = "Không thể cập nhật sản phẩm." });
 
             return Ok(new { message = "Cập nhật thành công." });
+        }
+        [HttpGet("sku/{id}")]
+        public async Task<IActionResult> GetSKUInfo(Guid id)
+        {
+            var result = await _productLookupService.GetSKUInfoAsync(id);
+            if (result == null)
+                return NotFound(new { message = "❌ Không tìm thấy ProductSKU." });
+
+            return Ok(result);
         }
 
 

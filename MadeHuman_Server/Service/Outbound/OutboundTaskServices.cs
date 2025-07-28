@@ -331,6 +331,7 @@ namespace MadeHuman_Server.Service.Outbound
             };
 
             var usedLocationIds = new HashSet<Guid>();
+            int orderIndex = 1; // Bắt đầu đánh số thứ tự quét từ 1
 
             foreach (var detail in outboundTaskItem.OutboundTaskItemDetails)
             {
@@ -356,12 +357,15 @@ namespace MadeHuman_Server.Service.Outbound
                     ProductSKUId = detail.ProductSKUId,
                     Quantity = detail.Quantity,
                     WarehouseLocationId = location.Id,
-                    PickTaskId = pickTask.Id
+                    PickTaskId = pickTask.Id,
+                    QuantityPicked = 0,
+                    OrderIndex = orderIndex++ // ⚠️ Gán thứ tự
                 });
             }
 
             return pickTask;
         }
+
     }
 }
 

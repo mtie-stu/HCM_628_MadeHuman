@@ -1,0 +1,84 @@
+﻿@model List<Madehuman_Share.ViewModel.Outbound.PickTaskViewModelForIndexView>
+
+@{
+    ViewData["Title"] = "Nhiệm vụ Pick hàng";
+    var activeTasks = Model.Where(x => x.Status != "Finished").ToList();
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="text-primary">
+            <i class="bi bi-box-seam"></i> Danh sách nhiệm vụ Pick hàng của tôi
+        </h2>
+        <form asp-controller="PickTasks" asp-action="Assign" method="post">
+            <button type="submit" class="btn btn-success">
+                📦 Nhận nhiệm vụ Pick
+            </button>
+        </form>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle"></i> @TempData["Success"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            <i class="bi bi-x-circle"></i> @TempData["Error"]
+        </div>
+    }
+
+    @if (!activeTasks.Any())
+    {
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i> Bạn hiện không có nhiệm vụ Pick nào đang xử lý.
+        </div>
+    }
+    else
+    {
+        <table class="table table-bordered table-hover table-striped table-sm">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Mã nhiệm vụ</th>
+                    <th>Ngày tạo</th>
+                    <th>Trạng thái</th>
+                    <th>Số lượng cần Pick</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < activeTasks.Count; i++)
+                {
+                    var task = activeTasks[i];
+                    <tr>
+                        <td>@(i + 1)</td>
+                        <td>@task.Id</td>
+                        <td>@task.CreateAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            @switch (task.Status)
+                            {
+                                case "Recived":
+                                    <span class="badge bg-warning text-dark">Đang thực hiện</span>
+                                    break;
+                             
+                            }
+                        </td>
+                        <td><strong>@task.TotalQuantity</strong></td>
+                        <td>
+                            <a class="btn btn-primary btn-sm"
+                               asp-controller="PickTasks"
+                               asp-action="Scan"
+                               asp-route-id="@task.Id">
+                                <i class="bi bi-box-arrow-in-right"></i> Bắt đầu Pick
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

@@ -15,6 +15,7 @@ namespace MadeHuman_Server.Model.Outbound
         public bool IsPicked { get; set; }  = false;
         public Guid ProductSKUId { get; set; } = default!;
         public int QuantityPicked { get; set; } = 0;
+        public int? OrderIndex { get; set; } // 🔼 Thêm dòng này
 
 
         [ForeignKey("ProductSKUId")]
