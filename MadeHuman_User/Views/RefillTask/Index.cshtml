@@ -94,14 +94,14 @@
 
 
                     $.ajax({
-                        url: 'https://localhost:7204/api/RefillTask/assign',
+                        url: 'https://hcm-628-madehuman-api.onrender.com/api/RefillTask/assign',
                         type: 'POST',
                         headers: {
                             Authorization: 'Bearer ' + token // 👈 Gửi token trong header
                         },
                         success: function (response) {
                             alert("✅ Đã nhận nhiệm vụ thành công!");
-                                window.location.href = `https://localhost:7112/RefillTask/Details/${response.taskId}`;
+                            window.location.href = `https://hcm-628-madehuman-api.onrender.com/RefillTask/Details/${response.taskId}`;
 
                         },
                         error: function (xhr) {
