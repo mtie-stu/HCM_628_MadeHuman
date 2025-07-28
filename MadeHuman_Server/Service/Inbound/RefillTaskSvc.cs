@@ -125,7 +125,7 @@ namespace MadeHuman_Server.Service.Inbound
                         FromLocation = d.FromLocation,
                         ToLocation = d.ToLocation,
                         Quantity = d.Quantity,
-                        IsRefilled=false,
+                        IsRefilled = false,
                     }).ToList()
                 };
 

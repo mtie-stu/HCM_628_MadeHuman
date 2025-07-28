@@ -26,7 +26,7 @@ builder.Services.AddScoped<IRefillTaskService, RefillTaskService>();
 builder.Services.AddScoped<IPickTaskApiService, PickTaskApiService>();
 builder.Services.AddScoped<IWarehouseLookupApiService, WarehouseLocationServices>();
 
-
+//https://localhost:7204
 /*https://hcm-628-madehuman-api.onrender.com*/
 builder.Services.AddHttpClient("API", client =>
 {

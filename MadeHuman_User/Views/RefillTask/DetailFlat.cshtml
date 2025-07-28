@@ -36,19 +36,21 @@
             <tbody>
                 @foreach (var item in Model)
                 {
-                    if (item.IsRefilled)
+                    if (item.IsRefilled = true)
                     {
                         continue; // ❌ Bỏ qua dòng này nếu đã bổ sung
                     }
-
-                    <tr>
-                        <td>@item.RefillTaskId</td>
-                        <td>@item.CreateBy</td>
-                        <td>@item.CreateAt.ToString("dd/MM/yyyy HH:mm")</td>
-                        <td>@item.FromLocation</td>
-                        <td>@item.ToLocation</td>
-                        <td>@item.Quantity</td>
-                    </tr>
+                    else
+                    {
+                        <tr>
+                            <td>@item.RefillTaskId</td>
+                            <td>@item.CreateBy</td>
+                            <td>@item.CreateAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@item.FromLocation</td>
+                            <td>@item.ToLocation</td>
+                            <td>@item.Quantity</td>
+                        </tr>
+                    }
                 }
 
             </tbody>

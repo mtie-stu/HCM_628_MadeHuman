@@ -1,4 +1,5 @@
-﻿@model Madehuman_Share.ViewModel.PartTime_Task.Checkin_Checkout_Viewmodel
+﻿@using Madehuman_Share.ViewModel.PartTime_Task
+@model CheckinPageViewModel
 
 @{
     ViewData["Title"] = "Chấm công";
@@ -7,74 +8,195 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow border-0">
-                <div class="card-header bg-primary text-white text-center">
-                    <h4 class="mb-0"><i class="bi bi-fingerprint me-2"></i>Chấm công: Check In / Out</h4>
+<style>
+    body {
+        background-color: #f6f8fa;
+        font-family: "Segoe UI", sans-serif;
+    }
+
+    .header-banner {
+        background: linear-gradient(45deg, #ee4d2d, #f08a5d);
+        color: white;
+        padding: 2rem 1rem;
+        border-radius: 0.75rem;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .card-section {
+        background-color: #ffffff;
+        border-radius: 0.75rem;
+    }
+
+    .card-header-orange {
+        background-color: #ee4d2d;
+        color: white;
+        border-radius: 0.75rem 0.75rem 0 0;
+    }
+
+    .btn-orange {
+        background-color: #ee4d2d;
+        color: white;
+        border: none;
+        border-radius: 0.3rem;
+        font-weight: 500;
+    }
+
+        .btn-orange:hover {
+            background-color: #d64025;
+        }
+
+    .form-control,
+    .form-select {
+        border-radius: 0.3rem;
+    }
+
+    .badge-checkin {
+        background-color: #28a745;
+    }
+
+    .badge-checkout {
+        background-color: #ffc107;
+        color: #000;
+    }
+
+    .badge-overtime {
+        background-color: #17a2b8;
+        color: #000;
+    }
+
+    .table thead th {
+        background-color: #343a40;
+        color: #fff;
+    }
+
+    .section-title {
+        font-weight: 600;
+        font-size: 1.25rem;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+
+    .alert {
+        border-radius: 0.4rem;
+    }
+</style>
+
+<div class="container mt-3">
+
+    <!-- Header banner -->
+    <div class="header-banner">
+        <h2 class="fw-bold"><i class="bi bi-calendar-check me-2"></i>Hệ thống chấm công</h2>
+        <p class="mb-0">Ghi nhận thời gian làm việc hàng ngày của bạn một cách nhanh chóng và chính xác.</p>
+    </div>
+
+    <!-- Form chấm công -->
+    <div class="card shadow border-0 mb-5 card-section">
+        <div class="card-header card-header-orange text-center">
+            <h4 class="mb-0"><i class="bi bi-fingerprint me-2"></i>Chấm công</h4>
+        </div>
+        <div class="card-body p-4">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
                 </div>
-                <div class="card-body">
+            }
 
-                    @if (TempData["Success"] != null)
-                    {
-                        <div class="alert alert-success d-flex align-items-center" role="alert">
-                            <i class="bi bi-check-circle-fill me-2"></i>
-                            @TempData["Success"]
-                        </div>
-                    }
-
-                    @if (TempData["Error"] != null)
-                    {
-                        <div class="alert alert-danger d-flex align-items-center" role="alert">
-                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            @TempData["Error"]
-                        </div>
-                    }
-
-                    <form asp-action="CheckInOut" method="post" id="checkForm">
-                        <div class="mb-3">
-                            <label asp-for="UserId" class="form-label fw-semibold">👤 User ID</label>
-                            <input asp-for="UserId" id="userIdInput" class="form-control" />
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="PartTimeId" class="form-label fw-semibold">🆔 PartTime ID</label>
-                            <input asp-for="PartTimeId" class="form-control" />
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="regime" class="form-label fw-semibold">📌 Hoạt động</label>
-                            <select asp-for="regime" id="regimeSelect" class="form-select">
-                                <option value="">-- Chọn hành động --</option>
-                                <option value="Checkin">✅ Check In</option>
-                                <option value="Checkout">⏱️ Check Out</option>
-                                <option value="Break">☕ Nghỉ giải lao</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-3" id="breakDurationWrapper" style="display:none;">
-                            <label asp-for="BreakDuration" class="form-label fw-semibold">🕒 Thời gian nghỉ (hh:mm:ss)</label>
-                            <input asp-for="BreakDuration" placeholder="00:10:00" class="form-control" />
-                        </div>
-
-                        @* <div class="mb-3">
-                            <label asp-for="Note" class="form-label fw-semibold">📝 Ghi chú (tuỳ chọn)</label>
-                            <input asp-for="Note" class="form-control" />
-                        </div> *@
-
-                        <div class="d-flex justify-content-between">
-                            <button type="submit" class="btn btn-success w-50 me-2">
-                                <i class="bi bi-send-check"></i> Gửi
-                            </button>
-                            <a href="@Url.Action("AllTodayLogs", "User")" class="btn btn-outline-primary w-50">
-                                <i class="bi bi-clock-history"></i> Xem lịch sử hôm nay
-                            </a>
-                        </div>
-                    </form>
-
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger d-flex align-items-center">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
                 </div>
-            </div>
+            }
+
+            <form asp-action="CheckInOut" method="post" id="checkForm">
+                <div class="mb-3">
+                    <label asp-for="Form.UserId" class="form-label fw-semibold">👤 Mã nhân viên</label>
+                    <input asp-for="Form.UserId" class="form-control" placeholder="Nhập ID nhân viên" />
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Form.PartTimeId" class="form-label fw-semibold">🆔 Mã ca làm</label>
+                    <input asp-for="Form.PartTimeId" class="form-control" placeholder="Nhập ID ca làm" />
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Form.regime" class="form-label fw-semibold">📌 Hành động</label>
+                    <select asp-for="Form.regime" id="regimeSelect" class="form-select">
+                        <option value="">-- Chọn hành động --</option>
+                        <option value="Checkin">✅ Check In</option>
+                        <option value="Checkout">⏱️ Check Out</option>
+                        <option value="Break">☕ Nghỉ giải lao</option>
+                    </select>
+                </div>
+
+                <div class="mb-3" id="breakDurationWrapper" style="display:none;">
+                    <label asp-for="Form.BreakDuration" class="form-label fw-semibold">🕒 Thời gian nghỉ (hh:mm:ss)</label>
+                    <input asp-for="Form.BreakDuration" placeholder="00:10:00" class="form-control" />
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-orange">
+                        <i class="bi bi-send-check me-1"></i> Gửi chấm công
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bảng lịch sử hôm nay -->
+    <div class="card shadow border-0 card-section">
+        <div class="card-header card-header-orange text-center">
+            <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Lịch sử hôm nay</h5>
+        </div>
+        <div class="card-body p-4">
+            @if (Model.TodayLogs == null || !Model.TodayLogs.Any())
+            {
+                <div class="alert alert-warning text-center">
+                    <i class="bi bi-info-circle me-2"></i>Không có dữ liệu hôm nay.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-bordered table-striped align-middle table-sm">
+                        <thead class="text-center">
+                            <tr>
+                                <th>👤 Nhân viên</th>
+                                <th>🆔 Ca làm</th>
+                                <th>🕒 Thời gian</th>
+                                <th>📌 Loại</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var log in Model.TodayLogs)
+                            {
+                                <tr>
+                                    <td>@log.UserId</td>
+                                    <td>@log.PartTimeId</td>
+                                    <td>@log.Timestamp.ToString("HH:mm:ss")</td>
+                                    <td>
+                                        @if (log.IsCheckIn)
+                                        {
+                                            <span class="badge badge-checkin">✅ Check In</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-checkout">⏱️ Check Out</span>
+                                        }
+
+                                        @if (log.IsOvertime)
+                                        {
+                                            <span class="badge badge-overtime ms-2">Tăng ca</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
         </div>
     </div>
 </div>
@@ -86,12 +208,11 @@
             const breakDurationWrapper = document.getElementById("breakDurationWrapper");
 
             function toggleBreakField() {
-                const selected = regimeSelect.value;
-                breakDurationWrapper.style.display = (selected === "Break") ? "block" : "none";
+                breakDurationWrapper.style.display = (regimeSelect.value === "Break") ? "block" : "none";
             }
 
             regimeSelect.addEventListener("change", toggleBreakField);
-            toggleBreakField(); // gọi ban đầu
+            toggleBreakField(); // khởi tạo ban đầu
         });
     </script>
 }
