@@ -37,10 +37,16 @@ namespace MadeHuman_User.Controllers.InboundControlles
         }
 
         [HttpGet]
-        public IActionResult ValidateScan()
+        public IActionResult ValidateScan(Guid? inboundTaskId = null)
         {
-            return View(new ScanInboundTaskValidationRequest());
+            var vm = new ScanInboundTaskValidationRequest();
+
+            if (inboundTaskId.HasValue)
+                vm.InboundTaskId = inboundTaskId.Value; // gán vào ViewModel
+
+            return View(vm); // truyền sang View => tự đổ vào input
         }
+
 
         [HttpPost]
         public async Task<IActionResult> ValidateScan(ScanInboundTaskValidationRequest request)
@@ -54,7 +60,12 @@ namespace MadeHuman_User.Controllers.InboundControlles
 
             return View(request);
         }
-
+        public async Task<IActionResult> Index()
+        {
+            var token = Request.Cookies["JWTToken"] ?? "";
+            var tasks = await _inboundTaskService.GetAllAsync(token);
+            return View(tasks);
+        }
 
 
 

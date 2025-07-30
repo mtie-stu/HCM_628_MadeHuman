@@ -153,13 +153,12 @@
             <div id="collapseInbound" class="collapse">
                 <a asp-controller="Inbound" asp-action="Import"
                    class="@IsActive("Inbound","Import")">
-                    <span><i class="fas fa-file-import"></i> Import</span>
+                    <span><i class="fas fa-file-import"></i> Import (FullTime)</span>
                 </a>
-                <a asp-controller="Inbound" asp-action="ValidateScan"
-                   class="@IsActive("Inbound","ValidateScan")">
-                    <span><i class="bi bi-upc-scan me-2"></i>Scan Inbound</span>
+                <a asp-controller="Inbound" asp-action="Index"
+                   class="@IsActive("Inbound","Index")">
+                    <span><i class="fas fa-file-import"></i>Import (PartTime)</span>
                 </a>
-
                 <a asp-controller="Inbound" asp-action="Export"
                    class="@IsActive("Inbound","Export")">
                     <span><i class="fas fa-file-export"></i> Export</span>

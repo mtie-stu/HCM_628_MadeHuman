@@ -12,7 +12,6 @@ namespace Madehuman_Share.ViewModel.Inbound
         public Guid Id { get; set; }
         public Guid? LowStockId { get; set; }
         public Guid? UserTaskId { get; set; }
-
         public DateTime CreateAt { get; set; } = DateTime.UtcNow;
         public string CreateBy { get; set; }
         public string? CreateByName { get; set; }
