@@ -131,7 +131,6 @@ namespace MadeHuman_Server.Service.Inbound
 
                 _context.RefillTasks.Add(task);
                 await _context.SaveChangesAsync();
-
                 vm.Id = task.Id;
                 return vm;
             }
@@ -219,7 +218,7 @@ namespace MadeHuman_Server.Service.Inbound
                     CreateAt = d.RefillTasks.CreateAt,
                     LowStockId = d.RefillTasks.LowStockId,
                     UserTaskId = d.RefillTasks.UserTaskId,
-
+                    SKU = d.ProductSKUs.SKU,
                     DetailId = d.Id,
                     FromLocation = d.FromLocation,
                     ToLocation = d.ToLocation,

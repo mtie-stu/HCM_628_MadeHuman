@@ -69,6 +69,45 @@ namespace MadeHuman_User.Controllers.InboundControlles
             // Trả về view với model rỗng để hiển thị form nhập
             return View(new ScanRefillTaskValidationRequest());
         }
+        //[HttpGet]
+        //public IActionResult ValidateScan(
+        //        Guid refillTaskId,
+        //        Guid refillTaskDetailId,
+        //        Guid fromLocation,
+        //        Guid toLocation,
+        //        string sku,
+        //        int quantity,
+        //        string? createBy,
+        //        string? createAt)
+        //{
+        //    var detail = new RefillTaskDetailWithHeaderViewModel
+        //    {
+        //        RefillTaskId = refillTaskId,
+        //        DetailId = refillTaskDetailId,
+        //        FromLocation = fromLocation,
+        //        ToLocation = toLocation,
+        //        SKU = sku,
+        //        Quantity = quantity,
+        //        CreateBy = createBy,
+        //        CreateAt = DateTime.TryParse(createAt, out var parsedDate) ? parsedDate : DateTime.UtcNow
+        //    };
+
+        //    var vm = new RefillScanPageViewModel
+        //    {
+        //        TaskDetailFlat = detail,
+        //        ScanRequest = new ScanRefillTaskValidationRequest
+        //        {
+        //            RefillTaskId = refillTaskId,
+        //            RefillTaskDetailId = refillTaskDetailId,
+        //            FromLocationName = fromLocation,
+        //            ToLocationName = toLocation,
+        //            SKU = sku,
+        //            Quantity = quantity
+        //        }
+        //    };
+
+        //    return View(vm);
+        //}
 
         [HttpPost]
         public async Task<IActionResult> ValidateScan(ScanRefillTaskValidationRequest request)
