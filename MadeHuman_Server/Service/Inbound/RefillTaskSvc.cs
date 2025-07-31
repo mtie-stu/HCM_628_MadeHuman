@@ -174,6 +174,7 @@ namespace MadeHuman_Server.Service.Inbound
                     UserTaskId = x.UserTaskId,
                     CreateAt = x.CreateAt,
                     CreateBy = x.CreateBy,
+                    StatusRefillTasks = x.StatusRefillTasks.ToString(), // 👈 Thêm dòng này
                     Details = x.RefillTaskDetails.Select(d => new RefillTaskFullViewModel.RefillTaskDetailItem
                     {
                         Id = d.Id,
@@ -273,6 +274,13 @@ namespace MadeHuman_Server.Service.Inbound
         }
         public async Task<List<string>> ValidateRefillTaskScanAsync(ScanRefillTaskValidationRequest request)   //Picker quét từng luồn dữ liệu với "RefillTaskId và RefillTaskDetailId" người dùng k cần nhập, được gán lại từ nhiệm vụ do picker nhận (  AssignRefillTaskToCurrentUserAsync)
         {
+            Console.WriteLine($"refilltaskid gửi: {request.RefillTaskId}");
+            Console.WriteLine($"RefillTaskDetailId gửi: {request.RefillTaskDetailId}");
+            Console.WriteLine($"SKU gửi: {request.SKU}");
+            Console.WriteLine($"Từ: {request.FromLocationName}");
+            Console.WriteLine($"Đến: {request.ToLocationName}");
+            Console.WriteLine($"Số lượng: {request.Quantity}");
+
             var errors = new List<string>();
 
             var task = await _context.RefillTasks
@@ -376,13 +384,16 @@ namespace MadeHuman_Server.Service.Inbound
 
             if (!errors.Any() && enoughInfo)
             {
+                Console.WriteLine("✅ Điều kiện đủ, gọi xử lý...");
                 await StoreRefillTaskDetailAsync(task.Id, detail.Id, userTaskId.Value);
                 errors.Add("✅ Quét thành công và xử lý luân chuyển.");
             }
-            else if (!errors.Any())
+            else
             {
-                errors.Add("✅ Dữ liệu hợp lệ nhưng chưa đủ để xử lý.");
+                Console.WriteLine("❌ Không đủ điều kiện xử lý:");
+                foreach (var err in errors) Console.WriteLine(err);
             }
+
 
             return errors;
         }

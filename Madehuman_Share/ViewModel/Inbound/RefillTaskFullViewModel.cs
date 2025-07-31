@@ -16,6 +16,8 @@ namespace Madehuman_Share.ViewModel.Inbound
         public string CreateBy { get; set; }
         public string? CreateByName { get; set; }
 
+        public string StatusRefillTasks { get; set; } = string.Empty;
+
 
         // Danh sách chi tiết Refill
         public List<RefillTaskDetailItem> Details { get; set; } = new();

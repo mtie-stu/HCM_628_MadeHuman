@@ -53,17 +53,50 @@
     <script>
         let step = 1;
         let qtyScanned = 0;
+
         const fromLocation = "@scan.FromLocationName";
         const toLocation = "@scan.ToLocationName";
         const sku = "@scan.SKU";
-        const qtyExpected = parseInt("@scan.Quantity");
+        const refillTaskId = "@scan.RefillTaskId";
+        const refillTaskDetailId = "@scan.RefillTaskDetailId";
 
         const input = document.getElementById("scanInput");
         const resultBox = document.getElementById("result");
 
+        const successSFX = new Audio("/sounds/success.mp3");
+        const errorSFX = new Audio("/sounds/error.mp3");
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        function updatePlaceholder() {
+            if (step === 1) input.placeholder = "🔍 Quét mã vị trí lấy hàng...";
+            else if (step === 2) input.placeholder = "🔍 Quét mã SKU...";
+            else if (step === 3) input.placeholder = "🔢 Nhập số lượng cần bổ sung...";
+            else if (step === 4) input.placeholder = "📍 Quét vị trí bổ sung...";
+        }
+
+        function showSuccess(msg) {
+            resultBox.className = "alert alert-success";
+            resultBox.innerHTML = msg;
+            resultBox.classList.remove("d-none");
+            successSFX.play();
+        }
+
+        function showError(msg) {
+            resultBox.className = "alert alert-danger";
+            resultBox.innerHTML = msg;
+            resultBox.classList.remove("d-none");
+            errorSFX.play();
+        }
+
+        updatePlaceholder();
+
         input.addEventListener("keypress", async function (e) {
             if (e.key !== "Enter") return;
-
             const value = input.value.trim();
             input.value = "";
             if (!value) return;
@@ -72,6 +105,7 @@
                 if (value === fromLocation) {
                     step = 2;
                     showSuccess("✅ Vị trí lấy hàng đúng. Quét SKU tiếp theo.");
+                    updatePlaceholder();
                 } else {
                     showError("❌ Sai vị trí lấy hàng.");
                 }
@@ -79,66 +113,66 @@
                 if (value === sku) {
                     step = 3;
                     showSuccess("✅ SKU đúng. Nhập số lượng cần bổ sung.");
+                    updatePlaceholder();
                 } else {
-                    showError("❌ Sai mã SKU.");
+                    showError("❌ Sai SKU.");
                 }
             } else if (step === 3) {
                 const parsedQty = parseInt(value);
                 if (isNaN(parsedQty) || parsedQty <= 0) {
-                    showError("❌ Số lượng không hợp lệ. Vui lòng nhập lại.");
+                    showError("❌ Số lượng không hợp lệ.");
                 } else {
                     qtyScanned = parsedQty;
                     step = 4;
-                    showSuccess(`✅ Đã nhập số lượng: ${qtyScanned}. Quét vị trí bổ sung.`);
+                    showSuccess(`✅ Nhập ${qtyScanned} thành công. Quét vị trí bổ sung.`);
+                    updatePlaceholder();
                 }
             } else if (step === 4) {
                 if (value === toLocation) {
+                    const jwt = getCookie("JWTToken");
+
                     const data = {
-                        RefillTaskId: "@scan.RefillTaskId",
-                        RefillTaskDetailId: "@scan.RefillTaskDetailId",
+                        RefillTaskId: refillTaskId,
+                        RefillTaskDetailId: refillTaskDetailId,
                         FromLocationName: fromLocation,
                         ToLocationName: toLocation,
                         SKU: sku,
                         Quantity: qtyScanned
                     };
 
-                    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                    try {
+                        const res = await fetch("https://localhost:7204/api/RefillTask/validate-scan", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": `Bearer ${jwt}`
+                            },
+                            body: JSON.stringify(data)
+                        });
 
-                    const res = await fetch("https://localhost:7204/api/RefillTask/ValidateScan", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "RequestVerificationToken": token
-                        },
-                        body: JSON.stringify(data)
-                    });
+                        const body = await res.json();
 
-                    if (res.ok) {
-                        showSuccess("🎉 Hoàn tất xác nhận bổ sung!");
-                    } else {
-                        const err = await res.text();
-                        showError("❌ Xác nhận thất bại: " + err);
+                        if (res.ok) {
+                            showSuccess(body?.find(m => m.includes("✅")) ?? "✅ Xác nhận thành công.");
+
+                            setTimeout(() => {
+                                window.location.href = "https://localhost:7112/RefillTask/DetailFlat";
+                            }, 1500);
+                        } else {
+                            showError(body?.join("<br>") ?? "❌ Xác nhận thất bại.");
+                        }
+
+                        step = 1;
+                        qtyScanned = 0;
+                        updatePlaceholder();
+                    } catch {
+                        showError("❌ Lỗi kết nối tới server.");
                     }
-
-                    // Reset
-                    step = 1;
-                    qtyScanned = 0;
                 } else {
                     showError("❌ Sai vị trí bổ sung.");
                 }
             }
+
         });
-
-        function showSuccess(msg) {
-            resultBox.className = "alert alert-success";
-            resultBox.innerHTML = msg;
-            resultBox.classList.remove("d-none");
-        }
-
-        function showError(msg) {
-            resultBox.className = "alert alert-danger";
-            resultBox.innerHTML = msg;
-            resultBox.classList.remove("d-none");
-        }
     </script>
 }
