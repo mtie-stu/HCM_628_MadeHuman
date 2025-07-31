@@ -1,74 +1,144 @@
-﻿@model Madehuman_Share.ViewModel.Inbound.ScanRefillTaskValidationRequest
+﻿@model Madehuman_Share.ViewModel.Inbound.RefillScanPageViewModel
 
 @{
     ViewData["Title"] = "Refill";
+    var detail = Model.TaskDetailFlat;
+    var scan = Model.ScanRequest;
 }
 
 <div class="container mt-4">
-    <h3 class="text-primary">🛠️ Xác nhận nhiệm vụ bổ sung kho</h3>
+    <h3 class="text-primary mb-3">🛠️ Xác nhận nhiệm vụ bổ sung kho</h3>
 
-    <form asp-action="ValidateScan" method="post" class="card shadow-sm p-4 mt-3">
-        @Html.AntiForgeryToken()
-
-        <div class="mb-3">
-            <label asp-for="RefillTaskId" class="form-label"></label>
-            <input asp-for="RefillTaskId" class="form-control" required />
-            <span asp-validation-for="RefillTaskId" class="text-danger small"></span>
+    <div class="row">
+        <!-- Bên trái: Thông tin sản phẩm -->
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">📦 Thông tin chi tiết</h5>
+                    <p><strong>Người tạo:</strong> @detail.CreateBy</p>
+                    <p><strong>Thời gian:</strong> @detail.CreateAt.ToString("dd/MM/yyyy HH:mm")</p>
+                    <p><strong>SKU:</strong> @detail.SKU</p>
+                    <p><strong>Số lượng:</strong> @detail.Quantity</p>
+                    <p><strong>Vị trí lấy hàng:</strong> @scan.FromLocationName</p>
+                    <p><strong>Vị trí bổ sung:</strong> @scan.ToLocationName</p>
+                </div>
+            </div>
         </div>
 
-        <div class="mb-3">
-            <label asp-for="RefillTaskDetailId" class="form-label"></label>
-            <input asp-for="RefillTaskDetailId" class="form-control" required />
-            <span asp-validation-for="RefillTaskDetailId" class="text-danger small"></span>
-        </div>
+        <!-- Bên phải: Quét mã và kết quả -->
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4">
+                @Html.AntiForgeryToken()
 
-        <div class="mb-3">
-            <label asp-for="FromLocationName" class="form-label"></label>
-            <input asp-for="FromLocationName" class="form-control" />
-            <span asp-validation-for="FromLocationName" class="text-danger small"></span>
-        </div>
+                <!-- Hidden fields để gửi dữ liệu -->
+                <input type="hidden" id="RefillTaskId" value="@scan.RefillTaskId" />
+                <input type="hidden" id="RefillTaskDetailId" value="@scan.RefillTaskDetailId" />
+                <input type="hidden" id="FromLocationName" value="@scan.FromLocationName" />
+                <input type="hidden" id="ToLocationName" value="@scan.ToLocationName" />
+                <input type="hidden" id="SKU" value="@scan.SKU" />
+                <input type="hidden" id="Quantity" value="@scan.Quantity" />
 
-        <div class="mb-3">
-            <label asp-for="ToLocationName" class="form-label"></label>
-            <input asp-for="ToLocationName" class="form-control" />
-            <span asp-validation-for="ToLocationName" class="text-danger small"></span>
-        </div>
+                <div class="mb-3">
+                    <label for="scanInput" class="form-label fw-bold">🔍 Quét mã từng bước</label>
+                    <input type="text" id="scanInput" class="form-control form-control-lg" placeholder="Bước 1: Vị trí lấy → Bước 2: SKU → Bước 3: Vị trí đích" autofocus />
+                </div>
 
-        <div class="mb-3">
-            <label asp-for="SKU" class="form-label"></label>
-            <input asp-for="SKU" class="form-control" />
-            <span asp-validation-for="SKU" class="text-danger small"></span>
+                <div id="result" class="alert d-none mt-3"></div>
+            </div>
         </div>
-
-        <div class="mb-3">
-            <label asp-for="Quantity" class="form-label"></label>
-            <input asp-for="Quantity" class="form-control" type="number" />
-            <span asp-validation-for="Quantity" class="text-danger small"></span>
-        </div>
-
-        <button type="submit" class="btn btn-success">✅ Xác nhận bổ sung</button>
-    </form>
-
-    @if (ViewBag.Success != null)
-    {
-        <div class="alert alert-success mt-3" role="alert">
-            @Html.Raw(ViewBag.Success)
-        </div>
-    }
-
-    @if (ViewBag.Errors != null)
-    {
-        <div class="alert alert-danger mt-3" role="alert">
-            <ul class="mb-0">
-                @foreach (var err in (List<string>)ViewBag.Errors)
-                {
-                    <li>@err</li>
-                }
-            </ul>
-        </div>
-    }
+    </div>
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    <script>
+        let step = 1;
+        let qtyScanned = 0;
+        const fromLocation = "@scan.FromLocationName";
+        const toLocation = "@scan.ToLocationName";
+        const sku = "@scan.SKU";
+        const qtyExpected = parseInt("@scan.Quantity");
+
+        const input = document.getElementById("scanInput");
+        const resultBox = document.getElementById("result");
+
+        input.addEventListener("keypress", async function (e) {
+            if (e.key !== "Enter") return;
+
+            const value = input.value.trim();
+            input.value = "";
+            if (!value) return;
+
+            if (step === 1) {
+                if (value === fromLocation) {
+                    step = 2;
+                    showSuccess("✅ Vị trí lấy hàng đúng. Quét SKU tiếp theo.");
+                } else {
+                    showError("❌ Sai vị trí lấy hàng.");
+                }
+            } else if (step === 2) {
+                if (value === sku) {
+                    step = 3;
+                    showSuccess("✅ SKU đúng. Nhập số lượng cần bổ sung.");
+                } else {
+                    showError("❌ Sai mã SKU.");
+                }
+            } else if (step === 3) {
+                const parsedQty = parseInt(value);
+                if (isNaN(parsedQty) || parsedQty <= 0) {
+                    showError("❌ Số lượng không hợp lệ. Vui lòng nhập lại.");
+                } else {
+                    qtyScanned = parsedQty;
+                    step = 4;
+                    showSuccess(`✅ Đã nhập số lượng: ${qtyScanned}. Quét vị trí bổ sung.`);
+                }
+            } else if (step === 4) {
+                if (value === toLocation) {
+                    const data = {
+                        RefillTaskId: "@scan.RefillTaskId",
+                        RefillTaskDetailId: "@scan.RefillTaskDetailId",
+                        FromLocationName: fromLocation,
+                        ToLocationName: toLocation,
+                        SKU: sku,
+                        Quantity: qtyScanned
+                    };
+
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                    const res = await fetch("/RefillTask/ValidateScan", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "RequestVerificationToken": token
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (res.ok) {
+                        showSuccess("🎉 Hoàn tất xác nhận bổ sung!");
+                    } else {
+                        const err = await res.text();
+                        showError("❌ Xác nhận thất bại: " + err);
+                    }
+
+                    // Reset
+                    step = 1;
+                    qtyScanned = 0;
+                } else {
+                    showError("❌ Sai vị trí bổ sung.");
+                }
+            }
+        });
+
+        function showSuccess(msg) {
+            resultBox.className = "alert alert-success";
+            resultBox.innerHTML = msg;
+            resultBox.classList.remove("d-none");
+        }
+
+        function showError(msg) {
+            resultBox.className = "alert alert-danger";
+            resultBox.innerHTML = msg;
+            resultBox.classList.remove("d-none");
+        }
+    </script>
 }
