@@ -15,7 +15,7 @@ namespace MadeHuman_Server.Service.Outbound
         Task<List<PickTaskViewModelForIndexView>> GetPickTasksByUserTaskIdAsync();
         Task<Guid?> AssignPickTaskToCurrentUserAsync();
         Task<List<string>> ValidatePickTaskScanAsync(ScanPickTaskValidationRequest request);
-        Task<List<string>> ConfirmPickDetailToBasketAsync(Guid pickTaskId, Guid pickTaskDetailId, Guid basketId);
+        Task<ConfirmPickResult> ConfirmPickDetailToBasketAsync(Guid pickTaskId, Guid pickTaskDetailId, Guid basketId);
         Task<PickTaskFullViewModel?> GetPickTaskDetailByIdAsync(Guid pickTaskId);
         Task<List<string>> AssignBasketToOutboundTaskAsync(Guid basketId, Guid outboundTaskId);
     }
@@ -136,49 +136,60 @@ namespace MadeHuman_Server.Service.Outbound
             return new() { $"✅ Đã pick {detail.QuantityPicked}/{detail.Quantity}." };
         }
 
-        public async Task<List<string>> ConfirmPickDetailToBasketAsync(Guid pickTaskId, Guid pickTaskDetailId, Guid basketId)
+        public async Task<ConfirmPickResult> ConfirmPickDetailToBasketAsync(Guid pickTaskId, Guid pickTaskDetailId, Guid basketId)
         {
+            var result = new ConfirmPickResult();
+
             var task = await _context.PickTasks.Include(t => t.PickTaskDetails).FirstOrDefaultAsync(t => t.Id == pickTaskId);
-            if (task == null) return new() { "❌ Không tìm thấy nhiệm vụ." };
+            if (task == null) return Fail("❌ Không tìm thấy nhiệm vụ.");
 
             var detail = task.PickTaskDetails.FirstOrDefault(d => d.Id == pickTaskDetailId);
-            if (detail == null) return new() { "❌ Không tìm thấy chi tiết nhiệm vụ." };
-            if (detail.IsPicked) return new() { "✅ Chi tiết này đã hoàn tất rồi." };
-            if (detail.QuantityPicked < detail.Quantity) return new() { $"❌ Bạn mới pick {detail.QuantityPicked}/{detail.Quantity}. Hãy hoàn tất trước khi xác nhận." };
+            if (detail == null) return Fail("❌ Không tìm thấy chi tiết nhiệm vụ.");
 
             var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId)) return new() { "❌ Không xác định được người dùng." };
+            if (string.IsNullOrEmpty(userId)) return Fail("❌ Không xác định được người dùng.");
 
             var userTaskId = await _usertaskservice.GetUserTaskIdAsync(userId, DateOnly.FromDateTime(DateTime.UtcNow));
-            if (userTaskId == null) return new() { "❌ Không tìm thấy phân công công việc hôm nay." };
+            if (userTaskId == null) return Fail("❌ Không tìm thấy phân công công việc hôm nay.");
 
-            var assignResult = await AssignBasketToOutboundTaskAsync(basketId, task.OutboundTaskId);
-            if (assignResult.Any()) return assignResult;
-
-            detail.IsPicked = true;
-
-            var inventory = await _context.Inventory.FirstOrDefaultAsync(i =>
-                i.ProductSKUId == detail.ProductSKUId &&
-                i.WarehouseLocationId == detail.WarehouseLocationId);
-
-            if (inventory == null || inventory.StockQuantity < detail.Quantity)
-                return new() { "❌ Không đủ tồn kho để hoàn tất pick. Vui lòng nhờ staff hỗ trợ." };
-
-            inventory.StockQuantity -= detail.Quantity;
-            inventory.LastUpdated = DateTime.UtcNow;
-
-            _context.InventoryLogs.Add(new InventoryLogs
+            if (!detail.IsPicked)
             {
-                Id = Guid.NewGuid(),
-                InventoryId = inventory.Id,
-                StockQuantity = inventory.StockQuantity,
-                ChangeQuantity = -detail.Quantity,
-                RemainingQuantity = inventory.StockQuantity,
-                ActionInventoryLogs = ActionInventoryLogs.Take,
-                ChangeBy = userTaskId.ToString(),
-                Time = DateTime.UtcNow
-            });
 
+                var assignResult = await AssignBasketToOutboundTaskAsync(basketId, task.OutboundTaskId);
+                if (assignResult.Any()) return Fail(assignResult.ToArray());
+
+                detail.IsPicked = true;
+
+                var inventory = await _context.Inventory.FirstOrDefaultAsync(i =>
+                    i.ProductSKUId == detail.ProductSKUId &&
+                    i.WarehouseLocationId == detail.WarehouseLocationId);
+
+                if (inventory == null || inventory.StockQuantity < detail.Quantity)
+                    return Fail("❌ Không đủ tồn kho để hoàn tất pick. Vui lòng nhờ staff hỗ trợ.");
+
+                inventory.StockQuantity -= detail.Quantity;
+                inventory.LastUpdated = DateTime.UtcNow;
+
+                _context.InventoryLogs.Add(new InventoryLogs
+                {
+                    Id = Guid.NewGuid(),
+                    InventoryId = inventory.Id,
+                    StockQuantity = inventory.StockQuantity,
+                    ChangeQuantity = -detail.Quantity,
+                    RemainingQuantity = inventory.StockQuantity,
+                    ActionInventoryLogs = ActionInventoryLogs.Take,
+                    ChangeBy = userTaskId.ToString(),
+                    Time = DateTime.UtcNow
+                });
+
+                result.Messages.Add("✅ Đã xác nhận rổ và hoàn tất chi tiết pick.");
+            }
+            else
+            {
+                result.Messages.Add("✅ Chi tiết này đã hoàn tất rồi.");
+            }
+
+            // Kiểm tra toàn bộ PickTask
             if (task.PickTaskDetails.All(d => d.IsPicked))
             {
                 task.Status = StatusPickTask.Finished;
@@ -193,10 +204,30 @@ namespace MadeHuman_Server.Service.Outbound
                 }
 
                 await _checkTaskService.CreateCheckTaskAsync(task.OutboundTaskId);
+                result.IsPickTaskFinished = true;
+            }
+            else
+            {
+                result.IsPickTaskFinished = false;
+
+                var next = task.PickTaskDetails
+                    .Where(d => !d.IsPicked)
+                    .Select(d => new
+                    {
+                        d.Id,
+                        d.ProductSKUId,
+                        d.Quantity,
+                        d.WarehouseLocationId
+                    })
+                    .FirstOrDefault();
+
+                result.NextDetail = next;
             }
 
             await _context.SaveChangesAsync();
-            return new() { "✅ Đã xác nhận rổ và hoàn tất chi tiết pick." };
+            return result;
+
+            ConfirmPickResult Fail(params string[] msgs) => new() { Messages = msgs.ToList(), IsPickTaskFinished = false };
         }
 
         public async Task<List<string>> AssignBasketToOutboundTaskAsync(Guid basketId, Guid outboundTaskId)
@@ -251,10 +282,9 @@ namespace MadeHuman_Server.Service.Outbound
                 .FirstOrDefaultAsync();
 
             var basketid = await _context.Baskets
-                 .Where(b => b.OutBoundTaskId == outboundTaskId)
-                 .Select(b => (Guid?)b.Id) // <- Nullable
-                 .FirstOrDefaultAsync();
-
+                .Where(b => b.OutBoundTaskId == outboundTaskId)
+                .Select(b => (Guid?)b.Id)
+                .FirstOrDefaultAsync();
 
             var entity = await _context.PickTasks
                 .Include(p => p.PickTaskDetails)
@@ -269,17 +299,22 @@ namespace MadeHuman_Server.Service.Outbound
                 Status = (StatusPickTaskvm)Enum.Parse(typeof(StatusPickTaskvm), p.Status.ToString()),
                 UsersTasksId = p.UsersTasksId,
                 BasketId = basketid,
-                Details = p.PickTaskDetails.Select(d => new PickTaskFullViewModel.PickTaskDetailItem
-                {
-                    Id = d.Id,
-                    Quantity = d.Quantity,
-                    WarehouseLocationId = d.WarehouseLocationId,
-                    ProductSKUId = d.ProductSKUId
-                }).OrderBy(d => d.Id).ToList()
+                Details = p.PickTaskDetails
+                    .Where(d => !d.IsPicked) // ✅ chỉ lấy các detail chưa được pick
+                    .Select(d => new PickTaskFullViewModel.PickTaskDetailItem
+                    {
+                        Id = d.Id,
+                        Quantity = d.Quantity,
+                        WarehouseLocationId = d.WarehouseLocationId,
+                        ProductSKUId = d.ProductSKUId
+                    })
+                    .OrderBy(d => d.Id)
+                    .ToList()
             }).FirstOrDefault();
 
             return data;
         }
+
 
 
     }

@@ -30,6 +30,7 @@ namespace Madehuman_Share.ViewModel.Outbound
             public string WarehouseLocationCode { get; set; } // Mã vị trí
             public Guid ProductSKUId { get; set; }
             public string ProductName { get; set; }
+            public bool IsPicked    { get; set; }   
             public string SkuCode { get; set; }
             public List<string> ImageUrls { get; set; } = new();  // ✅ hỗ trợ nhiều ảnh
         }
