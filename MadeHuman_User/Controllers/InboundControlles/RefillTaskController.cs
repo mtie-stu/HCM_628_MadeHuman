@@ -115,6 +115,40 @@ namespace MadeHuman_User.Controllers.InboundControlles
             return View(vm);
         }
 
+        //[HttpPost]
+        //public async Task<IActionResult> ValidateScan(ScanRefillTaskValidationRequest request)
+        //{
+        //    var messages = await _refillTaskService.ValidateRefillScanAsync(request, HttpContext);
+
+        //    if (messages.Any(m => m.Contains("✅")))
+        //        ViewBag.Success = string.Join("<br/>", messages);
+        //    else
+        //        ViewBag.Errors = messages;
+
+        //    // 🔁 Load lại thông tin vị trí + thời gian tạo
+        //    var fromInfo = await _warehouseLocationService.GetLocationInfoByNameAsync(request.FromLocationName);
+        //    var toInfo = await _warehouseLocationService.GetLocationInfoByNameAsync(request.ToLocationName);
+
+        //    var detail = new RefillTaskDetailWithHeaderViewModel
+        //    {
+        //        RefillTaskId = request.RefillTaskId,
+        //        DetailId = request.RefillTaskDetailId,
+        //        FromLocation = fromInfo?.Id ?? Guid.Empty,
+        //        ToLocation = toInfo?.Id ?? Guid.Empty,
+        //        SKU = request.SKU,
+        //        Quantity = request.Quantity ?? 0,
+        //        CreateAt = DateTime.UtcNow // bạn có thể lưu thời gian gốc nếu muốn
+        //    };
+
+        //    var vm = new RefillScanPageViewModel
+        //    {
+        //        TaskDetailFlat = detail,
+        //        ScanRequest = request
+        //    };
+
+        //    return View(vm); // ✅ đúng model
+        //}
+
 
         [HttpPost]
         public async Task<IActionResult> ValidateScan(ScanRefillTaskValidationRequest request)
@@ -135,7 +169,6 @@ namespace MadeHuman_User.Controllers.InboundControlles
             // Trả lại view với model đã nhập
             return View(request);
         }
-
 
     }
 }

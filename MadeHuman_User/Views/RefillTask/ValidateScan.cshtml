@@ -104,7 +104,7 @@
 
                     const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
 
-                    const res = await fetch("/RefillTask/ValidateScan", {
+                    const res = await fetch("https://localhost:7204/api/RefillTask/ValidateScan", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
