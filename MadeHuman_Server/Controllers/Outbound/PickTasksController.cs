@@ -67,14 +67,20 @@ namespace MadeHuman_Server.Controllers.Outbound
         [HttpPost("confirm-basket")]
         public async Task<IActionResult> ConfirmPickDetailWithBasket([FromBody] ConfirmPickDetailRequest request)
         {
-            var messages = await _pickTaskServices.ConfirmPickDetailToBasketAsync(request.PickTaskId, request.PickTaskDetailId, request.BasketId);
-            //ConfirmPickTaskDetailWithBasketAsync
+            var result = await _pickTaskServices.ConfirmPickDetailToBasketAsync(
+                request.PickTaskId, request.PickTaskDetailId, request.BasketId);
 
-            if (messages.Any(m => m.StartsWith("❌")))
-                return BadRequest(new { errors = messages });
+            if (result.Messages.Any(m => m.StartsWith("❌")))
+                return BadRequest(new { errors = result.Messages });
 
-            return Ok(new { messages });
+            return Ok(new
+            {
+                messages = result.Messages,
+                isPickTaskFinished = result.IsPickTaskFinished,
+                nextDetail = result.NextDetail
+            });
         }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPickTaskDetailById(Guid id)
         {
