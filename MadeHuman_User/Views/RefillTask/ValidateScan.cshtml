@@ -9,28 +9,26 @@
 <div class="container mt-4">
     <h3 class="text-primary mb-3">🛠️ Xác nhận nhiệm vụ bổ sung kho</h3>
 
-    <div class="row">
-        <!-- Bên trái: Thông tin sản phẩm -->
-        <div class="col-md-6">
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <h5 class="card-title text-primary">📦 Thông tin chi tiết</h5>
-                    <p><strong>Người tạo:</strong> @detail.CreateBy</p>
-                    <p><strong>Thời gian:</strong> @detail.CreateAt.ToString("dd/MM/yyyy HH:mm")</p>
-                    <p><strong>SKU:</strong> @detail.SKU</p>
-                    <p><strong>Số lượng:</strong> @detail.Quantity</p>
-                    <p><strong>Vị trí lấy hàng:</strong> @scan.FromLocationName</p>
-                    <p><strong>Vị trí bổ sung:</strong> @scan.ToLocationName</p>
-                </div>
-            </div>
+    <!-- 🧾 Thông tin nhiệm vụ -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title text-primary">📄 Thông tin nhiệm vụ</h5>
+            <p><strong>Người tạo:</strong> @detail.CreateBy</p>
+            <p><strong>Thời gian:</strong> @detail.CreateAt.ToString("dd/MM/yyyy HH:mm")</p>
+            <p><strong>SKU:</strong> @detail.SKU</p>
+            <p><strong>Số lượng:</strong> @detail.Quantity</p>
+            <p><strong>Vị trí lấy:</strong> @scan.FromLocationName</p>
+            <p><strong>Vị trí đích:</strong> @scan.ToLocationName</p>
         </div>
+    </div>
 
-        <!-- Bên phải: Quét mã và kết quả -->
+    <!-- 🔄 Bố cục 2 cột: bên trái nhập mã - bên phải thông tin sản phẩm -->
+    <div class="row">
+        <!-- ⬅️ Nhập mã & xác nhận -->
         <div class="col-md-6">
             <div class="card shadow-sm p-4">
                 @Html.AntiForgeryToken()
 
-                <!-- Hidden fields để gửi dữ liệu -->
                 <input type="hidden" id="RefillTaskId" value="@scan.RefillTaskId" />
                 <input type="hidden" id="RefillTaskDetailId" value="@scan.RefillTaskDetailId" />
                 <input type="hidden" id="FromLocationName" value="@scan.FromLocationName" />
@@ -39,11 +37,47 @@
                 <input type="hidden" id="Quantity" value="@scan.Quantity" />
 
                 <div class="mb-3">
-                    <label for="scanInput" class="form-label fw-bold">🔍 Quét mã từng bước</label>
-                    <input type="text" id="scanInput" class="form-control form-control-lg" placeholder="Bước 1: Vị trí lấy → Bước 2: SKU → Bước 3: Vị trí đích" autofocus />
+                    <label for="scanInput" class="form-label fw-bold">🔍 Nhập mã / số lượng</label>
+                    <input type="text" id="scanInput" class="form-control form-control-lg"
+                           placeholder="Bước 1: Vị trí lấy → Bước 2: SKU → Bước 3: Số lượng → Bước 4: Vị trí đích"
+                           autofocus />
                 </div>
 
                 <div id="result" class="alert d-none mt-3"></div>
+            </div>
+        </div>
+
+        <!-- ➡️ Thông tin sản phẩm -->
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">📦 Thông tin sản phẩm</h5>
+
+                    <p><strong>Tên sản phẩm:</strong> @Model.ProductInfo?.ProductName</p>
+                    <p><strong>SKU:</strong> @Model.ProductInfo?.SkuCode</p>
+
+                    @if (Model.ProductInfo?.ImageUrls != null && Model.ProductInfo.ImageUrls.Any())
+                    {
+                        <div id="carouselImages" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                @for (int i = 0; i < Model.ProductInfo.ImageUrls.Count; i++)
+                                {
+                                    var img = Model.ProductInfo.ImageUrls[i];
+                                    <div class="carousel-item @(i == 0 ? "active" : "")">
+                                        <img src="/proxy-image?url=@Uri.EscapeDataString(img)"
+                                             class="d-block mx-auto img-thumbnail"
+                                             style="max-height: 250px; object-fit: contain;"
+                                             alt="Ảnh sản phẩm">
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Không có ảnh sản phẩm.</p>
+                    }
+                </div>
             </div>
         </div>
     </div>
@@ -154,7 +188,6 @@
 
                         if (res.ok) {
                             showSuccess(body?.find(m => m.includes("✅")) ?? "✅ Xác nhận thành công.");
-
                             setTimeout(() => {
                                 window.location.href = "https://localhost:7112/RefillTask/DetailFlat";
                             }, 1500);
@@ -172,7 +205,6 @@
                     showError("❌ Sai vị trí bổ sung.");
                 }
             }
-
         });
     </script>
 }

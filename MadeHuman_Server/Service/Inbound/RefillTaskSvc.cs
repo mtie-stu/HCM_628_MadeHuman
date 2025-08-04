@@ -1,5 +1,6 @@
 ﻿using MadeHuman_Server.Data;
 using MadeHuman_Server.Model.Inbound;
+using MadeHuman_Server.Model.Shop;
 using MadeHuman_Server.Model.WareHouse;
 using MadeHuman_Server.Service.UserTask;
 using Madehuman_Share.ViewModel.Inbound;
@@ -155,6 +156,7 @@ namespace MadeHuman_Server.Service.Inbound
             {
                 Id = Guid.NewGuid(),
                 FromLocation = d.FromLocation,
+                ProductSKUId = d.ProductSKUId.Value,
                 ToLocation = d.ToLocation,
                 Quantity = d.Quantity
             }).ToList();
@@ -179,6 +181,7 @@ namespace MadeHuman_Server.Service.Inbound
                     {
                         Id = d.Id,
                         FromLocation = d.FromLocation,
+                        ProductSKUId = d.ProductSKUId,
                         ToLocation = d.ToLocation,
                         Quantity = d.Quantity
                     }).ToList()
@@ -202,6 +205,7 @@ namespace MadeHuman_Server.Service.Inbound
                     {
                         Id = d.Id,
                         FromLocation = d.FromLocation,
+                        ProductSKUId = d.ProductSKUId,
                         ToLocation = d.ToLocation,
                         Quantity = d.Quantity
                     }).ToList()
@@ -220,6 +224,7 @@ namespace MadeHuman_Server.Service.Inbound
                     LowStockId = d.RefillTasks.LowStockId,
                     UserTaskId = d.RefillTasks.UserTaskId,
                     SKU = d.ProductSKUs.SKU,
+                    ProductSKUId = d.ProductSKUId,
                     DetailId = d.Id,
                     FromLocation = d.FromLocation,
                     ToLocation = d.ToLocation,
@@ -267,6 +272,7 @@ namespace MadeHuman_Server.Service.Inbound
                 {
                     Id = d.Id,
                     FromLocation = d.FromLocation,
+                    ProductSKUId = d.ProductSKUId,
                     ToLocation = d.ToLocation,
                     Quantity = d.Quantity
                 }).ToList()

@@ -63,7 +63,6 @@
                             <table class="table table-bordered table-sm">
                                 <thead class="table-light">
                                     <tr>
-                                        <th><i class="bi bi-upc-scan"></i> SKU</th>
                                         <th><i class="bi bi-box-arrow-in-left"></i> From</th>
                                         <th><i class="bi bi-box-arrow-right"></i> To</th>
                                         <th><i class="bi bi-hash"></i> Số lượng</th>
@@ -73,7 +72,6 @@
                                     @foreach (var d in task.Details)
                                     {
                                         <tr>
-                                            <td>@(d.SKU ?? "N/A")</td>
                                             <td>@d.FromLocation</td>
                                             <td>@d.ToLocation</td>
                                             <td>@d.Quantity</td>

@@ -1,4 +1,5 @@
-﻿using Madehuman_Share.ViewModel.WareHouse;
+﻿using Madehuman_Share.ViewModel.Shop;
+using Madehuman_Share.ViewModel.WareHouse;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,5 +15,7 @@ namespace Madehuman_Share.ViewModel.Inbound
         public RefillTaskDetailWithHeaderViewModel TaskDetailFlat { get; set; } = new();
         // ✅ Thêm danh sách vị trí kho để truy xuất
         public List<WarehouseLocationInfoViewModel> WarehouseLocations { get; set; } = new();
+        // ✅ Thêm thông tin sản phẩm để hiện ra sau khi quét SKU
+        public ProductSKUInfoViewmodel? ProductInfo { get; set; } // ← bạn sẽ populate cái này từ service
     }
 }

@@ -13,6 +13,7 @@ namespace Madehuman_Share.ViewModel.Inbound
         public DateTime CreateAt { get; set; }
         public Guid? LowStockId { get; set; }
         public Guid? UserTaskId { get; set; }
+        public Guid? ProductSKUId { get; set; }
         public string SKU { get; set; }
         public Guid DetailId { get; set; }
         public Guid FromLocation { get; set; }

@@ -1,7 +1,10 @@
 ﻿using Madehuman_Share.ViewModel.Inbound;
+using Madehuman_Share.ViewModel.Shop;
 using MadeHuman_User.ServicesTask.Services.InboundService;
+using MadeHuman_User.ServicesTask.Services.ShopService;
 using MadeHuman_User.ServicesTask.Services.Warehouse;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace MadeHuman_User.Controllers.InboundControlles
 {
@@ -9,10 +12,12 @@ namespace MadeHuman_User.Controllers.InboundControlles
     {
         private readonly IRefillTaskService _refillTaskService;
         private readonly IWarehouseLookupApiService _warehouseLocationService;
+        private readonly IProductService _productService;
 
-        public RefillTaskController(IRefillTaskService refillTaskService, IWarehouseLookupApiService warehouseLocationService)
+        public RefillTaskController(IRefillTaskService refillTaskService, IWarehouseLookupApiService warehouseLocationService, IProductService productService)
         {
             _refillTaskService = refillTaskService;
+            _productService = productService;
             _warehouseLocationService = warehouseLocationService;
         }
 
@@ -81,11 +86,20 @@ namespace MadeHuman_User.Controllers.InboundControlles
             string sku,
             int quantity,
             string? createBy,
-            string? createAt)
+            string? createAt,
+            Guid? productSKUId)
         {
             var fromLocationInfo = await _warehouseLocationService.GetLocationInfoAsync(fromLocation);
             var toLocationInfo = await _warehouseLocationService.GetLocationInfoAsync(toLocation);
-
+            var task = await _refillTaskService.GetByIdAsync(refillTaskId, HttpContext);
+            // hoặc cách bạn lấy toàn bộ task
+            var currentDetail = task.Details.FirstOrDefault(x => x.Id == refillTaskDetailId);
+            // ✅ gọi lấy thông tin sản phẩm nếu có productSKUId
+            ProductSKUInfoViewmodel? productInfo = null;
+            if (currentDetail?.ProductSKUId != null)
+            {
+                productInfo = await _productService.GetSKUInfoAsync(currentDetail.ProductSKUId.Value);
+            }
             var detail = new RefillTaskDetailWithHeaderViewModel
             {
                 RefillTaskId = refillTaskId,
@@ -97,7 +111,6 @@ namespace MadeHuman_User.Controllers.InboundControlles
                 CreateBy = createBy,
                 CreateAt = DateTime.TryParse(createAt, out var parsedDate) ? parsedDate : DateTime.UtcNow
             };
-
             var vm = new RefillScanPageViewModel
             {
                 TaskDetailFlat = detail,
@@ -109,46 +122,14 @@ namespace MadeHuman_User.Controllers.InboundControlles
                     ToLocationName = toLocationInfo?.NameLocation ?? toLocation.ToString(),
                     SKU = sku,
                     Quantity = quantity
-                }
+                },
+                ProductInfo = productInfo // 👈 truyền thêm thông tin sản phẩm
             };
 
             return View(vm);
         }
 
-        //[HttpPost]
-        //public async Task<IActionResult> ValidateScan(ScanRefillTaskValidationRequest request)
-        //{
-        //    var messages = await _refillTaskService.ValidateRefillScanAsync(request, HttpContext);
-
-        //    if (messages.Any(m => m.Contains("✅")))
-        //        ViewBag.Success = string.Join("<br/>", messages);
-        //    else
-        //        ViewBag.Errors = messages;
-
-        //    // 🔁 Load lại thông tin vị trí + thời gian tạo
-        //    var fromInfo = await _warehouseLocationService.GetLocationInfoByNameAsync(request.FromLocationName);
-        //    var toInfo = await _warehouseLocationService.GetLocationInfoByNameAsync(request.ToLocationName);
-
-        //    var detail = new RefillTaskDetailWithHeaderViewModel
-        //    {
-        //        RefillTaskId = request.RefillTaskId,
-        //        DetailId = request.RefillTaskDetailId,
-        //        FromLocation = fromInfo?.Id ?? Guid.Empty,
-        //        ToLocation = toInfo?.Id ?? Guid.Empty,
-        //        SKU = request.SKU,
-        //        Quantity = request.Quantity ?? 0,
-        //        CreateAt = DateTime.UtcNow // bạn có thể lưu thời gian gốc nếu muốn
-        //    };
-
-        //    var vm = new RefillScanPageViewModel
-        //    {
-        //        TaskDetailFlat = detail,
-        //        ScanRequest = request
-        //    };
-
-        //    return View(vm); // ✅ đúng model
-        //}
-
+       
 
         [HttpPost]
         public async Task<IActionResult> ValidateScan(ScanRefillTaskValidationRequest request)
