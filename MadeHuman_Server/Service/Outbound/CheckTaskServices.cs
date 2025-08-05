@@ -492,7 +492,7 @@ namespace MadeHuman_Server.Service.Outbound
                 return new() { $"❌ Số lượng không khớp. Cần kiểm: {requiredQty}, bạn nhập: {request.Quantity}" };
 
             // [3] Đánh dấu tất cả detail là hoàn tất
-            // [3.1] Tạo PackTask tương ứng
+            // [3.1] Tạo PackTask tương ứng nếu chưa có
             foreach (var detail in checkTask.CheckTaskDetails)
             {
                 detail.QuantityChecked = detail.OutboundTaskItems.OutboundTaskItemDetails.Sum(x => x.Quantity);
@@ -501,14 +501,22 @@ namespace MadeHuman_Server.Service.Outbound
 
                 await PrintOutboundBill(detail);
 
-                // Tạo PackTask nếu chưa có
                 var outboundTaskItemId = detail.OutboundTaskItems.Id;
+
                 var exists = await _context.PackTask.AnyAsync(p => p.OutboundTaskItemId == outboundTaskItemId);
                 if (!exists)
                 {
-                    await _packTaskService.CreatePackTaskAsync(outboundTaskItemId);
+                    try
+                    {
+                        await _packTaskService.CreatePackTaskAsync(outboundTaskItemId); // ✅ Gọi đúng
+                    }
+                    catch (Exception ex)
+                    {
+                        logs.Add($"❌ Lỗi tạo PackTask cho {outboundTaskItemId}: {ex.Message}");
+                    }
                 }
             }
+
 
 
             // [4] Cập nhật trạng thái task nếu tất cả đã xong
