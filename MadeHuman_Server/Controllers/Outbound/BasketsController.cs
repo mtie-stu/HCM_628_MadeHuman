@@ -10,9 +10,9 @@ namespace MadeHuman_Server.Controllers
     [ApiController]
     public class BasketsController : ControllerBase
     {
-        private readonly BasketService _basketService;
+        private readonly BasketsService _basketService;
 
-        public BasketsController(BasketService basketService)
+        public BasketsController(BasketsService basketService)
         {
             _basketService = basketService;
         }

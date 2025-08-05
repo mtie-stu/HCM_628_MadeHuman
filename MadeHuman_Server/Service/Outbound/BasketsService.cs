@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace MadeHuman_Server.Services
 {
-    public class BasketService
+    public class BasketsService
     {
         private readonly ApplicationDbContext _context;
 
-        public BasketService(ApplicationDbContext context)
+        public BasketsService(ApplicationDbContext context)
         {
             _context = context;
         }

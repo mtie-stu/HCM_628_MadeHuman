@@ -6,6 +6,7 @@ namespace MadeHuman_User.ServicesTask.Services.InboundService
     public interface IInboundTaskService 
     {
         Task<bool> CreateAsync(Guid receiptId, HttpContext httpContext);
+        Task<List<InboundTaskViewModel>> GetAllAsync(string token);
         Task<(bool Success, string? Message, List<string>? Errors)> ValidateScanAsync(ScanInboundTaskValidationRequest request, HttpContext httpContext);
     }
 
@@ -72,6 +73,24 @@ namespace MadeHuman_User.ServicesTask.Services.InboundService
                 var result = await response.Content.ReadFromJsonAsync<ValidateScanErrorResponse>();
                 return (false, null, result?.Errors ?? new List<string> { "❌ Lỗi không xác định từ server." });
             }
+        }
+        public async Task<List<InboundTaskViewModel>> GetAllAsync(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+                return new List<InboundTaskViewModel>();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/api/InboundTask");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("❌ Lỗi khi gọi API GetAll: " + await response.Content.ReadAsStringAsync());
+                return new List<InboundTaskViewModel>();
+            }
+
+            var data = await response.Content.ReadFromJsonAsync<List<InboundTaskViewModel>>();
+            return data ?? new List<InboundTaskViewModel>();
         }
 
 

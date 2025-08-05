@@ -16,8 +16,4 @@
 	<!--<ProjectReference Include="..\MadeHuman_Admin\MadeHuman_Admin.csproj" />-->
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="ServicesTask\Services\OutboundService\" />
-  </ItemGroup>
-
 </Project>

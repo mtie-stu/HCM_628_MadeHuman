@@ -9,10 +9,10 @@
         <i class="bi bi-table"></i> Danh sách chi tiết nhiệm vụ bổ sung kho
     </h2>
 
-    <a href="@Url.Action("ValidateScan", "RefillTask")" class="btn btn-sm btn-success">
-        <i class="bi bi-upc-scan"></i> Chuyển đến trang quét xác nhận
-    </a>
-    <p class="text-muted">📦 Tổng số bản ghi: <strong>@(Model?.Count ?? 0)</strong></p>
+    <p class="text-muted">
+        📦 Tổng số bản ghi: <strong>@(Model?.Count ?? 0)</strong> <br />
+        ✅ Đã hoàn thành: <strong>@(Model?.Count(x => x.IsRefilled) ?? 0)</strong>
+    </p>
 
     @if (Model == null || !Model.Any())
     {
@@ -25,32 +25,49 @@
         <table class="table table-bordered table-striped table-hover table-sm">
             <thead class="table-light">
                 <tr>
+                    <th>Hành động</th>
                     <th>Mã nhiệm vụ</th>
                     <th>Người tạo</th>
                     <th>Thời gian tạo</th>
                     <th>From</th>
                     <th>To</th>
+                    <th>SKU</th>
                     <th>Số lượng</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in Model)
+                @foreach (var item in Model.Where(x => !x.IsRefilled))
                 {
-                    if (item.IsRefilled)
-                    {
-                        continue; // ❌ Bỏ qua dòng này nếu đã bổ sung
-                    }
+                    var shortId = item.RefillTaskId.ToString();
+                    var displayId = shortId.Length > 6
+                    ? shortId.Substring(0, 3) + "..." + shortId.Substring(shortId.Length - 3)
+                    : shortId;
 
                     <tr>
-                        <td>@item.RefillTaskId</td>
+                        <td>
+                            <a asp-controller="RefillTask"
+                               asp-action="ValidateScan"
+                               asp-route-refillTaskId="@item.RefillTaskId"
+                               asp-route-refillTaskDetailId="@item.DetailId"
+                               asp-route-fromLocation="@item.FromLocation"
+                               asp-route-toLocation="@item.ToLocation"
+                               asp-route-sku="@item.SKU"
+                               asp-route-quantity="@item.Quantity"
+                               asp-route-createBy="@item.CreateBy"
+                               asp-route-createAt="@item.CreateAt.ToString("O")"
+                               class="btn btn-sm btn-outline-success">
+                                <i class="bi bi-upc-scan"></i> Quét xác nhận
+                            </a>
+                        </td>
+                        <td>@displayId</td> <!-- 👈 Dùng mã rút gọn -->
                         <td>@item.CreateBy</td>
                         <td>@item.CreateAt.ToString("dd/MM/yyyy HH:mm")</td>
-                        <td>@item.FromLocation</td>
-                        <td>@item.ToLocation</td>
+                        <td>@item.FromLocationName</td>
+                        <td>@item.ToLocationName</td>
+                        <td>@item.SKU</td>
                         <td>@item.Quantity</td>
                     </tr>
                 }
-
             </tbody>
         </table>
     }

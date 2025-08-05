@@ -27,7 +27,8 @@ builder.Services.AddScoped<IPickTaskApiService, PickTaskApiService>();
 builder.Services.AddScoped<IWarehouseLookupApiService, WarehouseLocationServices>();
 builder.Services.AddScoped<IBillRenderService, BillRenderService>();
 builder.Services.AddScoped<ICheckTaskServices, CheckTaskServices>();
-
+builder.Services.AddScoped<IPackTaskService, PackTaskService>();
+builder.Services.AddScoped<IDispatchTaskService, DispatchTaskService>();
 builder.Services.AddHttpContextAccessor();
 
 
