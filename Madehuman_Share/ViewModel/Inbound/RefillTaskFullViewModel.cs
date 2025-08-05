@@ -28,7 +28,9 @@ namespace Madehuman_Share.ViewModel.Inbound
             public Guid? ProductSKUId { get; set; }     // có thể null nếu nhập theo SKU
             public string? SKU { get; set; }            // SKU dạng text
             public Guid FromLocation { get; set; }
+            public string? FromLocationName { get; set; }  // 👈 Thêm
             public Guid ToLocation { get; set; }
+            public string? ToLocationName { get; set; }    // 👈 Thêm
             public int Quantity { get; set; }   
         }
     }

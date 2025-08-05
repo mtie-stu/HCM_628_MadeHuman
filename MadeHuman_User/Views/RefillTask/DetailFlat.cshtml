@@ -38,6 +38,11 @@
             <tbody>
                 @foreach (var item in Model.Where(x => !x.IsRefilled))
                 {
+                    var shortId = item.RefillTaskId.ToString();
+                    var displayId = shortId.Length > 6
+                    ? shortId.Substring(0, 3) + "..." + shortId.Substring(shortId.Length - 3)
+                    : shortId;
+
                     <tr>
                         <td>
                             <a asp-controller="RefillTask"
@@ -54,11 +59,11 @@
                                 <i class="bi bi-upc-scan"></i> Quét xác nhận
                             </a>
                         </td>
-                        <td>@item.RefillTaskId</td>
+                        <td>@displayId</td> <!-- 👈 Dùng mã rút gọn -->
                         <td>@item.CreateBy</td>
                         <td>@item.CreateAt.ToString("dd/MM/yyyy HH:mm")</td>
-                        <td>@item.FromLocation</td>
-                        <td>@item.ToLocation</td>
+                        <td>@item.FromLocationName</td>
+                        <td>@item.ToLocationName</td>
                         <td>@item.SKU</td>
                         <td>@item.Quantity</td>
                     </tr>

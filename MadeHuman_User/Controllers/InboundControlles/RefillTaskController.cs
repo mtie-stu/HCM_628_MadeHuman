@@ -92,6 +92,7 @@ namespace MadeHuman_User.Controllers.InboundControlles
             var fromLocationInfo = await _warehouseLocationService.GetLocationInfoAsync(fromLocation);
             var toLocationInfo = await _warehouseLocationService.GetLocationInfoAsync(toLocation);
             var task = await _refillTaskService.GetByIdAsync(refillTaskId, HttpContext);
+
             // hoặc cách bạn lấy toàn bộ task
             var currentDetail = task.Details.FirstOrDefault(x => x.Id == refillTaskDetailId);
             // ✅ gọi lấy thông tin sản phẩm nếu có productSKUId
@@ -104,8 +105,8 @@ namespace MadeHuman_User.Controllers.InboundControlles
             {
                 RefillTaskId = refillTaskId,
                 DetailId = refillTaskDetailId,
-                FromLocation = fromLocation,
-                ToLocation = toLocation,
+                FromLocationName = fromLocationInfo?.NameLocation,
+                ToLocationName = toLocationInfo?.NameLocation,
                 SKU = sku,
                 Quantity = quantity,
                 CreateBy = createBy,
@@ -118,8 +119,8 @@ namespace MadeHuman_User.Controllers.InboundControlles
                 {
                     RefillTaskId = refillTaskId,
                     RefillTaskDetailId = refillTaskDetailId,
-                    FromLocationName = fromLocationInfo?.NameLocation ?? fromLocation.ToString(),
-                    ToLocationName = toLocationInfo?.NameLocation ?? toLocation.ToString(),
+                    FromLocationName = fromLocationInfo?.NameLocation ?? "(Không rõ)",
+                    ToLocationName = toLocationInfo?.NameLocation ?? "(Không rõ)",
                     SKU = sku,
                     Quantity = quantity
                 },

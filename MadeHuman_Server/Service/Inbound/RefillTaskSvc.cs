@@ -2,7 +2,9 @@
 using MadeHuman_Server.Model.Inbound;
 using MadeHuman_Server.Model.Shop;
 using MadeHuman_Server.Model.WareHouse;
+using MadeHuman_Server.Service.Shop;
 using MadeHuman_Server.Service.UserTask;
+using MadeHuman_Server.Service.WareHouse;
 using Madehuman_Share.ViewModel.Inbound;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -26,13 +28,17 @@ namespace MadeHuman_Server.Service.Inbound
         private readonly ApplicationDbContext _context;
         private readonly IUserTaskSvc _usertaskservice;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IWarehouseLocationService _locationService;
+        private readonly IProductLookupService _productService;
 
 
-        public RefillTaskService(ApplicationDbContext context,IUserTaskSvc userTaskSvc, IHttpContextAccessor httpContextAccessor)
+        public RefillTaskService(ApplicationDbContext context,IUserTaskSvc userTaskSvc, IHttpContextAccessor httpContextAccessor, IProductLookupService productService, IWarehouseLocationService locationService)
         {
             _context = context;
             _usertaskservice = userTaskSvc;
             _httpContextAccessor = httpContextAccessor;
+            _locationService = locationService;
+            _productService = productService;
         }
 
             public async Task<RefillTaskFullViewModel> CreateAsync(RefillTaskFullViewModel vm, string UserId)
@@ -191,7 +197,7 @@ namespace MadeHuman_Server.Service.Inbound
 
         public async Task<RefillTaskFullViewModel?> GetByIdAsync(Guid id)
         {
-            return await _context.RefillTasks
+            var task = await _context.RefillTasks
                 .Include(x => x.RefillTaskDetails)
                 .Where(x => x.Id == id)
                 .Select(x => new RefillTaskFullViewModel
@@ -211,7 +217,36 @@ namespace MadeHuman_Server.Service.Inbound
                     }).ToList()
                 })
                 .FirstOrDefaultAsync();
+
+            if (task == null)
+                return null;
+
+            // ⛳️ Bổ sung thông tin hiển thị từ service
+            foreach (var d in task.Details)
+            {
+                // 👉 SKU
+                if (d.ProductSKUId.HasValue)
+                {
+                    var sku = await _productService.GetSKUInfoAsync(d.ProductSKUId.Value);
+                    d.SKU = sku?.SkuCode ?? "";
+                }
+
+                // 👉 FromLocationName
+                var fromLoc = await _locationService.GetLocationInfoAsync(d.FromLocation);
+                d.FromLocationName = fromLoc?.NameLocation ?? "(Không rõ)";
+
+                // 👉 ToLocationName
+                var toLoc = await _locationService.GetLocationInfoAsync(d.ToLocation);
+                d.ToLocationName = toLoc?.NameLocation ?? "(Không rõ)";
+            }
+
+            // 👉 Nếu muốn hiển thị Email/người tạo, có thể xử lý tại đây nếu có user service
+            // task.CreateByName = await _usertaskservice.GetUserDisplayName(task.CreateBy);
+
+            return task;
         }
+
+
         public async Task<List<RefillTaskDetailWithHeaderViewModel>> GetAllDetailsAsync()
         {
             return await _context.RefillTaskDetails

@@ -55,13 +55,14 @@
             @foreach (var d in Model.Details)
             {
                 <tr>
-                    <td>@(d.SKU ?? d.ProductSKUId.ToString())</td>
-                    <td>@d.FromLocation</td>
-                    <td>@d.ToLocation</td>
+                    <td>@(d.SKU ?? d.ProductSKUId?.ToString())</td>
+                    <td>@(d.FromLocationName ?? d.FromLocation.ToString())</td> <!-- 👈 thêm tên vị trí -->
+                    <td>@(d.ToLocationName ?? d.ToLocation.ToString())</td>     <!-- 👈 thêm tên vị trí -->
                     <td>@d.Quantity</td>
                 </tr>
             }
         </tbody>
+
     </table>
         <a href="/RefillTask/DetailFlat" class="btn btn-success mt-3 me-2" role="button">
             <i class="bi bi-person-check-fill"></i> Bắt đầu nhiệm vụ

@@ -95,7 +95,7 @@ namespace MadeHuman_Server.Service.Outbound
                 userTask.TotalKPI += 1;
                 userTask.HourlyKPIs += 1;
             }
-             packTask.StatusPackTask= StatusPackTask.Finished;
+            packTask.StatusPackTask= StatusPackTask.Finished;
             packTask.FinishAt = DateTime.UtcNow;
             await _dispatchTaskServices.CreateDisPactchPackTaskAsync(outboundTaskItemId);
             await _context.SaveChangesAsync();

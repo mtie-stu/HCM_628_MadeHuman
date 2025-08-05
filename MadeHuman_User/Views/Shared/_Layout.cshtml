@@ -183,13 +183,13 @@
                 <a asp-controller="Outbound" asp-action="CheckerTaskMix"
                    class="@IsActive("Outbound","CheckerTaskMix")">
                     <span><i class="fas fa-tasks"></i> Checker Task Mix</span>
-                </a>
+                </a>`
                 <a asp-controller="Outbound" asp-action="CheckerTaskSingle"
                    class="@IsActive("Outbound","CheckerTaskSingle")">
                     <span><i class="fas fa-tasks"></i> Checker Task Single</span>
                 </a>
-                <a asp-controller="Outbound" asp-action="Packer"
-                   class="@IsActive("Outbound","Packer")">
+                <a asp-controller="PackTask" asp-action="Index"
+                   class="@IsActive("PackTask","Index")">`
                     <span><i class="fas fa-box"></i> Packer</span>
                 </a>
                 <a asp-controller="Outbound" asp-action="Dispatch"
