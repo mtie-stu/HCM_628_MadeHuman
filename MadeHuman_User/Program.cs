@@ -25,6 +25,10 @@ builder.Services.AddScoped<ICheckinCheckoutService, CheckinCheckoutService>();
 builder.Services.AddScoped<IRefillTaskService, RefillTaskService>();
 builder.Services.AddScoped<IPickTaskApiService, PickTaskApiService>();
 builder.Services.AddScoped<IWarehouseLookupApiService, WarehouseLocationServices>();
+builder.Services.AddScoped<IBillRenderService, BillRenderService>();
+builder.Services.AddScoped<ICheckTaskServices, CheckTaskServices>();
+
+builder.Services.AddHttpContextAccessor();
 
 
 /*https://hcm-628-madehuman-api.onrender.com*/

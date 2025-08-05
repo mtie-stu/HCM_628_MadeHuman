@@ -102,6 +102,7 @@ builder.Services.AddScoped<IPackTaskService, PackTaskServices>();
 builder.Services.AddScoped<IPickTaskServices, PickTaskServices>();
 builder.Services.AddScoped<IDispatchTaskServices, DispatchTaskServices>();
 builder.Services.AddScoped<IProductLookupService, ProductLookupService>();
+builder.Services.AddScoped<IBillRenderService, BillRenderService>();
 
 // (Tùy chọn) Cấu hình upload file lớn nếu cần
 builder.Services.Configure<FormOptions>(options =>
