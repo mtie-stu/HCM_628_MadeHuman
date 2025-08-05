@@ -1,6 +1,7 @@
 ﻿// CheckTaskServices.cs
 using MadeHuman_Server.Data;
 using MadeHuman_Server.Model.Outbound;
+using MadeHuman_Server.Service.Shop;
 using MadeHuman_Server.Service.UserTask;
 using Madehuman_Share.ViewModel.Outbound;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +11,8 @@ namespace MadeHuman_Server.Service.Outbound
 {
     public interface ICheckTaskServices
     {
-
+        Task<PreviewSingleSKUResponse?> PreviewSingleSKUAsync(Guid basketId, string sku);
+        Task<List<string>> ValidateMixCheckTaskScanAsync(ValidateMixCheckTaskRequest request);
         Task<CheckTasks> CreateCheckTaskAsync(Guid outboundTaskId);
         Task<CheckTaskFullViewModel> AssignUserTaskToCheckTaskByBasketAsync(Guid basketId);
         Task<List<string>> ValidateCheckTaskScanAsync(ScanCheckTaskRequest request);
@@ -24,14 +26,140 @@ namespace MadeHuman_Server.Service.Outbound
         private readonly IUserTaskSvc _usertaskservice;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IPackTaskService _packTaskService;
+        private readonly IProductImageService _productImageService;
+        private readonly IProductLookupService _productLookup;
 
-        public CheckTaskServices(ApplicationDbContext context, IUserTaskSvc userTaskSvc, IHttpContextAccessor httpContextAccessor, IPackTaskService packTaskService)
+
+        public CheckTaskServices(ApplicationDbContext context, IUserTaskSvc userTaskSvc, IHttpContextAccessor httpContextAccessor, IPackTaskService packTaskService, IProductImageService productImageService, IProductLookupService productLookupService)
         {
             _context = context;
             _usertaskservice = userTaskSvc;
             _httpContextAccessor = httpContextAccessor;
             _packTaskService = packTaskService; 
+            _productImageService = productImageService;
+            _productLookup = productLookupService;
         }
+        public async Task<PreviewSingleSKUResponse?> PreviewSingleSKUAsync(Guid basketId, string sku)
+        {
+            // Bước 1: Lấy OutboundTaskId từ Basket
+            var basket = await _context.Baskets
+                .AsNoTracking()
+                .FirstOrDefaultAsync(b => b.Id == basketId);
+
+            if (basket == null)
+                return null;
+
+            // Bước 2: Tìm CheckTask theo OutboundTaskId
+            var checkTask = await _context.CheckTasks
+                .Include(ct => ct.CheckTaskDetails)
+                    .ThenInclude(d => d.OutboundTaskItems)
+                        .ThenInclude(oti => oti.OutboundTaskItemDetails)
+                .FirstOrDefaultAsync(ct => ct.OutboundTaskId == basket.OutBoundTaskId);
+
+            if (checkTask == null)
+                return null;
+
+            // Bước 3: Lấy danh sách SKUId cần check
+            var skuIds = checkTask.CheckTaskDetails
+                .SelectMany(d => d.OutboundTaskItems.OutboundTaskItemDetails)
+                .Select(i => i.ProductSKUId)
+                .Distinct()
+                .ToList();
+
+            // Bước 4: Tìm SKU khớp
+            var matchedSku = await _context.ProductSKUs
+                .Include(p => p.Product)
+                .Include(p => p.Combo)
+                .Where(p => skuIds.Contains(p.Id))
+                .ToListAsync();
+
+            var matched = matchedSku
+                .FirstOrDefault(p => p.SKU.Equals(sku, StringComparison.OrdinalIgnoreCase));
+
+            if (matched == null)
+                return null;
+
+            // Bước 5: Tính tổng số lượng yêu cầu
+            var requiredQty = checkTask.CheckTaskDetails
+                .SelectMany(d => d.OutboundTaskItems.OutboundTaskItemDetails)
+                .Where(i => i.ProductSKUId == matched.Id)
+                .Sum(i => i.Quantity);
+
+            // Bước 6: Lấy ảnh
+            var imageDict = await _productImageService.GetImageUrlsByProductSKUIdsAsync(new List<Guid> { matched.Id });
+            var imageUrls = imageDict.ContainsKey(matched.Id) ? imageDict[matched.Id] : new List<string>();
+
+            return new PreviewSingleSKUResponse
+            {
+                SKU = matched.SKU,
+                ProductName = matched.Product?.Name ?? matched.Combo?.Name ?? "Unknown",
+                RequiredQuantity = requiredQty,
+                ImageUrls = imageUrls
+            };
+        }
+
+
+
+        public async Task<List<string>> ValidateMixCheckTaskScanAsync(ValidateMixCheckTaskRequest request)
+        {
+            var logs = new List<string>();
+
+            var detail = await _context.CheckTaskDetails
+                .Include(d => d.OutboundTaskItems)
+                    .ThenInclude(oti => oti.OutboundTaskItemDetails)
+                .FirstOrDefaultAsync(d => d.Id == request.CheckTaskDetailId);
+
+            if (detail == null)
+            {
+                logs.Add("❌ Không tìm thấy chi tiết kiểm hàng.");
+                return logs;
+            }
+            var productSkuId = await _context.ProductSKUs
+                .Where(d => d.SKU == request.SKU )// Thay "YourSKUValue" bằng giá trị SKU cụ thể
+                .Select(d => d.Id)
+                .FirstOrDefaultAsync(); // Trả về `default` (0 hoặc null) nếu không tìm thấy              
+
+            var productLookup = await _productLookup.GetSKUInfoAsync(productSkuId);
+            if (productLookup == null)
+            {
+                logs.Add("❌ Không tìm thấy sản phẩm với mã SKU.");
+                return logs;
+            }
+
+            var matchingDetail = detail.OutboundTaskItems.OutboundTaskItemDetails
+                .FirstOrDefault(p => p.ProductSKUId == productLookup.ProductSKUId);
+
+            if (matchingDetail == null)
+            {
+                logs.Add("❌ SKU không khớp với sản phẩm trong đơn.");
+                return logs;
+            }
+
+            detail.QuantityChecked = matchingDetail.Quantity;
+            detail.IsChecked = true;
+            detail.StatusCheckDetailTask = StatusCheckDetailTask.finished;
+            detail.FinishAt = DateTime.UtcNow;
+
+            // 🔍 Kiểm tra xem tất cả các detail đã xong chưa
+            var allFinished = await _context.CheckTaskDetails
+                .Where(d => d.CheckTaskId == detail.CheckTaskId)
+                .AllAsync(d => d.StatusCheckDetailTask == StatusCheckDetailTask.finished);
+
+            if (allFinished)
+            {
+                var checkTask = await _context.CheckTasks.FindAsync(detail.CheckTaskId);
+                if (checkTask != null)
+                {
+                    checkTask.StatusCheckTask = StatusCheckTask.finished;
+                    checkTask.FinishAt = DateTime.UtcNow;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            logs.Add("✅ Đã xác nhận và cập nhật trạng thái.");
+            return logs;
+        }
+
 
         public async Task<CheckTasks> CreateCheckTaskAsync(Guid outboundTaskId)
         {
@@ -332,7 +460,7 @@ namespace MadeHuman_Server.Service.Outbound
             var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return new() { "❌ Không xác định người dùng." };
-
+              
             var checkTask = await _context.CheckTasks
                 .Include(ct => ct.CheckTaskDetails)
                     .ThenInclude(d => d.OutboundTaskItems)

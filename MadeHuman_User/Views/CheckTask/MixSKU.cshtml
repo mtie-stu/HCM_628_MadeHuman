@@ -1,0 +1,275 @@
+﻿@{
+    ViewData["Title"] = "Kiểm hàng Mix SKU";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- 📍 Card Vị trí & BasketId (1/4 bên trái) -->
+        <div class="col-md-3">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header">📍 Vị trí làm việc</div>
+                <div class="card-body">
+                    <input type="text" id="locationInput" class="form-control mb-2" placeholder="🔎 Vị trí kiểm" />
+                    <input type="text" id="basketInput" class="form-control" placeholder="🧺 Mã rổ (BasketId)" />
+                </div>
+            </div>
+
+            <!-- 🔍 Thao tác -->
+            <div class="card shadow-sm">
+                <div class="card-header">🔍 Quét mã</div>
+                <div class="card-body">
+                    <input type="text" id="mainInput" class="form-control mb-2" placeholder="📦 Quét mã SKU..." autofocus autocomplete="off" />
+                    <input type="text" id="slotInput" class="form-control mb-2 d-none" placeholder="#️⃣ Quét phân loại (#1-#12)..." autocomplete="off" />
+
+                    <div id="productInfo" class="mt-3 d-none">
+                        <p><strong>Tên:</strong> <span id="productName">---</span></p>
+                        <p><strong>SKU:</strong> <span id="sku">---</span></p>
+                        <div id="carouselContainer" class="mt-2">
+                            <div id="imageCarousel" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-inner"></div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon"></span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="messageArea" class="alert d-none mt-3" role="alert"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🧾 Grid 12 slots (2/4 bên phải) -->
+        <div class="col-md-9">
+            <div class="row" id="slotGrid">
+                @for (int i = 1; i <= 12; i++)
+                {
+                    <div class="col-md-3 mb-3">
+                        <div class="card text-center h-100">
+                            <div class="card-header">#@i</div>
+                            <div class="card-body">
+                                <button class="btn btn-sm btn-primary mb-2" onclick="showDetail(@i)">Chi tiết</button>
+                                <input type="hidden" id="slotData_@i" />
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xác nhận in -->
+<div class="modal fade" id="printConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+            <div class="modal-body">
+                <h5 class="mb-3">✅ Đã in xong</h5>
+                <button class="btn btn-primary" onclick="location.reload()">Tiếp tục</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // File: wwwroot/js/check-mix-sku.js
+
+        const successSFX = new Audio("/sounds/success.mp3");
+        const errorSFX = new Audio("/sounds/error.mp3");
+
+        const state = {
+            checkTaskId: null,
+            slots: [],
+            selectedProductSKU: null,
+            selectedSlotIndex: null
+        };
+
+        function showMessage(msg, type = "info") {
+            const area = document.getElementById("messageArea");
+            area.className = `alert alert-${type}`;
+            area.textContent = msg;
+            area.classList.remove("d-none");
+        }
+
+        function updateCarousel(imageUrls) {
+            const carouselInner = document.querySelector(".carousel-inner");
+            if (!carouselInner) return;
+
+            if (!imageUrls || imageUrls.length === 0) {
+                carouselInner.innerHTML = `<div class="d-flex align-items-center justify-content-center bg-light h-100 text-muted">
+                        <p class="text-center m-3">Không có ảnh.</p></div>`;
+                return;
+            }
+
+            carouselInner.innerHTML = imageUrls.map((url, i) => `
+                    <div class="carousel-item ${i === 0 ? 'active' : ''}">
+                        <img src="/proxy-image?url=${encodeURIComponent(url)}"
+                            class="img-thumbnail d-block mx-auto"
+                            style="max-height: 250px; object-fit: contain;"
+                            alt="Ảnh sản phẩm">
+                    </div>`).join("");
+        }
+
+        async function showDetail(slotIndex) {
+            const detail = state.slots.find(s => s.orderIndex === slotIndex);
+            if (!detail) return;
+
+            alert(`📦 ${detail.productName}\nSKU: ${detail.sku}\nSố lượng: ${detail.requiredQuantity}`);
+        }
+
+        document.getElementById("basketInput").addEventListener("change", async function () {
+            const basketId = this.value.trim();
+            const jwt = document.cookie.split("; ").find(x => x.startsWith("JWTToken="))?.split("=")[1];
+            if (!basketId || !jwt) return showMessage("❌ Thiếu mã rổ hoặc token", "danger");
+
+            try {
+                const res = await fetch(`https://localhost:7204/api/CheckTask/assign-user/${basketId}`, {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${jwt}` }
+                });
+
+                const task = await res.json();
+                if (!res.ok) throw new Error(task?.message || "Không thể gán nhiệm vụ");
+
+                state.checkTaskId = task.id;
+                state.slots = [];
+
+                // Build slots from response
+                task.details.forEach(detail => {
+                    const skuList = detail.outboundTaskItem.itemDetails.map(i => i.productSKUId);
+                    skuList.forEach(skuId => {
+                        state.slots.push({
+                            checkTaskDetailId: detail.id,
+                            orderIndex: detail.orderIndex,
+                            skuId: skuId,
+                            isChecked: detail.status === 2,
+                            productName: "--", // Will load later
+                            sku: "--",
+                            imageUrls: []
+                        });
+                    });
+                });
+
+                // Lookup product info
+                const skuIds = state.slots.map(s => s.skuId);
+                const productRes = await fetch("https://localhost:7204/api/ProductLookup/sku-infos", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${jwt}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(skuIds)
+                });
+
+                const productMap = await productRes.json();
+                state.slots.forEach(slot => {
+                    const product = productMap[slot.skuId];
+                    if (product) {
+                        slot.productName = product.name;
+                        slot.sku = product.code;
+                        slot.imageUrls = product.imageUrls || [];
+                    }
+                });
+
+                showMessage("✅ Đã gán nhiệm vụ và tải thông tin sản phẩm", "success");
+                successSFX.play();
+
+            } catch (err) {
+                errorSFX.play();
+                showMessage("❌ " + err.message, "danger");
+            }
+        });
+
+        document.getElementById("mainInput").addEventListener("change", async function () {
+            const code = this.value.trim();
+            this.value = "";
+
+            const jwt = document.cookie.split("; ").find(x => x.startsWith("JWTToken="))?.split("=")[1];
+            if (!jwt || !code) return;
+
+            // Step 2: Quét SKU
+            if (!state.selectedProductSKU) {
+                const found = state.slots.find(s => s.sku === code && !s.isChecked);
+                if (!found) {
+                    errorSFX.play();
+                    return showMessage("❌ Không khớp SKU nào đang chờ kiểm", "danger");
+                }
+
+                state.selectedProductSKU = found.sku;
+                state.selectedSlotIndex = found.orderIndex;
+
+                document.getElementById("productInfo").classList.remove("d-none");
+                document.getElementById("productName").innerText = found.productName;
+                document.getElementById("sku").innerText = found.sku;
+                updateCarousel(found.imageUrls);
+
+                showMessage(`✅ SKU khớp với slot #${found.orderIndex}. Quét mã #${found.orderIndex} để xác nhận`, "success");
+                successSFX.play();
+                return;
+            }
+
+            // Step 3: Quét mã phân loại (#1 -> #12)
+            const matched = code.startsWith("#") && parseInt(code.slice(1)) === state.selectedSlotIndex;
+            if (!matched) {
+                errorSFX.play();
+                showMessage("❌ Slot không khớp OrderIndex", "danger");
+                return;
+            }
+
+            try {
+                const slot = state.slots.find(s => s.orderIndex === state.selectedSlotIndex && s.sku === state.selectedProductSKU);
+                if (!slot) throw new Error("Không tìm thấy slot tương ứng");
+
+                const res = await fetch("https://localhost:7204/api/CheckTask/mix-sku/validate", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${jwt}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        checkTaskDetailId: slot.checkTaskDetailId,
+                        sku: state.selectedProductSKU
+                    })
+                });
+
+                if (!res.ok) throw new Error("Xác nhận thất bại");
+
+                // In hóa đơn nếu hoàn thành
+                const printRes = await fetch(`https://localhost:7204/api/Bill/by-checktask-detail/${slot.checkTaskDetailId}`, {
+                    headers: { "Authorization": `Bearer ${jwt}` }
+                });
+
+                const bills = await printRes.json();
+                for (const bill of bills) {
+                    const popup = window.open("", "", "width=600,height=800");
+                    popup.document.write(bill.htmlContent);
+                    popup.document.close();
+                    popup.focus();
+                    await new Promise(resolve => {
+                        popup.onload = () => {
+                            popup.print();
+                            setTimeout(() => popup.close(), 500);
+                            resolve();
+                        };
+                    });
+                }
+
+                showMessage("✅ Đã xác nhận và in hóa đơn", "success");
+                successSFX.play();
+
+                slot.isChecked = true;
+                state.selectedProductSKU = null;
+                state.selectedSlotIndex = null;
+                document.getElementById("productInfo").classList.add("d-none");
+
+            } catch (err) {
+                errorSFX.play();
+                showMessage("❌ " + err.message, "danger");
+            }
+        });
+
+    </script>
+}

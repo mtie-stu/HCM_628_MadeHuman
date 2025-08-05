@@ -1,0 +1,277 @@
+﻿@model Madehuman_Share.ViewModel.Outbound.PickTaskFullViewModel
+
+@{
+    ViewData["Title"] = "Nhiệm vụ Pick";
+    var currentDetail = Model.Details.FirstOrDefault();
+}
+
+<div class="container mt-4">
+    <h3 class="text-primary mb-3">🧾 Mã nhiệm vụ: <span class="badge bg-secondary">@Model.Id</span></h3>
+
+    <!-- ✅ Hiển thị tiến độ -->
+    <p class="fw-semibold text-secondary">
+        🧮 Tiến độ: <span id="progress-picked">@Model.Details.Count(d => d.IsPicked)</span>/<span id="progress-total">@Model.Details.Count</span> chi tiết đã hoàn thành
+    </p>
+
+    @if (currentDetail != null)
+    {
+        <div class="card shadow mb-4">
+            <div class="row g-0">
+                <!-- Ảnh sản phẩm -->
+                <div class="col-md-5">
+                    <div id="product-carousel" class="carousel slide h-100" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            @if (currentDetail.ImageUrls != null && currentDetail.ImageUrls.Any())
+                            {
+                                for (int i = 0; i < currentDetail.ImageUrls.Count; i++)
+                                {
+                                    var img = currentDetail.ImageUrls[i];
+                                    <div class="carousel-item @(i == 0 ? "active" : "")">
+                                        <img src="/proxy-image?url=@Uri.EscapeDataString(img)"
+                                             class="img-thumbnail d-block mx-auto"
+                                             style="max-height: 250px; object-fit: contain;"
+                                             alt="Ảnh sản phẩm" />
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="d-flex align-items-center justify-content-center bg-light h-100 text-muted">
+                                    <p class="text-center m-3">Không có ảnh.</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thông tin sản phẩm -->
+                <div class="col-md-7">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">📦 Sản phẩm cần lấy</h5>
+                        <p><strong>Tên sản phẩm:</strong> <span id="product-name">@currentDetail.ProductName</span></p>
+                        <p><strong>SKU:</strong> <span id="sku-code">@currentDetail.SkuCode</span></p>
+                        <p><strong>Số lượng cần lấy:</strong> <span id="quantity">@currentDetail.Quantity</span></p>
+                        <p><strong>Vị trí cần lấy hàng:</strong> <span id="location-code">@currentDetail.WarehouseLocationCode</span></p>
+                        <p><strong>Mã giỏ hàng:</strong> @Model.BasketId</p>
+                        <p><strong>Đã pick:</strong> <span id="qty-picked">0</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Quét mã -->
+    <div class="mb-4">
+        <label for="scanInput" class="form-label fw-bold">🔍 Ô nhập dữ liệu quét</label>
+        <input type="text" id="scanInput" class="form-control form-control-lg" placeholder="🔍 Quét mã vị trí..." autofocus />
+    </div>
+
+    <!-- Kết quả -->
+    <div id="result" class="alert d-none mt-3"></div>
+</div>
+
+@section Scripts {
+    <script>
+        let step = 1;
+        let picked = 0;
+
+        let totalDetails = @Model.Details.Count;
+        let pickedDetails = @Model.Details.Count(d => d.IsPicked);
+
+        const qtyPickedEl = document.getElementById("qty-picked");
+        const resultBox = document.getElementById("result");
+        const scanInput = document.getElementById("scanInput");
+
+        const successSFX = new Audio("/sounds/success.mp3");
+        const errorSFX = new Audio("/sounds/error.mp3");
+
+        let qtyNeed = parseInt("@currentDetail.Quantity");
+
+        let currentDetail = {
+            Id: "@currentDetail.Id",
+            ProductName: "@currentDetail.ProductName",
+            SkuCode: "@currentDetail.SkuCode",
+            Quantity: parseInt("@currentDetail.Quantity"),
+            WarehouseLocationCode: "@currentDetail.WarehouseLocationCode",
+            ImageUrls: @Html.Raw(Json.Serialize(currentDetail.ImageUrls ?? new List<string>()))
+            };
+
+        updatePlaceholder();
+
+        scanInput.addEventListener("keypress", async function (e) {
+            if (e.key !== "Enter") return;
+
+            const value = e.target.value.trim();
+            e.target.value = "";
+            if (!value) return;
+
+            if (step === 1) {
+                if (value === currentDetail.WarehouseLocationCode) {
+                    step = 2;
+                    playSuccess();
+                    showSuccess("✅ Vị trí chính xác. Quét SKU tiếp theo.");
+                    updatePlaceholder();
+                } else {
+                    playError();
+                    showError("❌ Sai vị trí. Hãy thử lại.");
+                }
+            } else if (step === 2) {
+                if (value === currentDetail.SkuCode) {
+                    picked++;
+                    if (qtyPickedEl) qtyPickedEl.textContent = picked;
+                    if (picked < qtyNeed) {
+                        playSuccess();
+                        showSuccess(`✅ Đã Pick ${picked}/${qtyNeed}. Tiếp tục quét.`);
+                    } else {
+                        step = 3;
+                        playSuccess();
+                        showSuccess("✅ Đã đủ số lượng. Quét giỏ để xác nhận.");
+                        updatePlaceholder();
+                    }
+                } else {
+                    playError();
+                    showError("❌ Sai SKU. Vui lòng thử lại.");
+                }
+            } else if (step === 3) {
+                if (value === "@Model.BasketId") {
+                    const data = {
+                        pickTaskId: "@Model.Id",
+                        pickTaskDetailId: currentDetail.Id,
+                        basketId: "@Model.BasketId"
+                    };
+
+                    try {
+                        const jwt = document.cookie.split("; ").find(r => r.startsWith("JWTToken="))?.split("=")[1];
+
+                        const res = await fetch(`https://localhost:7204/api/PickTasks/confirm-basket`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": `Bearer ${jwt}`
+                            },
+                            body: JSON.stringify(data)
+                        });
+
+
+                        const body = await res.json();
+
+                        if (res.ok) {
+                            playSuccess();
+                            showSuccess(body.messages?.join("<br>") ?? "✅ Hoàn tất PickTaskDetail!");
+
+                            // ✅ Cập nhật tiến độ tổng thể
+                            pickedDetails++;
+                            document.getElementById("progress-picked").textContent = pickedDetails;
+
+                            if (body.isPickTaskFinished) {
+                                setTimeout(() => window.location.href = "/PickTasks", 1500);
+                            } else {
+                                loadNextDetail(body.nextDetail);
+                            }
+                        } else {
+                            playError();
+                            showError(body.errors?.join("<br>") ?? "❌ Xác nhận thất bại.");
+                        }
+                    } catch (error) {
+                        playError();
+                        showError("❌ Lỗi kết nối tới server.");
+                    }
+                } else {
+                    playError();
+                    showError("❌ Sai giỏ. Hãy thử lại.");
+                }
+            }
+        });
+
+        async function loadNextDetail(detail) {
+            if (!detail || !detail.id) {
+                showError("❌ Không tìm thấy PickTaskDetail tiếp theo.");
+                return;
+            }
+
+            try {
+                setTimeout(() => location.reload(), 500); // ✅ reload nhẹ nhàng
+
+                // const product = await fetch(`https:localhost:7204/api/product/sku/${detail.productSKUId}`).then(r => r.json());
+                // const location = await fetch(`https:localhost:7204/api/warehouselocation/location/${detail.warehouseLocationId}`).then(r => r.json());
+
+                // document.getElementById("product-name").textContent = product.name;
+                // document.getElementById("sku-code").textContent = product.sku;
+                // document.getElementById("quantity").textContent = detail.quantity;
+                // document.getElementById("location-code").textContent = location.code;
+                // document.getElementById("qty-picked").textContent = 0;
+
+                // updateCarousel(product.imageUrls);
+
+                // currentDetail = {
+                //     Id: detail.id,
+                //     ProductName: product.name,
+                //     SkuCode: product.sku,
+                //     Quantity: detail.quantity,
+                //     WarehouseLocationCode: location.code,
+                //     ImageUrls: product.imageUrls
+                // };
+
+                // picked = 0;
+                // qtyNeed = detail.quantity;
+                // step = 1;
+                // updatePlaceholder();
+                // scanInput.focus();
+                // resultBox.classList.add("d-none");
+
+            } catch {
+                showError("❌ Lỗi khi tải dữ liệu chi tiết tiếp theo.");
+                setTimeout(() => location.reload(), 1000);
+
+            }
+        }
+
+        function updateCarousel(imageUrls) {
+            const carouselInner = document.querySelector(".carousel-inner");
+            if (!carouselInner) return;
+
+            if (!imageUrls || imageUrls.length === 0) {
+                carouselInner.innerHTML = `<div class="d-flex align-items-center justify-content-center bg-light h-100 text-muted">
+                        <p class="text-center m-3">Không có ảnh.</p></div>`;
+                return;
+            }
+
+            carouselInner.innerHTML = imageUrls.map((url, i) => `
+                    <div class="carousel-item ${i === 0 ? 'active' : ''}">
+                        <img src="/proxy-image?url=${encodeURIComponent(url)}"
+                             class="img-thumbnail d-block mx-auto"
+                             style="max-height: 250px; object-fit: contain;"
+                             alt="Ảnh sản phẩm">
+                    </div>
+                `).join("");
+        }
+
+        function showSuccess(msg) {
+            resultBox.className = "alert alert-success";
+            resultBox.innerHTML = msg;
+            resultBox.classList.remove("d-none");
+        }
+
+        function showError(msg) {
+            resultBox.className = "alert alert-danger";
+            resultBox.innerHTML = msg;
+            resultBox.classList.remove("d-none");
+        }
+
+        function updatePlaceholder() {
+            if (step === 1) scanInput.placeholder = "🔍 Quét mã vị trí...";
+            else if (step === 2) scanInput.placeholder = "🔍 Quét mã sản phẩm...";
+            else if (step === 3) scanInput.placeholder = "🔍 Quét mã giỏ hàng...";
+        }
+
+        function playSuccess() {
+            successSFX.currentTime = 0;
+            successSFX.play();
+        }
+
+        function playError() {
+            errorSFX.currentTime = 0;
+            errorSFX.play();
+        }
+    </script>
+}
