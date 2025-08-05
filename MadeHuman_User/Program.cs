@@ -25,9 +25,12 @@ builder.Services.AddScoped<ICheckinCheckoutService, CheckinCheckoutService>();
 builder.Services.AddScoped<IRefillTaskService, RefillTaskService>();
 builder.Services.AddScoped<IPickTaskApiService, PickTaskApiService>();
 builder.Services.AddScoped<IWarehouseLookupApiService, WarehouseLocationServices>();
-builder.Services.AddScoped<IPackTaskService, PackTaskService>();
+builder.Services.AddScoped<IBillRenderService, BillRenderService>();
+builder.Services.AddScoped<ICheckTaskServices, CheckTaskServices>();
 
-//https://localhost:7204
+builder.Services.AddHttpContextAccessor();
+
+
 /*https://hcm-628-madehuman-api.onrender.com*/
 builder.Services.AddHttpClient("API", client =>
 {

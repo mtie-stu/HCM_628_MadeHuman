@@ -7,7 +7,7 @@ namespace MadeHuman_Server.Controllers.Outbound
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] // đảm bảo có user khi truy cập
+    //[Authorize] // đảm bảo có user khi truy cập
     public class CheckTaskController : ControllerBase
     {
         private readonly ICheckTaskServices _checkTaskService;
@@ -72,6 +72,35 @@ namespace MadeHuman_Server.Controllers.Outbound
         {
             var result = await _checkTaskService.ValidateSingleSKUCheckTaskAsync(request);
             return Ok(result);
+        }
+
+        [HttpGet("preview-single-sku/{basketId}/{sku}")]
+        public async Task<IActionResult> PreviewSingleSKU(Guid basketId, string sku)
+        {
+            var result = await _checkTaskService.PreviewSingleSKUAsync(basketId, sku);
+            if (result == null)
+                return NotFound(new { message = "❌ SKU không hợp lệ trong nhiệm vụ này." });
+
+            return Ok(result);
+        }
+        [HttpPost("mix-sku/validate")]
+        public async Task<IActionResult> ValidateMixSKU([FromBody] ValidateMixCheckTaskRequest request)
+        {
+            if (request == null || request.CheckTaskDetailId == Guid.Empty || string.IsNullOrWhiteSpace(request.SKU))
+                return BadRequest(new { message = "❌ Dữ liệu không hợp lệ." });
+
+            try
+            {
+                var result = await _checkTaskService.ValidateMixCheckTaskScanAsync(request);
+                if (result.Any(m => m.StartsWith("❌")))
+                    return BadRequest(result);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "❌ Lỗi xử lý: " + ex.Message });
+            }
         }
     }
 }
