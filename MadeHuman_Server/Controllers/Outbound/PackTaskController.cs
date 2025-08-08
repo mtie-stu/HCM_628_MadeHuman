@@ -42,12 +42,13 @@ namespace MadeHuman_Server.Controllers.Outbound
             try
             {
                 var logs = await _packTaskService.AssignPackTaskAsync(outboundTaskItemId);
-                return Ok(logs);
+                return Ok(new { logs }); // ✅ Gói logs vào object
             }
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
         }
+
     }
 }
