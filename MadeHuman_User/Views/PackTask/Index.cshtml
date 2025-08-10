@@ -5,18 +5,25 @@
 <div class="container mt-4">
     <h3 class="text-primary">📦 Gán & Hoàn thành nhiệm vụ PackTask</h3>
 
+    @if (TempData["Logs"] != null)
+    {
+        <div class="alert alert-info">
+            @Html.Raw(TempData["Logs"]) <!-- ✅ hiển thị log bằng TempData -->
+        </div>
+    }
+
     <div class="card shadow-sm mt-3">
         <div class="card-body">
-            <label for="outboundTaskItemId" class="form-label">🔍 Mã OutboundTaskItem:</label>
-            <input type="text" id="outboundTaskItemId" class="form-control" placeholder="Nhập hoặc quét mã..." />
+            <form asp-action="Assign" method="post" onsubmit="return validateAndPlaySound();">
+                <label for="outboundTaskItemId" class="form-label">🔍 Mã OutboundTaskItem:</label>
+                <input type="text" id="outboundTaskItemId" name="outboundTaskItemId" class="form-control" placeholder="Nhập hoặc quét mã..." required />
 
-            <button id="assignBtn" class="btn btn-success mt-3 w-100">
-                🚀 Gán và hoàn thành
-            </button>
+                <button type="submit" class="btn btn-success mt-3 w-100">
+                    🚀 Gán và hoàn thành
+                </button>
+            </form>
         </div>
     </div>
-
-    <div class="mt-4" id="logResult"></div>
 </div>
 
 @section Scripts {
@@ -24,69 +31,17 @@
         const successSFX = new Audio("/sounds/success.mp3");
         const errorSFX = new Audio("/sounds/error.mp3");
 
-        function getCookie(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
-            return null;
+        // Hàm kiểm tra trước khi submit
+        function validateAndPlaySound() {
+            const input = document.getElementById("outboundTaskItemId").value.trim();
+            if (!input) {
+                errorSFX.play();
+                alert("⚠️ Vui lòng nhập mã OutboundTaskItemId.");
+                return false; // chặn submit
+            }
+
+            successSFX.play(); // phát âm thanh khi hợp lệ
+            return true; // cho phép submit
         }
-
-        async function safeReadJson(response) {
-            try {
-                return await response.json();
-            } catch {
-                return null;
-            }
-        }
-
-        document.getElementById("assignBtn").addEventListener("click", async function () {
-            const id = document.getElementById("outboundTaskItemId").value.trim();
-            const resultBox = document.getElementById("logResult");
-
-            if (!id) {
-                resultBox.innerHTML = `<div class="alert alert-warning">⚠️ Vui lòng nhập mã OutboundTaskItemId.</div>`;
-                errorSFX.play();
-                return;
-            }
-
-            const jwt = getCookie("JWTToken");
-            if (!jwt) {
-                resultBox.innerHTML = `<div class="alert alert-danger">❌ Không tìm thấy JWTToken trong cookie.</div>`;
-                errorSFX.play();
-                return;
-            }
-
-            resultBox.innerHTML = `<div class="alert alert-info">⏳ Đang xử lý, vui lòng chờ...</div>`;
-
-            try {
-                const response = await fetch(`https://localhost:7204/api/PackTask/assign/${id}`, {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${jwt}`
-                    }
-                });
-
-                const data = await safeReadJson(response);
-
-                if (response.ok) {
-                    const logs = Array.isArray(data?.logs) ? data.logs : [];
-                    resultBox.innerHTML = `
-                        <div class="alert alert-success">
-                            <strong>✅ Kết quả:</strong>
-                            <ul>${logs.map(log => `<li>${log}</li>`).join("")}</ul>
-                        </div>`;
-                    successSFX.play();
-                } else {
-                    resultBox.innerHTML = `
-                        <div class="alert alert-danger">
-                            ❌ ${data?.message || "Lỗi không xác định từ máy chủ."}
-                        </div>`;
-                    errorSFX.play();
-                }
-            } catch (err) {
-                resultBox.innerHTML = `<div class="alert alert-danger">❌ Lỗi khi gọi API: ${err.message}</div>`;
-                errorSFX.play();
-            }
-        });
     </script>
 }
