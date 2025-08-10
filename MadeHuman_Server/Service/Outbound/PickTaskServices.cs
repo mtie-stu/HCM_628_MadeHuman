@@ -258,7 +258,6 @@ namespace MadeHuman_Server.Service.Outbound
             if (userTaskId == null) throw new InvalidOperationException("❌ Không tìm thấy phân công công việc hôm nay cho người dùng.");
 
             var tasks = await _context.PickTasks
-                .Include(p => p.OutboundTask)
                 .Include(p => p.OutboundTaskItems)
                 .Include(p => p.PickTaskDetails)
                 .Where(p => p.UsersTasksId == userTaskId)

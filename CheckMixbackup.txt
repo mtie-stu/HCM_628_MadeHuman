@@ -1,0 +1,306 @@
+@{
+    ViewData["Title"] = "Kiểm hàng Mix SKU";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- 📍 Card Vị trí & BasketId (1/4 bên trái) -->
+        <div class="col-md-3">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header">📍 Vị trí làm việc</div>
+                <div class="card-body">
+                    <input type="text" id="locationInput" class="form-control mb-2" placeholder="🔎 Vị trí kiểm" />
+                    <input type="text" id="basketInput" class="form-control" placeholder="🧺 Mã rổ (BasketId)" />
+                </div>
+            </div>
+
+            <!-- 🔍 Thao tác -->
+            <div class="card shadow-sm">
+                <div class="card-header">🔍 Quét mã</div>
+                <div class="card-body">
+                    <input type="text" id="mainInput" class="form-control mb-2" placeholder="📦 Quét mã SKU..." autofocus autocomplete="off" />
+
+                    <div id="productInfo" class="mt-3 d-none">
+                        <p><strong>Tên:</strong> <span id="productName">---</span></p>
+                        <p><strong>SKU:</strong> <span id="sku">---</span></p>
+                        <div id="carouselContainer" class="mt-2">
+                            <div id="imageCarousel" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-inner"></div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon"></span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="messageArea" class="alert d-none mt-3" role="alert"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🧾 Grid 12 slots (2/4 bên phải) -->
+        <div class="col-md-9">
+            <div class="row" id="slotGrid">
+                @for (int i = 1; i <= 12; i++)
+                {
+                    <div class="col-md-3 mb-3">
+                        <div class="card text-center h-100" id="slotCard_@i">
+                            <div class="card-body">
+                                <div class="mb-2"><strong>#@i</strong></div>
+                                <button id="btnDetail_@i" class="btn btn-sm btn-primary mb-2" onclick="showDetail(@i)">Chi tiết</button>
+                                <input type="hidden" id="slotData_@i" />
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const successSFX = new Audio("/sounds/success.mp3");
+        const errorSFX = new Audio("/sounds/error.mp3");
+
+        const state = {
+            checkTaskId: null,
+            slots: [],
+            selectedProductSKU: null,
+            selectedSlotIndex: null
+        };
+
+        function showMessage(msg, type = "info") {
+            const area = document.getElementById("messageArea");
+            area.className = `alert alert-${type}`;
+            area.textContent = msg;
+            area.classList.remove("d-none");
+        }
+
+        function updateCarousel(imageUrls) {
+            const carouselInner = document.querySelector(".carousel-inner");
+            if (!carouselInner) return;
+
+            if (!imageUrls || imageUrls.length === 0) {
+                carouselInner.innerHTML = `<div class="d-flex align-items-center justify-content-center bg-light h-100 text-muted">
+                                            <p class="text-center m-3">Không có ảnh.</p></div>`;
+                return;
+            }
+
+            carouselInner.innerHTML = imageUrls.map((url, i) => `
+                                    <div class="carousel-item ${i === 0 ? 'active' : ''}">
+                                        <img src="/proxy-image?url=${encodeURIComponent(url)}"
+                                            class="img-thumbnail d-block mx-auto"
+                                            style="max-height: 250px; object-fit: contain;"
+                                            alt="Ảnh sản phẩm">
+                                    </div>`).join("");
+        }
+
+        function showDetail(slotIndex) {
+            const detail = state.slots.find(s => s.orderIndex === slotIndex);
+            if (!detail) return;
+            alert(`📦 ${detail.productName}\nSKU: ${detail.sku}\nSố lượng: ${detail.requiredQuantity}`);
+        }
+
+        function updateSlotStyles() {
+            state.slots.forEach(slot => {
+                const card = document.getElementById(`slotCard_${slot.orderIndex}`);
+                const btn = document.getElementById(`btnDetail_${slot.orderIndex}`);
+                if (!card || !btn) return;
+                if (slot.isChecked) {
+                    card.classList.add("bg-light", "opacity-50");
+                    btn.classList.replace("btn-primary", "btn-secondary");
+                    btn.disabled = true;
+                } else {
+                    card.classList.remove("bg-light", "opacity-50");
+                    btn.classList.replace("btn-secondary", "btn-primary");
+                    btn.disabled = false;
+                }
+            });
+        }
+
+        // 👉 Phục hồi trạng thái nếu có localStorage
+        const saved = localStorage.getItem("checkTaskState");
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            state.checkTaskId = parsed.checkTaskId;
+            state.slots = parsed.slots;
+            updateSlotStyles();
+            showMessage("🔄 Đã khôi phục nhiệm vụ kiểm hàng từ phiên trước", "info");
+        }
+
+        document.getElementById("basketInput").addEventListener("change", async function () {
+            const basketId = this.value.trim();
+            const jwt = document.cookie.split("; ").find(x => x.startsWith("JWTToken="))?.split("=")[1];
+            if (!basketId || !jwt) return showMessage("❌ Thiếu mã rổ hoặc token", "danger");
+
+            try {
+                const res = await fetch(`https://localhost:7204/api/CheckTask/assign-user/${basketId}`, {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${jwt}` }
+                });
+
+                const task = await res.json();
+                if (!res.ok) throw new Error(task?.message || "Không thể gán nhiệm vụ");
+
+                state.checkTaskId = task.id;
+                state.slots = [];
+
+                task.details.forEach(detail => {
+                    detail.outboundTaskItem.itemDetails.forEach(i => {
+                        state.slots.push({
+                            checkTaskDetailId: detail.id,
+                            orderIndex: detail.orderIndex,
+                            skuId: i.productSKUId,
+                            requiredQuantity: i.quantity,
+                            isChecked: detail.status === 1,
+                            productName: "--",
+                            sku: "--",
+                            imageUrls: []
+                        });
+                    });
+                });
+
+                const skuIds = [...new Set(state.slots.map(s => s.skuId))];
+                const productMap = {};
+
+                for (const skuId of skuIds) {
+                    const res = await fetch(`https://localhost:7204/api/Product/sku/${skuId}`, {
+                        headers: { "Authorization": `Bearer ${jwt}` }
+                    });
+
+                    if (res.ok) {
+                        const product = await res.json();
+                        productMap[skuId] = product;
+                    }
+                }
+
+                state.slots.forEach(slot => {
+                    const product = productMap[slot.skuId];
+                    if (product) {
+                        slot.productName = product.productName;
+                        slot.sku = product.skuCode;
+                        slot.imageUrls = product.imageUrls || [];
+                    }
+                });
+
+                // 👉 Lưu localStorage
+                localStorage.setItem("checkTaskState", JSON.stringify({
+                    checkTaskId: state.checkTaskId,
+                    slots: state.slots
+                }));
+
+                updateSlotStyles();
+                showMessage("✅ Đã gán nhiệm vụ và tải thông tin sản phẩm", "success");
+                successSFX.play();
+            } catch (err) {
+                errorSFX.play();
+                showMessage("❌ " + err.message, "danger");
+            }
+        });
+
+        document.getElementById("mainInput").addEventListener("change", async function () {
+            const code = this.value.trim();
+            this.value = "";
+            const jwt = document.cookie.split("; ").find(x => x.startsWith("JWTToken="))?.split("=")[1];
+            if (!jwt || !code) return;
+
+            // Step 2: Quét SKU
+            if (!state.selectedProductSKU) {
+                const found = state.slots.find(s => s.sku === code && !s.isChecked);
+                if (!found) {
+                    errorSFX.play();
+                    return showMessage("❌ Không khớp SKU nào đang chờ kiểm", "danger");
+                }
+
+                state.selectedProductSKU = found.sku;
+                state.selectedSlotIndex = found.orderIndex;
+                document.getElementById("mainInput").placeholder = `🔢 Quét mã slot #${found.orderIndex}`;
+                document.getElementById("productInfo").classList.remove("d-none");
+                document.getElementById("productName").innerText = found.productName;
+                document.getElementById("sku").innerText = found.sku;
+                updateCarousel(found.imageUrls);
+
+                showMessage(`✅ SKU khớp với slot #${found.orderIndex}. Quét mã #${found.orderIndex} để xác nhận`, "success");
+                successSFX.play();
+                return;
+            }
+
+            // Step 3: Quét mã slot để xác nhận
+            const matched = code.startsWith("#") && parseInt(code.slice(1)) === state.selectedSlotIndex;
+            if (!matched) {
+                errorSFX.play();
+                return showMessage("❌ Slot không khớp OrderIndex", "danger");
+            }
+
+            try {
+                const slot = state.slots.find(s => s.orderIndex === state.selectedSlotIndex && s.sku === state.selectedProductSKU);
+                if (!slot) throw new Error("Không tìm thấy slot tương ứng");
+
+                const res = await fetch("https://localhost:7204/api/CheckTask/mix-sku/validate", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${jwt}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        checkTaskDetailId: slot.checkTaskDetailId,
+                        sku: state.selectedProductSKU
+                    })
+                });
+
+                if (!res.ok) throw new Error("Xác nhận thất bại");
+
+                // ✅ In hóa đơn
+                const printRes = await fetch(`https://localhost:7204/api/Bill/by-check-detail/${slot.checkTaskDetailId}`, {
+                    headers: { "Authorization": `Bearer ${jwt}` }
+                });
+
+                const bills = await printRes.json();
+                for (const bill of bills) {
+                    const popup = window.open("", "", "width=600,height=800");
+                    popup.document.write(bill.htmlContent);
+                    popup.document.close();
+                    popup.focus();
+                    await new Promise(resolve => {
+                        popup.onload = () => {
+                            popup.print();
+                            setTimeout(() => popup.close(), 500);
+                            resolve();
+                        };
+                    });
+                }
+
+                slot.isChecked = true;
+                updateSlotStyles();
+
+                showMessage("✅ Đã xác nhận và in hóa đơn", "success");
+                successSFX.play();
+
+                state.selectedProductSKU = null;
+                state.selectedSlotIndex = null;
+                document.getElementById("mainInput").placeholder = "📦 Quét mã SKU...";
+                document.getElementById("productInfo").classList.add("d-none");
+
+                // 👉 Cập nhật lại localStorage
+                localStorage.setItem("checkTaskState", JSON.stringify({
+                    checkTaskId: state.checkTaskId,
+                    slots: state.slots
+                }));
+
+                // ✅ Nếu tất cả đã xong
+                const allChecked = state.slots.every(s => s.isChecked);
+                if (allChecked) {
+                    showMessage("🎉 Đã hoàn tất tất cả sản phẩm trong giỏ hàng!", "success");
+                    localStorage.removeItem("checkTaskState");
+                }
+
+            } catch (err) {
+                errorSFX.play();
+                showMessage("❌ " + err.message, "danger");
+            }
+        });
+    </script>
+}
