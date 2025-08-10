@@ -49,7 +49,7 @@ namespace MadeHuman_Server.Service.Outbound
 
         public async Task<List<PrintBillViewModel>> GenerateBillHtmlByCheckTaskDetailIdAsync(Guid checkTaskDetailId)
         {
-            var detail = await _context.CheckTaskDetails
+                     var detail = await _context.CheckTaskDetails
                 .FirstOrDefaultAsync(x => x.Id == checkTaskDetailId);
 
             if (detail == null)
