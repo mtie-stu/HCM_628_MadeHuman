@@ -23,25 +23,162 @@
                 </button>
             </form>
         </div>
+
+
+          <div class="card-body">
+            <h6 class="text-primary mb-2">🔎 Kết quả tra cứu</h6>
+            <div id="previewArea" class="small text-muted">Chưa có dữ liệu.</div>
+          </div>
+
+
     </div>
 </div>
 
-@section Scripts {
-    <script>
-        const successSFX = new Audio("/sounds/success.mp3");
-        const errorSFX = new Audio("/sounds/error.mp3");
+<script>
+  const successSFX = new Audio("/sounds/success.mp3");
+  const errorSFX   = new Audio("/sounds/error.mp3");
+  const $input     = document.getElementById("outboundTaskItemId");
+  const $preview   = document.getElementById("previewArea");
 
-        // Hàm kiểm tra trước khi submit
-        function validateAndPlaySound() {
-            const input = document.getElementById("outboundTaskItemId").value.trim();
-            if (!input) {
-                errorSFX.play();
-                alert("⚠️ Vui lòng nhập mã OutboundTaskItemId.");
-                return false; // chặn submit
-            }
+  function isGuid(v){
+    return /^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$/.test(v);
+  }
 
-            successSFX.play(); // phát âm thanh khi hợp lệ
-            return true; // cho phép submit
+  // Change (quét xong) -> preview
+  $input.addEventListener("change", () => {
+    const val = $input.value.trim();
+    if (!isGuid(val)) {
+      errorSFX.play();
+      $preview.innerHTML = `<div class="text-danger">⚠️ Mã không phải GUID hợp lệ.</div>`;
+      return;
+    }
+    fetchPreview(val);
+  });
+
+  // Enter -> preview (không submit form)
+  $input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const val = $input.value.trim();
+      if (!isGuid(val)) {
+        errorSFX.play();
+        $preview.innerHTML = `<div class="text-danger">⚠️ Mã không phải GUID hợp lệ.</div>`;
+        return;
+      }
+      fetchPreview(val);
+    }
+  });
+
+  window.addEventListener("load", () => $input.focus());
+
+  function getCookie(name) {
+    const m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return m ? decodeURIComponent(m[2]) : null;
+  }
+
+  async function fetchPreview(id) {
+    try {
+      if ($preview) $preview.innerHTML = "Đang tải...";
+
+      const token = getCookie("JWTToken");
+      const res = await fetch(`https://localhost:7204/api/OutboundTask/${id}/preview`, {
+        method: "GET",
+        headers: {
+          "Accept": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
         }
-    </script>
-}
+      });
+
+      if (res.status === 401 || res.status === 403) {
+        errorSFX.play();
+        $preview.innerHTML = `<div class="text-danger">❌ Chưa đăng nhập hoặc token hết hạn (HTTP ${res.status}).</div>`;
+        return;
+      }
+
+      const contentType = res.headers.get("content-type") || "";
+      if (!res.ok) {
+        let msg = `Lỗi ${res.status}`;
+        if (contentType.includes("application/json")) {
+          const j = await res.json().catch(()=>null);
+          if (j?.message) msg = j.message;
+        } else {
+          const t = await res.text().catch(()=>null);
+          if (t) msg = t;
+        }
+        errorSFX.play();
+        $preview.innerHTML = `<div class="text-danger">❌ ${msg}</div>`;
+        return;
+      }
+
+      const data = contentType.includes("application/json") ? await res.json() : null;
+      if (!data) {
+        errorSFX.play();
+        $preview.innerHTML = `<div class="text-danger">❌ Phản hồi không phải JSON hoặc rỗng.</div>`;
+        return;
+      }
+
+      successSFX.play();
+
+      const details = data.details || [];
+      const totalQty = details.reduce((s, d) => s + (d.quantity || 0), 0);
+
+      const rows = details.map(d => `
+        <tr>
+          <td>${d.outboundTaskItemDetailId}</td>
+          <td>${d.sku ?? ""}</td>
+          <td class="text-end">${d.quantity}</td>
+        </tr>
+      `).join("");
+
+      // === 2 CỘT: Trái (info), Phải (chi tiết) ===
+      $preview.innerHTML = `
+        <div class="row g-3">
+          <!-- Cột 1: Thông tin OutboundTaskItem -->
+          <div class="col-12 col-md-6">
+            <div class="border rounded p-3 h-100">
+              <h6 class="mb-3 text-primary">📦 Thông tin OutboundTaskItem</h6>
+              <div class="mb-2"><strong>OutboundTaskItemId:</strong><br><code>${data.outboundTaskItemId}</code></div>
+              <div class="mb-2"><strong>OutboundTaskId:</strong><br><code>${data.outboundTaskId}</code></div>
+              <div class="mb-2"><strong>ShopOrderId:</strong><br><code>${data.shopOrderId}</code></div>
+              <div class="mb-2"><strong>Trạng thái:</strong> <span class="badge bg-secondary">${data.status}</span></div>
+              <div class="mb-0"><strong>Tổng dòng chi tiết:</strong> ${details.length}</div>
+            </div>
+          </div>
+
+          <!-- Cột 2: Bảng chi tiết (SKU) -->
+          <div class="col-12 col-md-6">
+            <div class="border rounded p-3 h-100">
+              <h6 class="mb-3 text-primary">🧾 Chi tiết OutboundTaskItem</h6>
+              <div class="table-responsive">
+                <table class="table table-sm table-bordered mb-2">
+                  <thead class="table-light">
+                    <tr>
+                      <th>OutboundTaskItemDetailId</th>
+                      <th>SKU</th>
+                      <th class="text-end">Số Lượng</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${rows || `<tr><td colspan="3" class="text-center text-muted">Không có detail</td></tr>`}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th colspan="2" class="text-end">Tổng Số Lượng</th>
+                      <th class="text-end">${totalQty}</th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    } catch (e) {
+      console.error(e);
+      errorSFX.play();
+      if ($preview) $preview.innerHTML = `<div class="text-danger">❌ Không thể tải dữ liệu.</div>`;
+    }
+  }
+
+  // (Giữ nguyên validateAndPlaySound() nếu bạn đã khai báo ở nơi khác)
+</script>
