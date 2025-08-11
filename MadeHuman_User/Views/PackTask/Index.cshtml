@@ -35,30 +35,17 @@
 </div>
 
 <script>
-  const successSFX = new Audio("/sounds/success.mp3");
-  const errorSFX   = new Audio("/sounds/error.mp3");
-  const $input     = document.getElementById("outboundTaskItemId");
-  const $preview   = document.getElementById("previewArea");
+    const successSFX = new Audio("/sounds/success.mp3");
+    const errorSFX   = new Audio("/sounds/error.mp3");
+    const $input     = document.getElementById("outboundTaskItemId");
+    const $preview   = document.getElementById("previewArea");
 
-  function isGuid(v){
-    return /^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$/.test(v);
-  }
-
-  // Change (quét xong) -> preview
-  $input.addEventListener("change", () => {
-    const val = $input.value.trim();
-    if (!isGuid(val)) {
-      errorSFX.play();
-      $preview.innerHTML = `<div class="text-danger">⚠️ Mã không phải GUID hợp lệ.</div>`;
-      return;
+    function isGuid(v){
+      return /^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$/.test(v);
     }
-    fetchPreview(val);
-  });
 
-  // Enter -> preview (không submit form)
-  $input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
+    // Change (quét xong) -> preview
+    $input.addEventListener("change", () => {
       const val = $input.value.trim();
       if (!isGuid(val)) {
         errorSFX.play();
@@ -66,16 +53,43 @@
         return;
       }
       fetchPreview(val);
+    });
+
+    // Enter -> preview (không submit form)
+    $input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const val = $input.value.trim();
+        if (!isGuid(val)) {
+          errorSFX.play();
+          $preview.innerHTML = `<div class="text-danger">⚠️ Mã không phải GUID hợp lệ.</div>`;
+          return;
+        }
+        fetchPreview(val);
+      }
+    });
+
+    window.addEventListener("load", () => $input.focus());
+
+    function getCookie(name) {
+      const m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return m ? decodeURIComponent(m[2]) : null;
     }
-  });
 
-  window.addEventListener("load", () => $input.focus());
-
-  function getCookie(name) {
-    const m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-    return m ? decodeURIComponent(m[2]) : null;
+    // (1) Badge theo trạng thái
+  function getStatusBadgeClass(status) {
+    switch ((status || "").toLowerCase()) {
+      case "created":     return "bg-secondary";
+      case "picked":      return "bg-primary";
+      case "checked":     return "bg-warning text-dark";
+      case "packed":      return "bg-dark";
+      case "dispatched":  return "bg-info text-dark";
+      case "finished":    return "bg-success";
+      default:            return "bg-secondary";
+    }
   }
 
+  // (2) Thay toàn bộ fetchPreview
   async function fetchPreview(id) {
     try {
       if ($preview) $preview.innerHTML = "Đang tải...";
@@ -119,19 +133,38 @@
 
       successSFX.play();
 
-      const details = data.details || [];
-      const totalQty = details.reduce((s, d) => s + (d.quantity || 0), 0);
+      // Thông điệp theo trạng thái
+      const statusLower = (data.status || "").toLowerCase();
+      let statusNoteHtml = "";
+      if (statusLower === "dispatched") {
+        statusNoteHtml = `<div class="alert alert-info mb-3">📤 Đơn đã chuyển sang bộ phận tiếp theo (Dispatched).</div>`;
+      } else if (statusLower === "finished") {
+        statusNoteHtml = `<div class="alert alert-success mb-3">🎉 Đơn hàng đã hoàn thành.</div>`;
+      }
 
-      const rows = details.map(d => `
-        <tr>
-          <td>${d.outboundTaskItemDetailId}</td>
-          <td>${d.sku ?? ""}</td>
-          <td class="text-end">${d.quantity}</td>
-        </tr>
+      const badgeClass = getStatusBadgeClass(data.status);
+
+      const details        = data.details || [];
+      const totalQty       = details.reduce((s, d) => s + (d.quantity || 0), 0);
+      const uniqueSkuCount = new Set(details.map(d => d.sku ?? "")).size;
+
+      const detailCards = details.map(d => `
+        <div class="col-12">
+          <div class="d-flex justify-content-between align-items-center border rounded-3 px-3 py-2 bg-body">
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-secondary">SKU</span>
+              <span class="fw-semibold">${d.sku ?? ""}</span>
+            </div>
+            <div class="text-end">
+              <div class="fs-5 fw-bold">${d.quantity}</div>
+              <small class="text-muted">Số lượng</small>
+            </div>
+          </div>
+        </div>
       `).join("");
 
-      // === 2 CỘT: Trái (info), Phải (chi tiết) ===
       $preview.innerHTML = `
+        ${statusNoteHtml}
         <div class="row g-3">
           <!-- Cột 1: Thông tin OutboundTaskItem -->
           <div class="col-12 col-md-6">
@@ -140,35 +173,28 @@
               <div class="mb-2"><strong>OutboundTaskItemId:</strong><br><code>${data.outboundTaskItemId}</code></div>
               <div class="mb-2"><strong>OutboundTaskId:</strong><br><code>${data.outboundTaskId}</code></div>
               <div class="mb-2"><strong>ShopOrderId:</strong><br><code>${data.shopOrderId}</code></div>
-              <div class="mb-2"><strong>Trạng thái:</strong> <span class="badge bg-secondary">${data.status}</span></div>
-              <div class="mb-0"><strong>Tổng dòng chi tiết:</strong> ${details.length}</div>
+              <div class="mb-2"><strong>Trạng thái:</strong> <span class="badge ${badgeClass}">${data.status}</span></div>
+              <div class="mb-1"><strong>Tổng dòng chi tiết:</strong> ${details.length}</div>
+              <div class="mb-0"><strong>SKU khác nhau:</strong> ${uniqueSkuCount}</div>
             </div>
           </div>
 
-          <!-- Cột 2: Bảng chi tiết (SKU) -->
+          <!-- Cột 2: Chi tiết dạng thẻ -->
           <div class="col-12 col-md-6">
             <div class="border rounded p-3 h-100">
               <h6 class="mb-3 text-primary">🧾 Chi tiết OutboundTaskItem</h6>
-              <div class="table-responsive">
-                <table class="table table-sm table-bordered mb-2">
-                  <thead class="table-light">
-                    <tr>
-                      <th>OutboundTaskItemDetailId</th>
-                      <th>SKU</th>
-                      <th class="text-end">Số Lượng</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${rows || `<tr><td colspan="3" class="text-center text-muted">Không có detail</td></tr>`}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <th colspan="2" class="text-end">Tổng Số Lượng</th>
-                      <th class="text-end">${totalQty}</th>
-                    </tr>
-                  </tfoot>
-                </table>
+
+              <div class="row g-2">
+                ${detailCards || `<div class="col"><div class="text-center text-muted">Không có detail</div></div>`}
+                <!-- Tổng số lượng -->
+                <div class="col-12">
+                  <div class="d-flex justify-content-between align-items-center bg-light border rounded-3 px-3 py-2">
+                    <div class="fw-semibold">Tổng số lượng</div>
+                    <div class="fs-5 fw-bold">${totalQty}</div>
+                  </div>
+                </div>
               </div>
+
             </div>
           </div>
         </div>
@@ -179,6 +205,4 @@
       if ($preview) $preview.innerHTML = `<div class="text-danger">❌ Không thể tải dữ liệu.</div>`;
     }
   }
-
-  // (Giữ nguyên validateAndPlaySound() nếu bạn đã khai báo ở nơi khác)
 </script>

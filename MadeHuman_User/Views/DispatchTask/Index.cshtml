@@ -49,107 +49,117 @@
           return m ? decodeURIComponent(m[2]) : null;
         }
 
-        // ====== Preview logic (giống PackTask, 2 cột) ======
-        async function fetchPreview(id) {
-          try {
-            if ($preview) $preview.innerHTML = "Đang tải...";
+        // ====== Preview logic: 2 cột (Info | Detail dạng thẻ) ======
+       async function fetchPreview(id) {
+  try {
+    if ($preview) $preview.innerHTML = "Đang tải...";
 
-            const token = getCookie("JWTToken");
-            const res = await fetch(`https://localhost:7204/api/OutboundTask/${id}/preview`, {
-              method: "GET",
-              headers: {
-                "Accept": "application/json",
-                ...(token ? { "Authorization": `Bearer ${token}` } : {})
-              }
-            });
+    const token = getCookie("JWTToken");
+    const res = await fetch(`https://localhost:7204/api/OutboundTask/${id}/preview`, {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        ...(token ? { "Authorization": `Bearer ${token}` } : {})
+      }
+    });
 
-            if (res.status === 401 || res.status === 403) {
-              errorSFX.play();
-              $preview.innerHTML = `<div class="text-danger">❌ Chưa đăng nhập hoặc token hết hạn (HTTP ${res.status}).</div>`;
-              return;
-            }
+    if (res.status === 401 || res.status === 403) {
+      errorSFX.play();
+      $preview.innerHTML = `<div class="text-danger">❌ Chưa đăng nhập hoặc token hết hạn (HTTP ${res.status}).</div>`;
+      return;
+    }
 
-            const contentType = res.headers.get("content-type") || "";
-            if (!res.ok) {
-              let msg = `Lỗi ${res.status}`;
-              if (contentType.includes("application/json")) {
-                const j = await res.json().catch(()=>null);
-                if (j?.message) msg = j.message;
-              } else {
-                const t = await res.text().catch(()=>null);
-                if (t) msg = t;
-              }
-              errorSFX.play();
-              $preview.innerHTML = `<div class="text-danger">❌ ${msg}</div>`;
-              return;
-            }
+    const contentType = res.headers.get("content-type") || "";
+    if (!res.ok) {
+      let msg = `Lỗi ${res.status}`;
+      if (contentType.includes("application/json")) {
+        const j = await res.json().catch(()=>null);
+        if (j?.message) msg = j.message;
+      } else {
+        const t = await res.text().catch(()=>null);
+        if (t) msg = t;
+      }
+      errorSFX.play();
+      $preview.innerHTML = `<div class="text-danger">❌ ${msg}</div>`;
+      return;
+    }
 
-            const data = contentType.includes("application/json") ? await res.json() : null;
-            if (!data) {
-              errorSFX.play();
-              $preview.innerHTML = `<div class="text-danger">❌ Phản hồi không phải JSON hoặc rỗng.</div>`;
-              return;
-            }
+    const data = contentType.includes("application/json") ? await res.json() : null;
+    if (!data) {
+      errorSFX.play();
+      $preview.innerHTML = `<div class="text-danger">❌ Phản hồi không phải JSON hoặc rỗng.</div>`;
+      return;
+    }
 
-            successSFX.play();
+    successSFX.play();
 
-            const details  = data.details || [];
-            const totalQty = details.reduce((s, d) => s + (d.quantity || 0), 0);
-            const rows = details.map(d => `
-              <tr>
-                <td>${d.outboundTaskItemDetailId}</td>
-                <td>${d.sku ?? ""}</td>
-                <td class="text-end">${d.quantity}</td>
-              </tr>
-            `).join("");
+    // 🔔 Chỉ xét Finished
+    const isFinished = (data.status || "").toLowerCase() === "finished";
+    const statusNoteHtml = isFinished
+      ? `<div class="alert alert-success mb-3">🎉 Đơn hàng đã hoàn thành.</div>`
+      : "";
+    const badgeClass = isFinished ? "bg-success" : "bg-secondary";
 
-            // 2 cột: Info | Detail
-            $preview.innerHTML = `
-              <div class="row g-3">
-                <div class="col-12 col-md-6">
-                  <div class="border rounded p-3 h-100">
-                    <h6 class="mb-3 text-primary">📦 Thông tin OutboundTaskItem</h6>
-                    <div class="mb-2"><strong>OutboundTaskItemId:</strong><br><code>${data.outboundTaskItemId}</code></div>
-                    <div class="mb-2"><strong>OutboundTaskId:</strong><br><code>${data.outboundTaskId}</code></div>
-                    <div class="mb-2"><strong>ShopOrderId:</strong><br><code>${data.shopOrderId}</code></div>
-                    <div class="mb-2"><strong>Status:</strong> <span class="badge bg-secondary">${data.status}</span></div>
-                    <div class="mb-0"><strong>Tổng dòng chi tiết:</strong> ${details.length}</div>
-                  </div>
-                </div>
+    const details        = data.details || [];
+    const totalQty       = details.reduce((s, d) => s + (d.quantity || 0), 0);
+    const uniqueSkuCount = new Set(details.map(d => d.sku ?? "")).size;
 
-                <div class="col-12 col-md-6">
-                  <div class="border rounded p-3 h-100">
-                    <h6 class="mb-3 text-primary">🧾 Chi tiết OutboundTaskItem</h6>
-                    <div class="table-responsive">
-                      <table class="table table-sm table-bordered mb-2">
-                        <thead class="table-light">
-                          <tr>
-                            <th>OutboundTaskItemDetailId</th>
-                            <th>SKU</th>
-                            <th class="text-end">Qty</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          ${rows || `<tr><td colspan="3" class="text-center text-muted">Không có detail</td></tr>`}
-                        </tbody>
-                        <tfoot>
-                          <tr>
-                            <th colspan="2" class="text-end">Tổng Qty</th>
-                            <th class="text-end">${totalQty}</th>
-                          </tr>
-                        </tfoot>
-                      </table>
-                    </div>
-                  </div>
+    const detailCards = details.map(d => `
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center border rounded-3 px-3 py-2 bg-body">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-secondary">SKU</span>
+            <span class="fw-semibold">${d.sku ?? ""}</span>
+          </div>
+          <div class="text-end">
+            <div class="fs-5 fw-bold">${d.quantity}</div>
+            <small class="text-muted">Số lượng</small>
+          </div>
+        </div>
+      </div>
+    `).join("");
+
+    $preview.innerHTML = `
+      ${statusNoteHtml}
+      <div class="row g-3">
+        <!-- Cột 1: Thông tin OutboundTaskItem -->
+        <div class="col-12 col-md-6">
+          <div class="border rounded p-3 h-100">
+            <h6 class="mb-3 text-primary">📦 Thông tin OutboundTaskItem</h6>
+            <div class="mb-2"><strong>OutboundTaskItemId:</strong><br><code>${data.outboundTaskItemId}</code></div>
+            <div class="mb-2"><strong>OutboundTaskId:</strong><br><code>${data.outboundTaskId}</code></div>
+            <div class="mb-2"><strong>ShopOrderId:</strong><br><code>${data.shopOrderId}</code></div>
+            <div class="mb-2"><strong>Trạng thái:</strong> <span class="badge ${badgeClass}">${data.status}</span></div>
+            <div class="mb-1"><strong>Tổng dòng chi tiết:</strong> ${details.length}</div>
+            <div class="mb-0"><strong>SKU khác nhau:</strong> ${uniqueSkuCount}</div>
+          </div>
+        </div>
+
+        <!-- Cột 2: Chi tiết dạng thẻ -->
+        <div class="col-12 col-md-6">
+          <div class="border rounded p-3 h-100">
+            <h6 class="mb-3 text-primary">🧾 Chi tiết OutboundTaskItem</h6>
+            <div class="row g-2">
+              ${detailCards || `<div class="col"><div class="text-center text-muted">Không có detail</div></div>`}
+              <!-- Tổng số lượng -->
+              <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center bg-light border rounded-3 px-3 py-2">
+                  <div class="fw-semibold">Tổng số lượng</div>
+                  <div class="fs-5 fw-bold">${totalQty}</div>
                 </div>
               </div>
-            `;
-          } catch (e) {
-            console.error(e);
-            errorSFX.play();
-            if ($preview) $preview.innerHTML = `<div class="text-danger">❌ Không thể tải dữ liệu.</div>`;
-          }
-        }
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  } catch (e) {
+    console.error(e);
+    errorSFX.play();
+    if ($preview) $preview.innerHTML = `<div class="text-danger">❌ Không thể tải dữ liệu.</div>`;
+  }
+}
+
 
         // ====== Events giống PackTask ======
         $input.addEventListener("change", () => {
