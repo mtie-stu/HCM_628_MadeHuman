@@ -87,19 +87,22 @@ namespace MadeHuman_Server.Controllers.Outbound
         public async Task<IActionResult> ValidateMixSKU([FromBody] ValidateMixCheckTaskRequest request)
         {
             if (request == null || request.CheckTaskDetailId == Guid.Empty || string.IsNullOrWhiteSpace(request.SKU))
-                return BadRequest(new { message = "❌ Dữ liệu không hợp lệ." });
+                return BadRequest(new { code = 0, logs = new[] { "❌ Dữ liệu không hợp lệ." } });
 
             try
             {
-                var result = await _checkTaskService.ValidateMixCheckTaskScanAsync(request);
-                if (result.Any(m => m.StartsWith("❌")))
-                    return BadRequest(result);
+                var (code, logs) = await _checkTaskService.ValidateMixCheckTaskScanAsync(request);
 
-                return Ok(result);
+                // code: 0 = lỗi, 1|2|3 = thành công với các nhánh FE đã quy ước
+                if (code == 0)
+                    return BadRequest(new { code, logs });
+
+                return Ok(new { code, logs });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "❌ Lỗi xử lý: " + ex.Message });
+                // Có thể log ex tại đây
+                return StatusCode(500, new { code = 0, logs = new[] { "❌ Lỗi xử lý: " + ex.Message } });
             }
         }
     }

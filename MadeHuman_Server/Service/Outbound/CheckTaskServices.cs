@@ -12,7 +12,7 @@ namespace MadeHuman_Server.Service.Outbound
     public interface ICheckTaskServices
     {
         Task<PreviewSingleSKUResponse?> PreviewSingleSKUAsync(Guid basketId, string sku);
-        Task<List<string>> ValidateMixCheckTaskScanAsync(ValidateMixCheckTaskRequest request);
+        Task<(int Code, List<string> Logs)> ValidateMixCheckTaskScanAsync(ValidateMixCheckTaskRequest request);
         Task<CheckTasks> CreateCheckTaskAsync(Guid outboundTaskId);
         Task<CheckTaskFullViewModel> AssignUserTaskToCheckTaskByBasketAsync(Guid basketId);
         Task<List<string>> ValidateCheckTaskScanAsync(ScanCheckTaskRequest request);
@@ -100,7 +100,7 @@ namespace MadeHuman_Server.Service.Outbound
 
 
 
-        public async Task<List<string>> ValidateMixCheckTaskScanAsync(ValidateMixCheckTaskRequest request)
+        public async Task<(int Code, List<string> Logs)> ValidateMixCheckTaskScanAsync(ValidateMixCheckTaskRequest request)
         {
             var logs = new List<string>();
 
@@ -110,37 +110,53 @@ namespace MadeHuman_Server.Service.Outbound
                 .FirstOrDefaultAsync(d => d.Id == request.CheckTaskDetailId);
 
             if (detail == null)
-            {
-                logs.Add("❌ Không tìm thấy chi tiết kiểm hàng.");
-                return logs;
-            }
+                return (0, new List<string> { "❌ Không tìm thấy chi tiết kiểm hàng." });
+
+            // Map SKU -> ProductSKUId
             var productSkuId = await _context.ProductSKUs
-                .Where(d => d.SKU == request.SKU )// Thay "YourSKUValue" bằng giá trị SKU cụ thể
-                .Select(d => d.Id)
-                .FirstOrDefaultAsync(); // Trả về `default` (0 hoặc null) nếu không tìm thấy              
+                .Where(p => p.SKU == request.SKU)
+                .Select(p => p.Id)
+                .FirstOrDefaultAsync();
 
-            var productLookup = await _productLookup.GetSKUInfoAsync(productSkuId);
-            if (productLookup == null)
+            if (productSkuId == Guid.Empty)
+                return (0, new List<string> { "❌ Không tìm thấy sản phẩm với mã SKU." });
+
+            // Tìm dòng item tương ứng
+            var item = detail.OutboundTaskItems.OutboundTaskItemDetails
+                .FirstOrDefault(x => x.ProductSKUId == productSkuId);
+
+            if (item == null)
+                return (0, new List<string> { "❌ SKU không khớp với sản phẩm trong đơn." });
+
+            // Nếu đã đủ thì không cộng quá
+            if (item.QuantityChecked < item.Quantity)
             {
-                logs.Add("❌ Không tìm thấy sản phẩm với mã SKU.");
-                return logs;
+                item.QuantityChecked++;
+                if (item.QuantityChecked >= item.Quantity)
+                {
+                    item.QuantityChecked = item.Quantity;
+                    item.IsChecked = true;
+                }
+                logs.Add($"✅ Đã quét: {item.QuantityChecked}/{item.Quantity}");
+            }
+            else
+            {
+                item.IsChecked = true;
+                logs.Add("ℹ️ Mặt hàng này đã đủ số lượng trước đó.");
             }
 
-            var matchingDetail = detail.OutboundTaskItems.OutboundTaskItemDetails
-                .FirstOrDefault(p => p.ProductSKUId == productLookup.ProductSKUId);
+            // 1) Kiểm tra tất cả item thuộc detail hiện tại
+            var allItemFinished = detail.OutboundTaskItems
+                .OutboundTaskItemDetails
+                .All(x => x.IsChecked);
 
-            if (matchingDetail == null)
+            if (allItemFinished)
             {
-                logs.Add("❌ SKU không khớp với sản phẩm trong đơn.");
-                return logs;
+                detail.StatusCheckDetailTask = StatusCheckDetailTask.finished;
+                detail.FinishAt = DateTime.UtcNow;
             }
 
-            detail.QuantityChecked = matchingDetail.Quantity;
-            detail.IsChecked = true;
-            detail.StatusCheckDetailTask = StatusCheckDetailTask.finished;
-            detail.FinishAt = DateTime.UtcNow;
-
-            // 🔍 Kiểm tra xem tất cả các detail đã xong chưa
+            // 2) Kiểm tra toàn bộ CheckTask
             var allFinished = await _context.CheckTaskDetails
                 .Where(d => d.CheckTaskId == detail.CheckTaskId)
                 .AllAsync(d => d.StatusCheckDetailTask == StatusCheckDetailTask.finished);
@@ -155,10 +171,25 @@ namespace MadeHuman_Server.Service.Outbound
                 }
             }
 
+            // Lưu trước khi return
             await _context.SaveChangesAsync();
-            logs.Add("✅ Đã xác nhận và cập nhật trạng thái.");
-            return logs;
+
+            // Ưu tiên trả về: 3 (CheckTask xong) > 2 (slot/detail xong) > 1 (chỉ xác nhận)
+            if (allFinished)
+            {
+                logs.Add("✅ Đã xác nhận và cập nhật trạng thái.");
+                return (3, logs); // Case 3
+            }
+            if (allItemFinished)
+            {
+                logs.Add("✅ Đã xác nhận và đã hoàn thành 1 slot.");
+                return (2, logs); // Case 2
+            }
+
+            logs.Add("✅ Đã xác nhận.");
+            return (1, logs); // Case 1
         }
+
 
 
         public async Task<CheckTasks> CreateCheckTaskAsync(Guid outboundTaskId)

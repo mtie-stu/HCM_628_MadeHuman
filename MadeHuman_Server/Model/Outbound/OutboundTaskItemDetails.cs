@@ -8,6 +8,9 @@ namespace MadeHuman_Server.Model.Outbound
     {
         public Guid Id { get; set; }
         public  int Quantity { get; set; }
+        public int QuantityChecked { get; set; } = 0;
+        public bool IsChecked { get; set; } = false;
+
         public Guid ProductSKUId { get; set; }
         public Guid OutboundTaskItemId { get; set; }
         [ForeignKey(nameof(ProductSKUId))]

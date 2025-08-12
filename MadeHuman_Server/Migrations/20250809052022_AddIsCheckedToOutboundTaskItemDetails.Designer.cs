@@ -3,6 +3,7 @@ using System;
 using MadeHuman_Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MadeHuman_Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250809052022_AddIsCheckedToOutboundTaskItemDetails")]
+    partial class AddIsCheckedToOutboundTaskItemDetails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -538,9 +541,10 @@ namespace MadeHuman_Server.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("MadeAt")
+                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("OutboundTaskItemId")
+                    b.Property<Guid?>("OutboundTaskItemId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("StatusPackTask")
@@ -1640,9 +1644,7 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.HasOne("MadeHuman_Server.Model.Outbound.OutboundTaskItems", "OutboundTaskItems")
                         .WithOne("PackTask")
-                        .HasForeignKey("MadeHuman_Server.Model.Outbound.PackTask", "OutboundTaskItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("MadeHuman_Server.Model.Outbound.PackTask", "OutboundTaskItemId");
 
                     b.HasOne("MadeHuman_Server.Model.User_Task.UsersTasks", "UsersTasks")
                         .WithMany("PackTask")
