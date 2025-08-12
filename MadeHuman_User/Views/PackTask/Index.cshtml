@@ -76,133 +76,133 @@
       return m ? decodeURIComponent(m[2]) : null;
     }
 
-    // (1) Badge theo trạng thái
-  function getStatusBadgeClass(status) {
-    switch ((status || "").toLowerCase()) {
-      case "created":     return "bg-secondary";
-      case "picked":      return "bg-primary";
-      case "checked":     return "bg-warning text-dark";
-      case "packed":      return "bg-dark";
-      case "dispatched":  return "bg-info text-dark";
-      case "finished":    return "bg-success";
-      default:            return "bg-secondary";
+      // (1) Badge theo trạng thái
+    function getStatusBadgeClass(status) {
+      switch ((status || "").toLowerCase()) {
+        case "created":     return "bg-secondary";
+        case "picked":      return "bg-primary";
+        case "checked":     return "bg-warning text-dark";
+        case "packed":      return "bg-dark";
+        case "dispatched":  return "bg-info text-dark";
+        case "finished":    return "bg-success";
+        default:            return "bg-secondary";
+      }
     }
-  }
 
-  // (2) Thay toàn bộ fetchPreview
-  async function fetchPreview(id) {
-    try {
-      if ($preview) $preview.innerHTML = "Đang tải...";
+    // (2) Thay toàn bộ fetchPreview
+    async function fetchPreview(id) {
+      try {
+        if ($preview) $preview.innerHTML = "Đang tải...";
 
-      const token = getCookie("JWTToken");
-      const res = await fetch(`https://localhost:7204/api/OutboundTask/${id}/preview`, {
-        method: "GET",
-        headers: {
-          "Accept": "application/json",
-          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        const token = getCookie("JWTToken");
+        const res = await fetch(`https://localhost:7204/api/OutboundTask/${id}/preview`, {
+          method: "GET",
+          headers: {
+            "Accept": "application/json",
+            ...(token ? { "Authorization": `Bearer ${token}` } : {})
+          }
+        });
+
+        if (res.status === 401 || res.status === 403) {
+          errorSFX.play();
+          $preview.innerHTML = `<div class="text-danger">❌ Chưa đăng nhập hoặc token hết hạn (HTTP ${res.status}).</div>`;
+          return;
         }
-      });
 
-      if (res.status === 401 || res.status === 403) {
-        errorSFX.play();
-        $preview.innerHTML = `<div class="text-danger">❌ Chưa đăng nhập hoặc token hết hạn (HTTP ${res.status}).</div>`;
-        return;
-      }
-
-      const contentType = res.headers.get("content-type") || "";
-      if (!res.ok) {
-        let msg = `Lỗi ${res.status}`;
-        if (contentType.includes("application/json")) {
-          const j = await res.json().catch(()=>null);
-          if (j?.message) msg = j.message;
-        } else {
-          const t = await res.text().catch(()=>null);
-          if (t) msg = t;
+        const contentType = res.headers.get("content-type") || "";
+        if (!res.ok) {
+          let msg = `Lỗi ${res.status}`;
+          if (contentType.includes("application/json")) {
+            const j = await res.json().catch(()=>null);
+            if (j?.message) msg = j.message;
+          } else {
+            const t = await res.text().catch(()=>null);
+            if (t) msg = t;
+          }
+          errorSFX.play();
+          $preview.innerHTML = `<div class="text-danger">❌ ${msg}</div>`;
+          return;
         }
-        errorSFX.play();
-        $preview.innerHTML = `<div class="text-danger">❌ ${msg}</div>`;
-        return;
-      }
 
-      const data = contentType.includes("application/json") ? await res.json() : null;
-      if (!data) {
-        errorSFX.play();
-        $preview.innerHTML = `<div class="text-danger">❌ Phản hồi không phải JSON hoặc rỗng.</div>`;
-        return;
-      }
+        const data = contentType.includes("application/json") ? await res.json() : null;
+        if (!data) {
+          errorSFX.play();
+          $preview.innerHTML = `<div class="text-danger">❌ Phản hồi không phải JSON hoặc rỗng.</div>`;
+          return;
+        }
 
-      successSFX.play();
+        successSFX.play();
 
-      // Thông điệp theo trạng thái
-      const statusLower = (data.status || "").toLowerCase();
-      let statusNoteHtml = "";
-      if (statusLower === "dispatched") {
-        statusNoteHtml = `<div class="alert alert-info mb-3">📤 Đơn đã chuyển sang bộ phận tiếp theo (Dispatched).</div>`;
-      } else if (statusLower === "finished") {
-        statusNoteHtml = `<div class="alert alert-success mb-3">🎉 Đơn hàng đã hoàn thành.</div>`;
-      }
+        // Thông điệp theo trạng thái
+        const statusLower = (data.status || "").toLowerCase();
+        let statusNoteHtml = "";
+        if (statusLower === "dispatched") {
+          statusNoteHtml = `<div class="alert alert-info mb-3">📤 Đơn đã chuyển sang bộ phận tiếp theo (Dispatched).</div>`;
+        } else if (statusLower === "finished") {
+          statusNoteHtml = `<div class="alert alert-success mb-3">🎉 Đơn hàng đã hoàn thành.</div>`;
+        }
 
-      const badgeClass = getStatusBadgeClass(data.status);
+        const badgeClass = getStatusBadgeClass(data.status);
 
-      const details        = data.details || [];
-      const totalQty       = details.reduce((s, d) => s + (d.quantity || 0), 0);
-      const uniqueSkuCount = new Set(details.map(d => d.sku ?? "")).size;
+        const details        = data.details || [];
+        const totalQty       = details.reduce((s, d) => s + (d.quantity || 0), 0);
+        const uniqueSkuCount = new Set(details.map(d => d.sku ?? "")).size;
 
-      const detailCards = details.map(d => `
-        <div class="col-12">
-          <div class="d-flex justify-content-between align-items-center border rounded-3 px-3 py-2 bg-body">
-            <div class="d-flex align-items-center gap-2">
-              <span class="badge bg-secondary">SKU</span>
-              <span class="fw-semibold">${d.sku ?? ""}</span>
-            </div>
-            <div class="text-end">
-              <div class="fs-5 fw-bold">${d.quantity}</div>
-              <small class="text-muted">Số lượng</small>
+        const detailCards = details.map(d => `
+          <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center border rounded-3 px-3 py-2 bg-body">
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-secondary">SKU</span>
+                <span class="fw-semibold">${d.sku ?? ""}</span>
+              </div>
+              <div class="text-end">
+                <div class="fs-5 fw-bold">${d.quantity}</div>
+                <small class="text-muted">Số lượng</small>
+              </div>
             </div>
           </div>
-        </div>
-      `).join("");
+        `).join("");
 
-      $preview.innerHTML = `
-        ${statusNoteHtml}
-        <div class="row g-3">
-          <!-- Cột 1: Thông tin OutboundTaskItem -->
-          <div class="col-12 col-md-6">
-            <div class="border rounded p-3 h-100">
-              <h6 class="mb-3 text-primary">📦 Thông tin OutboundTaskItem</h6>
-              <div class="mb-2"><strong>OutboundTaskItemId:</strong><br><code>${data.outboundTaskItemId}</code></div>
-              <div class="mb-2"><strong>OutboundTaskId:</strong><br><code>${data.outboundTaskId}</code></div>
-              <div class="mb-2"><strong>ShopOrderId:</strong><br><code>${data.shopOrderId}</code></div>
-              <div class="mb-2"><strong>Trạng thái:</strong> <span class="badge ${badgeClass}">${data.status}</span></div>
-              <div class="mb-1"><strong>Tổng dòng chi tiết:</strong> ${details.length}</div>
-              <div class="mb-0"><strong>SKU khác nhau:</strong> ${uniqueSkuCount}</div>
+        $preview.innerHTML = `
+          ${statusNoteHtml}
+          <div class="row g-3">
+            <!-- Cột 1: Thông tin OutboundTaskItem -->
+            <div class="col-12 col-md-6">
+              <div class="border rounded p-3 h-100">
+                <h6 class="mb-3 text-primary">📦 Thông tin OutboundTaskItem</h6>
+                <div class="mb-2"><strong>OutboundTaskItemId:</strong><br><code>${data.outboundTaskItemId}</code></div>
+                <div class="mb-2"><strong>OutboundTaskId:</strong><br><code>${data.outboundTaskId}</code></div>
+                <div class="mb-2"><strong>ShopOrderId:</strong><br><code>${data.shopOrderId}</code></div>
+                <div class="mb-2"><strong>Trạng thái:</strong> <span class="badge ${badgeClass}">${data.status}</span></div>
+                <div class="mb-1"><strong>Tổng dòng chi tiết:</strong> ${details.length}</div>
+                <div class="mb-0"><strong>SKU khác nhau:</strong> ${uniqueSkuCount}</div>
+              </div>
             </div>
-          </div>
 
-          <!-- Cột 2: Chi tiết dạng thẻ -->
-          <div class="col-12 col-md-6">
-            <div class="border rounded p-3 h-100">
-              <h6 class="mb-3 text-primary">🧾 Chi tiết OutboundTaskItem</h6>
+            <!-- Cột 2: Chi tiết dạng thẻ -->
+            <div class="col-12 col-md-6">
+              <div class="border rounded p-3 h-100">
+                <h6 class="mb-3 text-primary">🧾 Chi tiết OutboundTaskItem</h6>
 
-              <div class="row g-2">
-                ${detailCards || `<div class="col"><div class="text-center text-muted">Không có detail</div></div>`}
-                <!-- Tổng số lượng -->
-                <div class="col-12">
-                  <div class="d-flex justify-content-between align-items-center bg-light border rounded-3 px-3 py-2">
-                    <div class="fw-semibold">Tổng số lượng</div>
-                    <div class="fs-5 fw-bold">${totalQty}</div>
+                <div class="row g-2">
+                  ${detailCards || `<div class="col"><div class="text-center text-muted">Không có detail</div></div>`}
+                  <!-- Tổng số lượng -->
+                  <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center bg-light border rounded-3 px-3 py-2">
+                      <div class="fw-semibold">Tổng số lượng</div>
+                      <div class="fs-5 fw-bold">${totalQty}</div>
+                    </div>
                   </div>
                 </div>
-              </div>
 
+              </div>
             </div>
           </div>
-        </div>
-      `;
-    } catch (e) {
-      console.error(e);
-      errorSFX.play();
-      if ($preview) $preview.innerHTML = `<div class="text-danger">❌ Không thể tải dữ liệu.</div>`;
+        `;
+      } catch (e) {
+        console.error(e);
+        errorSFX.play();
+        if ($preview) $preview.innerHTML = `<div class="text-danger">❌ Không thể tải dữ liệu.</div>`;
+      }
     }
-  }
 </script>
