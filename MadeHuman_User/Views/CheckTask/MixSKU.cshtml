@@ -57,6 +57,49 @@
                 }
             </div>
         </div>
+
+        <!-- 📝 CheckTask Logs (history only) -->
+        <div class="col-12 mt-4">
+            <div class="card shadow-sm" id="logCard" style="display:none;">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div>📝 Nhật ký kiểm hàng</div>
+                    <button id="btnRefreshLogs" class="btn btn-sm btn-outline-primary">Tải lại</button>
+                </div>
+
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="min-width:180px;">Thời gian</th>
+                                    <th>SKU</th>
+                                    <th class="text-end">SL thay đổi</th>
+                                    <th>Ghi chú</th>
+                                    <th>Người thực hiện</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logTableBody">
+                                <tr><td colspan="5" class="text-center text-muted">Chưa có dữ liệu.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted" id="logStatus">0 bản ghi</small>
+                        <div class="d-flex gap-2">
+                            <select id="logPageSize" class="form-select form-select-sm" style="width:120px;">
+                                <option value="10">10 / trang</option>
+                                <option value="25">25 / trang</option>
+                                <option value="50">50 / trang</option>
+                            </select>
+                            <button id="logPrev" class="btn btn-sm btn-outline-secondary">Trước</button>
+                            <button id="logNext" class="btn btn-sm btn-outline-secondary">Sau</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -263,6 +306,7 @@
                 updateSlotStyles(); // sẽ tự disable card không có sản phẩm
                 showMessage("✅ Đã gán nhiệm vụ và tải thông tin sản phẩm", "success");
                 successSFX.play();
+                await fetchLogs();
 
                 document.getElementById("mainInput").focus();
             } catch (err) {
@@ -385,6 +429,7 @@
                 updateSlotStyles();
                 persistState();
                 successSFX.play();
+                fetchLogs();
 
                 const lastLog = (data?.logs && data.logs.length) ? data.logs[data.logs.length - 1] : "✅ Đã xác nhận.";
                 showMessage(lastLog, "success");
@@ -412,8 +457,73 @@
         (function init() {
             restoreState();
             updateSlotStyles();
+            if (state.checkTaskId) fetchLogs();
+
             document.getElementById("mainInput").focus();
         })();
+
+
+        // ===== Logs (history-only) =====
+        const logState = { all: [], page: 1, pageSize: 10 };
+        const elLogs = {
+            card: document.getElementById("logCard"),
+            tbody: document.getElementById("logTableBody"),
+            status: document.getElementById("logStatus"),
+            btnRefresh: document.getElementById("btnRefreshLogs"),
+            prev: document.getElementById("logPrev"),
+            next: document.getElementById("logNext"),
+            pageSize: document.getElementById("logPageSize"),
+        };
+
+        function formatVN(dtIso) { try { return new Date(dtIso).toLocaleString(); } catch { return dtIso; } }
+
+        function renderLogs() {
+            const total = logState.all.length;
+            const totalPages = Math.max(1, Math.ceil(total / logState.pageSize));
+            logState.page = Math.min(logState.page, totalPages);
+            const start = (logState.page - 1) * logState.pageSize;
+            const rows = logState.all.slice(start, start + logState.pageSize);
+
+            elLogs.tbody.innerHTML = rows.length
+                ? rows.map(r => `
+                <tr>
+                  <td>${formatVN(r.time)}</td>
+                  <td>${r.sku || ""}</td>
+                  <td class="text-end">${r.quantityChanged >= 0 ? "+" : ""}${r.quantityChanged ?? 0}</td>
+                  <td title="${r.note || ""}">${r.note || ""}</td>
+                  <td>${r.performedBy || ""}</td>
+                </tr>`).join("")
+                : `<tr><td colspan="5" class="text-center text-muted">Không có dữ liệu.</td></tr>`;
+
+            elLogs.status.textContent = `Trang ${logState.page}/${totalPages} · Tổng ${total} bản ghi`;
+            elLogs.prev.disabled = logState.page <= 1;
+            elLogs.next.disabled = logState.page >= totalPages;
+        }
+
+        async function fetchLogs() {
+            if (!state.checkTaskId) return;
+            try {
+                elLogs.card.style.display = ""; // show card khi có task
+                elLogs.tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">Đang tải...</td></tr>`;
+                const res = await fetch(`${BASE_URL}/api/CheckTask/${state.checkTaskId}`, {
+                    headers: { "Authorization": `Bearer ${jwt()}` }
+                });
+                if (!res.ok) throw new Error("Tải logs thất bại");
+                const data = await res.json();
+                logState.all = (data || []).sort((a, b) => new Date(b.time) - new Date(a.time));
+                logState.page = 1;
+                renderLogs();
+            } catch {
+                elLogs.tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Không tải được nhật ký.</td></tr>`;
+            }
+        }
+
+        // events
+        elLogs.btnRefresh.addEventListener("click", fetchLogs);
+        elLogs.pageSize.addEventListener("change", () => { logState.pageSize = Number(elLogs.pageSize.value); logState.page = 1; renderLogs(); });
+        elLogs.prev.addEventListener("click", () => { logState.page = Math.max(1, logState.page - 1); renderLogs(); });
+        elLogs.next.addEventListener("click", () => { const totalPages = Math.max(1, Math.ceil(logState.all.length / logState.pageSize)); logState.page = Math.min(totalPages, logState.page + 1); renderLogs(); });
+
     </script>
 }
 

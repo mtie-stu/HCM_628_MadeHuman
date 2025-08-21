@@ -1,4 +1,5 @@
 ﻿// CheckTaskServices.cs
+using Google.Apis.Drive.v3.Data;
 using MadeHuman_Server.Data;
 using MadeHuman_Server.Model.Outbound;
 using MadeHuman_Server.Service.Shop;
@@ -18,6 +19,7 @@ namespace MadeHuman_Server.Service.Outbound
         Task<List<string>> ValidateCheckTaskScanAsync(ScanCheckTaskRequest request);
         Task<CheckTaskResultViewModel> AssignSlotAsync(AssignSlotRequest request);
         Task<List<string>> ValidateSingleSKUCheckTaskAsync(SingleSKUCheckTaskRequest request);
+        Task<IEnumerable<CheckTaskLogViewModel>> GetLogsByCheckTaskIdAsync(Guid checkTaskId);
     }
 
     public class CheckTaskServices : ICheckTaskServices
@@ -39,6 +41,7 @@ namespace MadeHuman_Server.Service.Outbound
             _productImageService = productImageService;
             _productLookup = productLookupService;
         }
+
         public async Task<PreviewSingleSKUResponse?> PreviewSingleSKUAsync(Guid basketId, string sku)
         {
             // Bước 1: Lấy OutboundTaskId từ Basket
@@ -170,6 +173,10 @@ namespace MadeHuman_Server.Service.Outbound
                     checkTask.FinishAt = DateTime.UtcNow;
                 }
             }
+            var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                throw new Exception("❌ Không xác định được người dùng hiện tại.");
+            await LogCheckTaskAction(detail.CheckTaskId, request.SKU, 1, $"Xác nhận kiểm hàng thủ công thành công cho NV Check #{detail.OrderIndex}", userId);
 
             // Lưu trước khi return
             await _context.SaveChangesAsync();
@@ -535,7 +542,7 @@ namespace MadeHuman_Server.Service.Outbound
             checkTask.StatusCheckTask = StatusCheckTask.finished;
 
             // [5] Ghi log 1 dòng
-            await LogCheckTaskAction(checkTask.Id, request.SKU, request.Quantity, "✅ Xác nhận kiểm thủ công (SingleSKU)", userId);
+            await LogCheckTaskAction(checkTask.Id, request.SKU, request.Quantity, "✅ Xác nhận kiểm tự động (SingleSKU)", userId);
 
             // [6] Cộng KPI
             var userTask = await _context.UsersTasks.FirstOrDefaultAsync(u => u.Id == checkTask.UsersTasksId);
@@ -555,8 +562,27 @@ namespace MadeHuman_Server.Service.Outbound
         {
             await Task.CompletedTask;
         }
+
+
+        public async Task<IEnumerable<CheckTaskLogViewModel>> GetLogsByCheckTaskIdAsync(Guid checkTaskId)
+        {
+            return await _context.CheckTaskLogs
+                                 .Where(x => x.CheckTaskId == checkTaskId)
+                                 .OrderByDescending(x => x.Time)
+                                 .Select(x => new CheckTaskLogViewModel
+                                 {
+                                     Time = x.Time,
+                                     SKU = x.SKU,
+                                     QuantityChanged = x.QuantityChanged,
+                                     Note = x.Note,
+                                     PerformedBy = x.PerformedBy
+                                 })
+                                 .ToListAsync();
+        }
     }
 }
+
+
 
 
 
