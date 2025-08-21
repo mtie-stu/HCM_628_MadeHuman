@@ -2,142 +2,218 @@
 @model List<RefillTaskFullViewModel>
 
 @{
-    ViewData["Title"] = "Refill";
+    ViewData["Title"] = "Export Refill";
+
+    // ====== Stats (theo Task & Detail) ======
+    var taskTotal      = Model?.Count ?? 0;
+    var taskCompleted  = Model?.Count(x => x.StatusRefillTasks == "Completed") ?? 0;
+    var taskCanceled   = Model?.Count(x => x.StatusRefillTasks == "Canceled") ?? 0;
+    var taskProcessing = Model?.Count(x => x.StatusRefillTasks == "Incomplete") ?? 0;
+
+    var detailTotal = Model?.Sum(t => t.Details?.Count ?? 0) ?? 0;
+
+    // Query trạng thái (dùng cho filter + export)
+    var qStatus = (string?)Context.Request.Query["status"] ?? "";
 }
 
-<!-- Bootstrap Icons -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<link rel="stylesheet" href="~/css/pages/Refill/refill-index.css" asp-append-version="true" />
 
+<div class="refill-page">
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="text-primary"><i class="bi bi-box-seam"></i> Danh sách nhiệm vụ bổ sung kho</h2>
-    <p class="text-muted mb-3">
-        📦 Tổng số nhiệm vụ: <strong>@Model.Count</strong> <br />
-        ✅ Đã hoàn thành: <strong>@Model.Count(x => x.StatusRefillTasks == "Completed")</strong> <br />
-        ❌ Đã huỷ: <strong>@Model.Count(x => x.StatusRefillTasks == "Canceled")</strong>
-        🕒 Đang xử lý: <strong>@Model.Count(x => x.StatusRefillTasks == "Incomplete")</strong>
-    </p>
 
-    <div>
-        <a class="btn btn-warning me-2" id="assignTaskBtn">
-            <i class="bi bi-person-check"></i> Nhận nhiệm vụ
-        </a>
-        <a class="btn btn-success" asp-controller="RefillTask" asp-action="DetailFlat">
-            <i class="bi bi-plus-circle"></i> Bắt đầu nhiệm vụ
-        </a>
+    <!-- Header -->
+    <div class="page-head">
+        <div>
+            <h2 class="page-title"><i class="bi bi-box-arrow-down"></i> Export nhiệm vụ bổ sung kho</h2>
+            <div class="page-subtext">Xuất toàn bộ dữ liệu theo bộ lọc bạn chọn.</div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="d-flex align-items-center gap-2">
+            <!-- Filter trạng thái (client-side + query-sync) -->
+            <select id="statusFilter" class="form-select" style="min-width:180px;">
+                <option value=""           selected="@(string.IsNullOrEmpty(qStatus) ? "selected" : null)">Tất cả trạng thái</option>
+                <option value="Incomplete" selected="@(qStatus == "Incomplete" ? "selected" : null)">Đang xử lý</option>
+                <option value="Completed"  selected="@(qStatus == "Completed"  ? "selected" : null)">Đã hoàn thành</option>
+                <option value="Canceled"   selected="@(qStatus == "Canceled"   ? "selected" : null)">Đã huỷ</option>
+            </select>
+
+            <button class="btn btn-outline" id="btnClearFilter">
+                <i class="bi bi-arrow-counterclockwise me-1"></i> Xoá lọc
+            </button>
+
+            <!-- Export: tất cả theo lọc -->
+            <a class="btn btn-orange" id="btnExportAll"
+               asp-controller="RefillTask" asp-action="DetailFlat"
+               asp-route-status="@(string.IsNullOrEmpty(qStatus) ? null : qStatus)">
+               <i class="bi bi-cloud-download me-1"></i> Export
+            </a>
+        </div>
     </div>
-</div>
 
-
-    @if (!Model.Any())
-    {
-            <div class="alert alert-warning">
-                <i class="bi bi-exclamation-triangle"></i> Không có nhiệm vụ nào được tạo.
+    <!-- Stat cards (giữ phong cách trang danh sách) -->
+    <div class="stat-grid">
+        <div class="stat-card">
+            <div class="stat-ico"><i class="bi bi-collection"></i></div>
+            <div class="stat-meta">
+                <div class="label">Tổng nhiệm vụ</div>
+                <div class="value">@taskTotal</div>
             </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-ico"><i class="bi bi-list-ul"></i></div>
+            <div class="stat-meta">
+                <div class="label">Tổng dòng chi tiết</div>
+                <div class="value">@detailTotal</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-ico"><i class="bi bi-check2-circle"></i></div>
+            <div class="stat-meta">
+                <div class="label">Đã hoàn thành</div>
+                <div class="value">@taskCompleted</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-ico"><i class="bi bi-hourglass-split"></i></div>
+            <div class="stat-meta">
+                <div class="label">Đang xử lý</div>
+                <div class="value">@taskProcessing</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-ico"><i class="bi bi-slash-circle"></i></div>
+            <div class="stat-meta">
+                <div class="label">Đã huỷ</div>
+                <div class="value">@taskCanceled</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Accordion theo Task -->
+    @{
+        IEnumerable<RefillTaskFullViewModel> tasks = Model ?? new List<RefillTaskFullViewModel>();
+        if (!string.IsNullOrEmpty(qStatus))
+            tasks = tasks.Where(t => string.Equals(t.StatusRefillTasks, qStatus, StringComparison.OrdinalIgnoreCase));
+        var taskList = tasks.ToList();
+    }
+
+    @if (!taskList.Any())
+    {
+        <div class="alert alert-warning">
+            <i class="bi bi-info-circle"></i> Không có nhiệm vụ phù hợp bộ lọc.
+        </div>
     }
     else
     {
-            <div class="accordion" id="refillTaskAccordion">
-            @for (int i = 0; i < Model.Count; i++)
+        <div class="accordion" id="exportAccordion">
+            @for (int i = 0; i < taskList.Count; i++)
             {
-                var task = Model[i];
+                var t = taskList[i];
 
-                // Ẩn nếu trạng thái là Completed hoặc Canceled
-                if (task.StatusRefillTasks == "Completed" || task.StatusRefillTasks == "Canceled")
-                {
-                    continue;
-                }
-
-                <div class="accordion-item mb-2 shadow-sm">
+                <div class="accordion-item mb-2">
                     <h2 class="accordion-header" id="heading-@i">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@i" aria-expanded="false" aria-controls="collapse-@i">
-                            <i class="bi bi-clipboard-check me-2"></i>
-                            <strong>Mã: @task.Id</strong> |
-                            🕒 @task.CreateAt.ToString("dd/MM/yyyy HH:mm")
+                        <button class="accordion-button collapsed" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#collapse-@i"
+                                aria-expanded="false" aria-controls="collapse-@i">
+                            <i class="bi bi-clipboard-check"></i>
+                            <span class="ms-2">Mã: <span class="task-id">@t.Id</span></span>
+                            <span class="ms-3 text-muted"><i class="bi bi-clock"></i> @t.CreateAt.ToString("dd/MM/yyyy HH:mm")</span>
+                            <span class="ms-3">
+                                @{
+                                    var badge = t.StatusRefillTasks == "Completed" ? "text-bg-success"
+                                            : (t.StatusRefillTasks == "Canceled" ? "text-bg-secondary" : "text-bg-warning");
+                                }
+                                <span class="badge @badge">@t.StatusRefillTasks</span>
+                            </span>
                         </button>
                     </h2>
-                    <div id="collapse-@i" class="accordion-collapse collapse" aria-labelledby="heading-@i" data-bs-parent="#refillTaskAccordion">
-                        <div class="accordion-body">
-                            <h6 class="mb-3"><i class="bi bi-list-ul"></i> Danh sách chi tiết</h6>
 
-                            <table class="table table-bordered table-sm">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th><i class="bi bi-upc-scan"></i> SKU</th>
-                                        <th><i class="bi bi-box-arrow-in-left"></i> From</th>
-                                        <th><i class="bi bi-box-arrow-right"></i> To</th>
-                                        <th><i class="bi bi-hash"></i> Số lượng</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var d in task.Details)
+                    <div id="collapse-@i" class="accordion-collapse collapse" aria-labelledby="heading-@i" data-bs-parent="#exportAccordion">
+                        <div class="accordion-body">
+
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-sm align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr class="text-center">
+                                            <th>SKU</th>
+                                            <th><i class="bi bi-box-arrow-in-left"></i> From</th>
+                                            <th><i class="bi bi-box-arrow-right"></i> To</th>
+                                            <th class="text-end"><i class="bi bi-hash"></i> Số lượng</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    @if (t.Details == null || !t.Details.Any())
                                     {
                                         <tr>
-                                            <td>@(d.SKU ?? "N/A")</td>
-                                            <td>@d.FromLocation</td>
-                                            <td>@d.ToLocation</td>
-                                            <td>@d.Quantity</td>
+                                            <td colspan="4" class="text-center text-muted py-3">Không có chi tiết.</td>
                                         </tr>
                                     }
-                                </tbody>
-                            </table>
-
-                            <div class="mt-3 text-end">
-                                <a class="btn btn-outline-primary btn-sm" asp-controller="RefillTask" asp-action="Details" asp-route-id="@task.Id">
-                                    <i class="bi bi-eye"></i> Xem chi tiết
-                                </a>
+                                    else
+                                    {
+                                        foreach (var d in t.Details)
+                                        {
+                                            var fromName = d.FromLocationName ?? d.FromLocation.ToString();
+                                            var toName   = d.ToLocationName   ?? d.ToLocation.ToString();
+                                            <tr>
+                                                <td>
+                                                    @if (!string.IsNullOrWhiteSpace(d.SKU))
+                                                    {
+                                                        <span class="task-chip"><i class="bi bi-upc-scan me-1"></i>@d.SKU</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">N/A</span>
+                                                    }
+                                                </td>
+                                                <td><span class="loc-chip"><i class="bi bi-geo-alt"></i> @fromName</span></td>
+                                                <td><span class="loc-chip"><i class="bi bi-geo"></i> @toName</span></td>
+                                                <td class="text-end">@d.Quantity</td>
+                                            </tr>
+                                        }
+                                    }
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
                 </div>
             }
-            </div>
+        </div>
     }
 
 </div>
+</div> <!-- /.refill-page -->
+
 @section Scripts {
-        <script>
-            $(document).ready(function () {
-                $('#assignTaskBtn').click(function () {
-                    const button = $(this);
-                    button.prop('disabled', true).text('Đang xử lý...');
+<script>
+(function(){
+  // ===== Lọc trạng thái: sync query =====
+  const statusSelect = document.getElementById('statusFilter');
+  statusSelect?.addEventListener('change', ()=>{
+    const p = new URLSearchParams(window.location.search);
+    const v = statusSelect.value;
+    if (v) p.set('status', v); else p.delete('status');
+    window.location.search = p.toString();
+  });
 
-                    const token = getCookie("JWTToken");
-                    console.log("Token:", token);
+  document.getElementById('btnClearFilter')?.addEventListener('click', ()=>{
+    const p = new URLSearchParams(window.location.search);
+    p.delete('status');
+    window.location.search = p.toString();
+  });
 
-
-                    $.ajax({
-                        url: 'https://hcm-628-madehuman-api.onrender.com/api/RefillTask/assign',
-                        type: 'POST',
-                        headers: {
-                            Authorization: 'Bearer ' + token // 👈 Gửi token trong header
-                        },
-                        success: function (response) {
-                            alert("✅ Đã nhận nhiệm vụ thành công!");
-                            window.location.href = `https://hcm-628-madehuman-api.onrender.com/RefillTask/Details/${response.taskId}`;
-
-                        },
-                        error: function (xhr) {
-                            button.prop('disabled', false).html('<i class="bi bi-person-check"></i> Nhận nhiệm vụ');
-                            if (xhr.status === 401) {
-                                alert("❌ Bạn chưa đăng nhập hoặc token đã hết hạn.");
-                            } else if (xhr.status === 400) {
-                                alert("⚠️ " + xhr.responseText);
-                            } else if (xhr.status === 404) {
-                                alert("🎉 Không còn nhiệm vụ nào để nhận.");
-                            } else {
-                                alert("🚨 Lỗi hệ thống: " + xhr.responseText);
-                            }
-                        }
-                    });
-                });
-
-                function getCookie(name) {
-                    const value = `; ${document.cookie}`;
-                    const parts = value.split(`; ${name}=`);
-                    if (parts.length === 2) return parts.pop().split(';').shift();
-                    return null;
-                }
-            });
-        </script>
+  // ===== Spinner cho export (theo lọc) =====
+  const btnAll = document.getElementById('btnExportAll');
+  function setLoadingAnchor(a, text){
+    a.setAttribute('aria-disabled','true');
+    a.style.pointerEvents = 'none';
+    a.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${text}`;
+  }
+  btnAll?.addEventListener('click', function(){
+    setLoadingAnchor(this, 'Đang xuất...');
+  });
+})();
+</script>
 }
