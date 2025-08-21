@@ -67,13 +67,14 @@ namespace MadeHuman_Server.Service.Inbound
         //}
         public async Task<InboundReceipts?> GetByIdAsync(Guid receiptId)
         {
-            return await _context.InboundReceipt               // 👈 thường DbSet đặt tên số nhiều
+            return await _context.InboundReceipt
                 .AsNoTracking()
                 .Include(r => r.InboundTasks)
                 .Include(r => r.InboundReceiptItems)
-                    .ThenInclude(i => i.ProductSKUs).AsNoTracking()     // 👈 thêm dòng này để có ProductSKUName
+                    .ThenInclude(i => i.ProductSKUs) // phải load SKU
                 .FirstOrDefaultAsync(r => r.Id == receiptId);
         }
+
 
         public async Task<List<InboundReceipts>> GetAllAsync()
         {

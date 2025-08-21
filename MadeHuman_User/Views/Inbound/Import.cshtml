@@ -129,143 +129,182 @@
 </div>
 
 @section Scripts {
-<script>
-(function () {
-  // ----- helpers: lấy key BẤT CHẤP hoa/thường -----
-  const qs = sel => document.querySelector(sel);
-  function getAny(obj, names) {
-    if (!obj) return undefined;
-    const map = {};
-    for (const k of Object.keys(obj)) map[k.toLowerCase()] = obj[k];
-    for (const n of names) {
-      const v = map[String(n).toLowerCase()];
-      if (v !== undefined && v !== null && v !== "") return v;
-    }
-    return undefined;
-  }
-  function guidLike(s){
-    const g=/^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$/;
-    return g.test(s)||String(s).length>=20;
-  }
-  function isMeaningfulDate(dt){
-    try{ const d=new Date(dt); return !isNaN(d)&&d.getFullYear()>2001; }catch{ return false; }
-  }
-  function showToast(type, text){
-    const toast = qs('#inlineAlert');
-    toast.className = 'inline-alert ' + (type==='success'?'success':'error');
-    toast.textContent = text;
-    toast.classList.remove('d-none');
-    requestAnimationFrame(()=> toast.classList.add('show'));
-    setTimeout(()=>{ toast.classList.remove('show'); setTimeout(()=> toast.classList.add('d-none'),180); },2200);
-  }
-  function setLoading(yes){
-    const sk = qs('#receiptSkeleton'), info = qs('#receiptInfo'), btn = qs('#btnSubmit');
-    if(yes){ sk.classList.remove('d-none'); info.classList.add('d-none'); btn.disabled = true; }
-    else sk.classList.add('d-none');
-  }
-  function mapStatusBadge(status){
-    const el = qs('#status');
-    el.classList.add('status-badge');
-    if (status === 'Received') el.style.setProperty('--sb-bg','#10b981');
-    else if (['Created','Pending','Confirmed'].includes(status||'')) el.style.setProperty('--sb-bg','#f59e0b');
-    else el.style.setProperty('--sb-bg','#9ca3af');
-    el.textContent = status || '--';
-  }
+    <script>
+        (function () {
+          // ===== Helpers =====
+          const qs = sel => document.querySelector(sel);
 
-  // ----- elements -----
-  const receiptInput = qs('#receiptIdInput');
-  const btnLoad      = qs('#btnLoad');
-  const btnSubmit    = qs('#btnSubmit');
-  const receiptInfo  = qs('#receiptInfo');
-  const itemsList    = qs('#receiptItemsList');
-  let debounce;
+          // Lấy thuộc tính bất chấp hoa/thường
+          function getAny(obj, names) {
+            if (!obj) return undefined;
+            const lower = {};
+            for (const k of Object.keys(obj)) lower[k.toLowerCase()] = obj[k];
+            for (const name of names) {
+              const v = lower[String(name).toLowerCase()];
+              if (v !== undefined && v !== null && v !== "") return v;
+            }
+            return undefined;
+          }
 
-  // ----- fill UI -----
-  function fillReceipt(data){
-    const createAt   = getAny(data,['createAt','CreateAt']);
-    const receivedAt = getAny(data,['receivedAt','ReceivedAt']);
-    const status     = getAny(data,['status','Status']);
-    const items      = getAny(data,['items','Items']) || [];
+          function guidLike(s){
+            const g=/^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$/;
+            return g.test(s)||String(s).trim().length>=20;
+          }
 
-    qs('#createAt').textContent  = isMeaningfulDate(createAt) ? new Date(createAt).toLocaleString() : '--';
-    qs('#receivedAt').textContent= isMeaningfulDate(receivedAt) ? new Date(receivedAt).toLocaleDateString() : 'Chưa nhận';
-    mapStatusBadge(status);
-    qs('#itemCount').textContent = items.length;
+          function isMeaningfulDate(dt){
+            try{ const d=new Date(dt); return !isNaN(d)&&d.getFullYear()>2001; }catch{ return false; }
+          }
 
-    itemsList.innerHTML = '';
-    items.forEach((item, idx) => {
-      // Lấy tên SKU & fallback
-      const skuName = getAny(item, ['productSKUName','ProductSKUName','productSkuName','skuName','SKU','sku']);
-      const skuId   = getAny(item, ['productSKUId','ProductSKUId','skuId','SkuId']);
-      const qty     = getAny(item, ['quantity','Quantity']) ?? '';
+          function showToast(type, text){
+            const toast = qs('#inlineAlert');
+            toast.className = 'inline-alert ' + (type==='success'?'success':'error');
+            toast.textContent = text;
+            toast.classList.remove('d-none');
+            requestAnimationFrame(()=> toast.classList.add('show'));
+            setTimeout(()=>{ toast.classList.remove('show'); setTimeout(()=> toast.classList.add('d-none'),180); },2200);
+          }
 
-      // debug (xóa nếu không cần)
-      console.debug('Item', idx, { skuName, skuId, item });
+          function setLoading(yes){
+            const sk = qs('#receiptSkeleton'), info = qs('#receiptInfo'), btn = qs('#btnSubmit');
+            if(yes){ sk.classList.remove('d-none'); info.classList.add('d-none'); btn.disabled = true; }
+            else { sk.classList.add('d-none'); }
+          }
 
-      const li = document.createElement('li');
-      li.className = 'list-group-item d-flex justify-content-between align-items-center';
-      li.innerHTML = `
-        <div class="sku-wrap">
-          <span class="sku-chip"><i class="bi bi-upc"></i>${skuName || '(Không có tên)'}</span>
-          ${skuId ? `<div class="sku-id">ID: ${skuId}</div>` : ''}
-        </div>
-        <span class="qty-chip">${qty}</span>
-      `;
-      itemsList.appendChild(li);
-    });
+          function mapStatusBadge(status){
+            const el = qs('#status');
+            el.classList.add('status-badge');
+            if ((status||'').toLowerCase()==='received') el.style.setProperty('--sb-bg','#10b981');
+            else if (['created','pending','confirmed'].includes(String(status||'').toLowerCase())) el.style.setProperty('--sb-bg','#f59e0b');
+            else el.style.setProperty('--sb-bg','#9ca3af');
+            el.textContent = status || '--';
+          }
 
-    receiptInfo.classList.remove('d-none');
-    btnSubmit.disabled = false;
-    receiptInput.readOnly = true;
-  }
+          // ===== Config =====
+          const API_BASE = 'https://hcm-628-madehuman-api.onrender.com';
 
-  // ----- load API -----
-  function loadReceipt(){
-    const id = receiptInput.value.trim();
-    if (!id || !guidLike(id)){
-      showToast('error','⚠️ Mã phiếu không hợp lệ. Vui lòng kiểm tra lại.');
-      return;
-    }
-    setLoading(true);
+          // ===== Elements =====
+          const receiptInput = qs('#receiptIdInput');
+          const btnLoad      = qs('#btnLoad');
+          const btnSubmit    = qs('#btnSubmit');
+          const receiptInfo  = qs('#receiptInfo');
+          const itemsList    = qs('#receiptItemsList');
+          let debounce;
 
-    // getJSON đảm bảo data là JSON
-    jQuery.getJSON(`https://hcm-628-madehuman-api.onrender.com/api/InboundReceipt/${id}`)
-      .done(function (data) {
-        setLoading(false);
-        fillReceipt(data);
-        showToast('success','✅ Đã tải thông tin phiếu nhập.');
-      })
-      .fail(function (xhr) {
-        setLoading(false);
-        receiptInfo.classList.add('d-none');
-        btnSubmit.disabled = true;
-        receiptInput.readOnly = false;
-        showToast('error', xhr.status === 404 ? '❌ Không tìm thấy phiếu nhập.' : '🚨 Lỗi tải dữ liệu.');
-      });
-  }
+          // ===== Fill UI =====
+          function fillReceipt(data){
+            const createAt   = getAny(data,['createAt','CreateAt']);
+            const receivedAt = getAny(data,['receivedAt','ReceivedAt']);
+            const status     = getAny(data,['status','Status']);
+            const items      = getAny(data,['items','Items']) || [];
 
-  // ----- events -----
-  btnLoad?.addEventListener('click', loadReceipt);
+            qs('#createAt').textContent  = isMeaningfulDate(createAt) ? new Date(createAt).toLocaleString() : '--';
+            qs('#receivedAt').textContent= isMeaningfulDate(receivedAt) ? new Date(receivedAt).toLocaleDateString() : 'Chưa nhận';
+            mapStatusBadge(status);
+            qs('#itemCount').textContent = items.length;
 
-  receiptInput.addEventListener('input', function(){
-    clearTimeout(debounce);
-    const val = this.value.trim();
-    receiptInfo.classList.add('d-none');
-    btnSubmit.disabled = true;
-    receiptInput.readOnly = false;
-    if (!val || val.length < 10) return;
-    debounce = setTimeout(loadReceipt, 500);
-  });
+            itemsList.innerHTML = '';
 
-  document.querySelector('#scanForm').addEventListener('submit', function(e){
-    if (btnSubmit.disabled){
-      e.preventDefault();
-      showToast('error','⚠️ Vui lòng tải thông tin phiếu trước.');
-      return;
-    }
-    btnSubmit.disabled = true;
-    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang tạo nhiệm vụ...';
-  });
-})();
-</script>
+            items.forEach((item) => {
+              // 1) Tên SKU ưu tiên field phẳng
+              let skuName =
+                getAny(item, ['productSKUName','ProductSKUName','productSkuName','skuName','SKU','sku']);
+
+              // 2) Fallback nếu là object lồng productSKUs/ProductSKUs
+              if (!skuName) {
+                const ps = getAny(item, ['productSKUs','ProductSKUs']);
+                if (ps) skuName = getAny(ps, ['sku','SKU']);
+              }
+
+              const skuId = getAny(item, ['productSKUId','ProductSKUId','skuId','SkuId']);
+              const qty   = getAny(item, ['quantity','Quantity']) ?? '';
+
+              // Tạo li
+              const li = document.createElement('li');
+              li.className = 'list-group-item d-flex justify-content-between align-items-center';
+              li.innerHTML = `
+                <div class="sku-wrap">
+                  <span class="sku-chip"><i class="bi bi-upc"></i>${skuName || '(Không có tên)'}</span>
+                  ${skuId ? `<div class="sku-id">ID: ${skuId}</div>` : ''}
+                </div>
+                <span class="qty-chip">${qty}</span>
+              `;
+              itemsList.appendChild(li);
+            });
+
+            receiptInfo.classList.remove('d-none');
+            btnSubmit.disabled = false;
+            receiptInput.readOnly = true;
+          }
+
+          // ===== Load API =====
+          function loadReceipt(){
+            const id = receiptInput.value.trim();
+            if (!id || !guidLike(id)){
+              showToast('error','⚠️ Mã phiếu không hợp lệ. Vui lòng kiểm tra lại.');
+              return;
+            }
+            setLoading(true);
+
+            jQuery.getJSON(`${API_BASE}/api/InboundReceipt/${id}`)
+              .done(function (data) {
+                setLoading(false);
+
+                // (Bật khi cần soi payload) — đã sửa đúng cú pháp
+                try {
+                  console.log('RAW payload:', JSON.parse(JSON.stringify(data)));
+                  if (Array.isArray(data?.items)) {
+                    data.items.slice(0, 2).forEach((it, i) => {
+                      console.log(`ITEM[${i}] keys:`, Object.keys(it));
+                      const ps = it.productSKUs || it.ProductSKUs;
+                      if (ps) console.log(`ITEM[${i}] productSKUs keys:`, Object.keys(ps));
+                    });
+                  }
+                } catch (e) { /* ignore log error */ }
+
+                fillReceipt(data);
+                showToast('success','✅ Đã tải thông tin phiếu nhập.');
+              })
+              .fail(function (xhr) {
+                setLoading(false);
+                receiptInfo.classList.add('d-none');
+                btnSubmit.disabled = true;
+                receiptInput.readOnly = false;
+                showToast('error', xhr.status === 404 ? '❌ Không tìm thấy phiếu nhập.' : '🚨 Lỗi tải dữ liệu.');
+              });
+          }
+
+          // ===== Events =====
+          btnLoad?.addEventListener('click', loadReceipt);
+
+          // Gõ vào input -> debounce fetch
+          receiptInput.addEventListener('input', function(){
+            clearTimeout(debounce);
+            const val = this.value.trim();
+            receiptInfo.classList.add('d-none');
+            btnSubmit.disabled = true;
+            receiptInput.readOnly = false;
+            if (!val || val.length < 10) return;
+            debounce = setTimeout(loadReceipt, 500);
+          });
+
+          // Enter trong input sẽ bấm nút tải
+          receiptInput.addEventListener('keydown', function(e){
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              loadReceipt();
+            }
+          });
+
+          // Chặn submit nếu chưa tải xong
+          document.querySelector('#scanForm').addEventListener('submit', function(e){
+            if (btnSubmit.disabled){
+              e.preventDefault();
+              showToast('error','⚠️ Vui lòng tải thông tin phiếu trước.');
+              return;
+            }
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang tạo nhiệm vụ...';
+          });
+        })();
+    </script>
 }

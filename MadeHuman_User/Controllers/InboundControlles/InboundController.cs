@@ -11,6 +11,7 @@ namespace MadeHuman_User.Controllers.InboundControlles
         private readonly IInboundTaskService _inboundTaskService;
         private readonly IRefillTaskService _refillTaskService;
 
+
         public InboundController(IInboundTaskService inboundTaskService, IRefillTaskService refillTaskService)
         {
             _inboundTaskService = inboundTaskService;

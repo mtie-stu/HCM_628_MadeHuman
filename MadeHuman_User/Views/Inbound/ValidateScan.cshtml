@@ -1,56 +1,167 @@
 ﻿@model Madehuman_Share.ViewModel.Inbound.ScanInboundTaskValidationRequest
 @{
-    ViewData["Title"] = "Inbound";
+    // ViewData["Title"] = "Xác nhận nhập kho";
 }
 
-<div class="container mt-4">
-    <h3 class="text-primary">📦 Xác nhận nhập kho</h3>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+<link rel="stylesheet" href="~/css/pages/Inbound/inbound-validate.css" asp-append-version="true" />
 
-    <form asp-action="ValidateScan" method="post" class="card shadow-sm p-4 mt-3">
-        <div class="mb-3">
-            <label class="form-label">Mã nhiệm vụ nhập kho (InboundTaskId)</label>
-            <input asp-for="InboundTaskId" class="form-control" readonly />
+<div class="inbound-validate-page container py-4">
 
+    <!-- Header -->
+    <div class="page-head d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h2 class="page-title">
+                <i class="bi bi-inboxes me-2"></i> Xác nhận nhập kho
+            </h2>
+            <div class="page-subtext text-muted">
+                Quét / nhập thông tin lô – vị trí – SKU – số lượng để lưu kho.
+            </div>
+        </div>
+        <div class="step-chips d-none d-md-flex">
+            <span class="chip active"><i class="bi bi-123 me-1"></i> Lô</span>
+            <span class="chip"><i class="bi bi-geo-alt me-1"></i> Vị trí</span>
+            <span class="chip"><i class="bi bi-upc-scan me-1"></i> SKU</span>
+            <span class="chip"><i class="bi bi-clipboard-check me-1"></i> Số lượng</span>
+        </div>
+    </div>
 
+    <!-- Content -->
+    <div class="row g-4">
+        <!-- Form card -->
+        <div class="col-lg-7">
+            <form asp-action="ValidateScan" method="post" class="card form-card shadow-sm">
+                @Html.AntiForgeryToken()
+                <div class="card-body p-4">
+
+                    <div class="mb-3">
+                        <label class="form-label">Mã nhiệm vụ nhập kho (InboundTaskId)</label>
+                        <div class="input-wrap">
+                            <i class="bi bi-qr-code-scan"></i>
+                            <input asp-for="InboundTaskId" class="form-control" readonly />
+                        </div>
+                        <span class="text-danger small" asp-validation-for="InboundTaskId"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Mã lô sản phẩm (ProductBatchId) <span class="req">*</span></label>
+                        <div class="input-wrap">
+                            <i class="bi bi-box-seam"></i>
+                            <input asp-for="ProductBatchId" class="form-control" required placeholder="Quét/nhập GUID lô..." />
+                        </div>
+                        <span class="text-danger small" asp-validation-for="ProductBatchId"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tên vị trí kho (NameLocation)</label>
+                        <div class="input-wrap">
+                            <i class="bi bi-pin-map"></i>
+                            <input asp-for="NameLocation" class="form-control" placeholder="VD: A1-01-03" />
+                        </div>
+                        <span class="text-danger small" asp-validation-for="NameLocation"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">SKU</label>
+                        <div class="input-wrap">
+                            <i class="bi bi-upc"></i>
+                            <input asp-for="SKU" class="form-control" placeholder="Quét/nhập SKU..." />
+                        </div>
+                        <span class="text-danger small" asp-validation-for="SKU"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Số lượng</label>
+                        <div class="input-wrap">
+                            <i class="bi bi-123"></i>
+                            <input asp-for="Quantity" class="form-control" inputmode="numeric" placeholder="Nhập số lượng..." />
+                        </div>
+                        <span class="text-danger small" asp-validation-for="Quantity"></span>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-orange btn-lg">
+                            <span class="btn-ripple"></span>
+                            <i class="bi bi-check2-circle me-2"></i> Xác nhận lưu kho
+                        </button>
+                    </div>
+                </div>
+            </form>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Mã lô sản phẩm (ProductBatchId)</label>
-            <input asp-for="ProductBatchId" class="form-control" required />
+        <!-- Side panel: alerts & tips -->
+        <div class="col-lg-5">
+            <div class="info-card card shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-3"><i class="bi bi-lightbulb me-2 text-orange"></i>Mẹo thao tác nhanh</h5>
+                    <ul class="tips list-unstyled mb-0">
+                        <li><i class="bi bi-dot"></i> Ưu tiên **quét mã** để tránh sai sót.</li>
+                        <li><i class="bi bi-dot"></i> Trường bắt buộc được đánh dấu <span class="req">*</span>.</li>
+                        <li><i class="bi bi-dot"></i> Nhấn <kbd>Enter</kbd> để gửi nhanh khi đang ở ô Số lượng.</li>
+                    </ul>
+                </div>
+            </div>
+
+            @if (ViewBag.Success != null)
+            {
+                <div class="alert alert-success mt-3 shadow-sm fade-in">
+                    <i class="bi bi-check-circle me-1"></i> @ViewBag.Success
+                </div>
+            }
+
+            @if (ViewBag.Errors != null)
+            {
+                <div class="alert alert-danger mt-3 shadow-sm fade-in">
+                    <div class="d-flex align-items-start">
+                        <i class="bi bi-x-circle me-2 fs-5"></i>
+                        <div>
+                            <div class="fw-semibold mb-1">Có lỗi xảy ra:</div>
+                            <ul class="mb-0">
+                                @foreach (var err in (List<string>)ViewBag.Errors)
+                                {
+                                    <li>@err</li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
-
-        <div class="mb-3">
-            <label class="form-label">Tên vị trí kho (NameLocation)</label>
-            <input asp-for="NameLocation" class="form-control" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">SKU</label>
-            <input asp-for="SKU" class="form-control" />
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Số lượng</label>
-            <input asp-for="Quantity" class="form-control" />
-        </div>
-
-        <button type="submit" class="btn btn-success">✅ Xác nhận lưu kho</button>
-    </form>
-
-    @if (ViewBag.Success != null)
-    {
-        <div class="alert alert-success mt-3">@ViewBag.Success</div>
-    }
-
-    @if (ViewBag.Errors != null)
-    {
-        <div class="alert alert-danger mt-3">
-            <ul>
-                @foreach (var err in (List<string>)ViewBag.Errors)
-                {
-                    <li>@err</li>
-                }
-            </ul>
-        </div>
-    }
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Autofocus vào ProductBatchId nếu có
+        const batchInput = document.getElementById("@Html.IdFor(m => m.ProductBatchId)");
+        if (batchInput) batchInput.focus();
+
+        // Đổi trạng thái chip theo input focus
+        const chips = document.querySelectorAll(".step-chips .chip");
+        const map = new Map([
+            ["@Html.IdFor(m => m.ProductBatchId)", 0],
+            ["@Html.IdFor(m => m.NameLocation)",   1],
+            ["@Html.IdFor(m => m.SKU)",            2],
+            ["@Html.IdFor(m => m.Quantity)",       3],
+        ]);
+
+        document.addEventListener("focusin", (e) => {
+            const idx = map.get(e.target.id);
+            if (idx !== undefined) {
+                chips.forEach((c,i)=>c.classList.toggle("active", i===idx));
+            }
+        });
+
+        // Hiệu ứng ripple cho nút
+        document.querySelectorAll(".btn-orange").forEach(btn=>{
+            btn.addEventListener("click", function(e){
+                const ripple = this.querySelector(".btn-ripple");
+                const rect = this.getBoundingClientRect();
+                ripple.style.left = (e.clientX - rect.left) + "px";
+                ripple.style.top  = (e.clientY - rect.top)  + "px";
+                ripple.classList.add("show");
+                setTimeout(()=>ripple.classList.remove("show"), 500);
+            });
+        });
+    </script>
+}
