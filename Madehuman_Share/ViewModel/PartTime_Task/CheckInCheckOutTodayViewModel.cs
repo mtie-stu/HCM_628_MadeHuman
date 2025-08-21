@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Madehuman_Share.ViewModel
+namespace Madehuman_Share.ViewModel.PartTime_Task
 {
     public class CheckInCheckOutTodayViewModel
     {

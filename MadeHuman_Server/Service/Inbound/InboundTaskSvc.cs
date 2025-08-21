@@ -14,6 +14,7 @@ namespace MadeHuman_Server.Service.Inbound
         Task<GetInboundTaskById_Viewmodel> GetInboundTaskByIdAsync(Guid inboundTaskId);
         Task<List<string>> ValidateInboundProductScanAsync(ScanInboundTaskValidationRequest request);
         Task StoreProductBatchAsync(Guid inboundTaskId, Guid productBatchId, Guid userTaskId);
+        Task<List<InboundTaskViewModel>> GetAllAsync();
     }
 
     public class InboundTaskSvc : IInboundTaskSvc
@@ -371,6 +372,20 @@ namespace MadeHuman_Server.Service.Inbound
 
             await _context.SaveChangesAsync();
         }
-
+        public async Task<List<InboundTaskViewModel>> GetAllAsync()
+        {
+            return await _context.InboundTasks
+                .AsNoTracking()
+                .Select(t => new InboundTaskViewModel
+                {
+                    Id = t.Id,
+                    CreateBy = t.CreateBy,
+                    CreateAt = t.CreateAt,
+                    Status = t.Status.ToString(),
+                    InboundReceiptId = t.InboundReceiptId,
+                    UserTaskId = t.UserTaskId
+                })
+                .ToListAsync();
+        }
     }
 }

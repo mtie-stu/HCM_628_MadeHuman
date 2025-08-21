@@ -538,10 +538,9 @@ namespace MadeHuman_Server.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("MadeAt")
-                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("OutboundTaskItemId")
+                    b.Property<Guid>("OutboundTaskItemId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("StatusPackTask")
@@ -1641,7 +1640,9 @@ namespace MadeHuman_Server.Migrations
                 {
                     b.HasOne("MadeHuman_Server.Model.Outbound.OutboundTaskItems", "OutboundTaskItems")
                         .WithOne("PackTask")
-                        .HasForeignKey("MadeHuman_Server.Model.Outbound.PackTask", "OutboundTaskItemId");
+                        .HasForeignKey("MadeHuman_Server.Model.Outbound.PackTask", "OutboundTaskItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("MadeHuman_Server.Model.User_Task.UsersTasks", "UsersTasks")
                         .WithMany("PackTask")

@@ -1,6 +1,8 @@
 ﻿using MadeHuman_Server.Service.Outbound;
+using Madehuman_Share.ViewModel.Outbound;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace MadeHuman_Server.Controllers.Outbound
 {
@@ -70,6 +72,17 @@ namespace MadeHuman_Server.Controllers.Outbound
                 message = $"✅ Đã xử lý tổng cộng {total} OutboundTask.",
                 totalCreated = total
             });
+        }
+        [HttpGet("{id:guid}/preview")]
+        // [Authorize] // bật nếu cần JWT
+        public async Task<ActionResult<OutboundTaskItemPreviewViewModel>> Preview(Guid id, CancellationToken ct)
+        {
+            if (id == Guid.Empty) return BadRequest(new { message = "Id không hợp lệ." });
+
+            var dto = await _outboundTaskService.GetPreviewAsync(id, ct);
+            if (dto == null) return NotFound(new { message = "Không tìm thấy OutboundTaskItem." });
+
+            return Ok(dto);
         }
     }
 }

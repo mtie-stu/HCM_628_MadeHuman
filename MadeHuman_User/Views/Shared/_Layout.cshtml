@@ -20,6 +20,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>@ViewData["Title"] - MadeHuman_User</title>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<link rel="stylesheet" asp-href="~/css/site.css" asp-append-version="true" />
 	<link rel="stylesheet" asp-href="~/MadeHuman_User.styles.css" asp-append-version="true" />
@@ -152,13 +153,12 @@
             <div id="collapseInbound" class="collapse">
                 <a asp-controller="Inbound" asp-action="Import"
                    class="@IsActive("Inbound","Import")">
-                    <span><i class="fas fa-file-import"></i> Import</span>
+                    <span><i class="fas fa-file-import"></i> Import (FullTime)</span>
                 </a>
-                <a asp-controller="Inbound" asp-action="ValidateScan"
-                   class="@IsActive("Inbound","ValidateScan")">
-                    <span><i class="bi bi-upc-scan me-2"></i> Validate Scan</span>
+                <a asp-controller="Inbound" asp-action="Index"
+                   class="@IsActive("Inbound","Index")">
+                    <span><i class="fas fa-file-import"></i>Import (PartTime)</span>
                 </a>
-
                 <a asp-controller="Inbound" asp-action="Export"
                    class="@IsActive("Inbound","Export")">
                     <span><i class="fas fa-file-export"></i> Export</span>
@@ -176,24 +176,24 @@
                 <i class="fas fa-chevron-down chevron"></i>
             </button>
             <div id="collapseOutbound" class="collapse">
-                <a asp-controller="Outbound" asp-action="Picker"
-                   class="@IsActive("Outbound","Picker")">
+                <a asp-controller="PickTasks" asp-action="Index"
+                   class="@IsActive("PickTasks","Index")">
                     <span><i class="fas fa-truck-loading"></i> Picker</span>
                 </a>
-                <a asp-controller="Outbound" asp-action="CheckerTaskMix"
-                   class="@IsActive("Outbound","CheckerTaskMix")">
+                <a asp-controller="CheckTask" asp-action="MixSKU"
+                   class="@IsActive("CheckTask","MixSKU")">
                     <span><i class="fas fa-tasks"></i> Checker Task Mix</span>
                 </a>
-                <a asp-controller="Outbound" asp-action="CheckerTaskSingle"
-                   class="@IsActive("Outbound","CheckerTaskSingle")">
+                <a asp-controller="CheckTask" asp-action="SingleSKU"
+                   class="@IsActive("CheckTask","SingleSKU")">
                     <span><i class="fas fa-tasks"></i> Checker Task Single</span>
                 </a>
-                <a asp-controller="Outbound" asp-action="Packer"
-                   class="@IsActive("Outbound","Packer")">
+                <a asp-controller="PackTask" asp-action="Index"
+                   class="@IsActive("PackTask","Index")">
                     <span><i class="fas fa-box"></i> Packer</span>
                 </a>
-                <a asp-controller="Outbound" asp-action="Dispatch"
-                   class="@IsActive("Outbound","Dispatch")">
+                <a asp-controller="DispatchTask" asp-action="Index"
+                   class="@IsActive("DispatchTask","Index")">
                     <span><i class="fas fa-shipping-fast"></i> Dispatch</span>
                 </a>
             </div>
@@ -208,7 +208,7 @@
             <button type="button" class="mb-1 @(isDemoMenuActive ? "active" : "")"
                     data-bs-toggle="collapse" data-bs-target="#demoSubmenu"
                     aria-expanded="@isDemoMenuActive.ToString().ToLower()" aria-controls="demoSubmenu">
-                <span><i class="fas fa-briefcase"></i> Demo</span>
+                <span><i class="fas fa-briefcase"></i> Giả lập dữ liệu</span>
                 <i class="fas fa-chevron-down chevron"></i>
             </button>
 
@@ -235,10 +235,10 @@
                 </a>
             </div>
 
-            <a asp-controller="Support" asp-action="Help"
+            @* <a asp-controller="Support" asp-action="Help"
                class="@IsActive("Support","Help")">
                 <span><i class="fas fa-question-circle"></i> Help</span>
-            </a>
+            </a> *@
 
 			<div class="bg-white rounded text-center py-3 mt-4 border-top">
 				<p class="small fw-bold text-dark mb-0">MADEHUMAN</p>
@@ -264,6 +264,7 @@
 	 @await RenderSectionAsync("Scripts", required: false)
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 
 </body>
 </html>

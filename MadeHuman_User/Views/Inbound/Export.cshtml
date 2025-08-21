@@ -1,96 +1,143 @@
-﻿
-@model MadeHuman_User.Models.ExportTaskViewModel
+﻿@using Madehuman_Share.ViewModel.Inbound
+@model List<RefillTaskFullViewModel>
 
 @{
-    ViewData["Title"] = "Xuất kho";
+    ViewData["Title"] = "Refill";
 }
 
-<!-- THÔNG BÁO -->
-@if (!ViewData.ModelState.IsValid)
-{
-    <div class="alert alert-danger">
-        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-        {
-            <p>@error.ErrorMessage</p>
-        }
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-primary"><i class="bi bi-box-seam"></i> Danh sách nhiệm vụ bổ sung kho</h2>
+    <p class="text-muted mb-3">
+        📦 Tổng số nhiệm vụ: <strong>@Model.Count</strong> <br />
+        ✅ Đã hoàn thành: <strong>@Model.Count(x => x.StatusRefillTasks == "Completed")</strong> <br />
+        ❌ Đã huỷ: <strong>@Model.Count(x => x.StatusRefillTasks == "Canceled")</strong>
+        🕒 Đang xử lý: <strong>@Model.Count(x => x.StatusRefillTasks == "Incomplete")</strong>
+    </p>
+
+    <div>
+        <a class="btn btn-warning me-2" id="assignTaskBtn">
+            <i class="bi bi-person-check"></i> Nhận nhiệm vụ
+        </a>
+        <a class="btn btn-success" asp-controller="RefillTask" asp-action="DetailFlat">
+            <i class="bi bi-plus-circle"></i> Bắt đầu nhiệm vụ
+        </a>
     </div>
-}
+</div>
 
-@if (ViewBag.Success != null)
-{
-    <div class="alert alert-success">
-        <p>@ViewBag.Success</p>
-    </div>
-}
 
-<form asp-action="Export" method="post" class="container mt-4 p-4 border border-primary rounded shadow bg-white">
-    <div class="row">
-        <!-- LEFT: Quét mã task Export -->
-        <div class="col-md-6">
-            <h2 class="h4 text-primary mb-3">Mã Task Export</h2>
-            <div class="input-group mb-4">
-                <input asp-for="ExportCode" class="form-control" placeholder="Nhập mã export" />
-                <button class="btn btn-outline-secondary" type="submit" title="Tìm mã export">
-                    <i class="fas fa-qrcode"></i>
-                </button>
+    @if (!Model.Any())
+    {
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle"></i> Không có nhiệm vụ nào được tạo.
             </div>
-
-            @if (Model?.Products != null && Model.Products.Any())
+    }
+    else
+    {
+            <div class="accordion" id="refillTaskAccordion">
+            @for (int i = 0; i < Model.Count; i++)
             {
-                @foreach (var product in Model.Products)
+                var task = Model[i];
+
+                // Ẩn nếu trạng thái là Completed hoặc Canceled
+                if (task.StatusRefillTasks == "Completed" || task.StatusRefillTasks == "Canceled")
                 {
-                    <div class="card mb-3">
-                        <img src="@product.ImageUrl" class="card-img-top" alt="Ảnh sản phẩm" />
-                        <div class="card-body">
-                            <p class="card-text"><strong>Tên:</strong> @product.ProductName</p>
-                            <p class="card-text"><strong>Mã SP:</strong> @product.ProductItemId</p>
-                            <p class="card-text"><strong>Vị trí:</strong> @product.LocationStorage</p>
-                            <p class="card-text"><strong>Số lượng tồn:</strong> @product.Quantity</p>
+                    continue;
+                }
+
+                <div class="accordion-item mb-2 shadow-sm">
+                    <h2 class="accordion-header" id="heading-@i">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@i" aria-expanded="false" aria-controls="collapse-@i">
+                            <i class="bi bi-clipboard-check me-2"></i>
+                            <strong>Mã: @task.Id</strong> |
+                            🕒 @task.CreateAt.ToString("dd/MM/yyyy HH:mm")
+                        </button>
+                    </h2>
+                    <div id="collapse-@i" class="accordion-collapse collapse" aria-labelledby="heading-@i" data-bs-parent="#refillTaskAccordion">
+                        <div class="accordion-body">
+                            <h6 class="mb-3"><i class="bi bi-list-ul"></i> Danh sách chi tiết</h6>
+
+                            <table class="table table-bordered table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><i class="bi bi-upc-scan"></i> SKU</th>
+                                        <th><i class="bi bi-box-arrow-in-left"></i> From</th>
+                                        <th><i class="bi bi-box-arrow-right"></i> To</th>
+                                        <th><i class="bi bi-hash"></i> Số lượng</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var d in task.Details)
+                                    {
+                                        <tr>
+                                            <td>@(d.SKU ?? "N/A")</td>
+                                            <td>@d.FromLocation</td>
+                                            <td>@d.ToLocation</td>
+                                            <td>@d.Quantity</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+
+                            <div class="mt-3 text-end">
+                                <a class="btn btn-outline-primary btn-sm" asp-controller="RefillTask" asp-action="Details" asp-route-id="@task.Id">
+                                    <i class="bi bi-eye"></i> Xem chi tiết
+                                </a>
+                            </div>
                         </div>
                     </div>
-                }
-            }
-            else if (!string.IsNullOrEmpty(Model?.ExportCode))
-            {
-                <p class="text-danger">Không tìm thấy thông tin sản phẩm với mã export trên.</p>
-            }
-        </div>
-
-        <!-- RIGHT: Nhập dữ liệu để xuất kho -->
-        <div class="col-md-6">
-            <div class="mb-3">
-                <label asp-for="ScannedLocationCode" class="form-label">Mã vị trí</label>
-                <div class="input-group">
-                    <input asp-for="ScannedLocationCode" class="form-control" placeholder="Mã vị trí" />
-                    <button type="button" class="btn btn-outline-secondary" title="Scan mã vị trí">
-                        <i class="fas fa-qrcode"></i>
-                    </button>
                 </div>
+            }
             </div>
+    }
 
-            <div class="mb-3">
-                <label asp-for="ScannedProductCode" class="form-label">Mã sản phẩm</label>
-                <div class="input-group">
-                    <input asp-for="ScannedProductCode" class="form-control" placeholder="Mã sản phẩm" />
-                    <button type="button" class="btn btn-outline-secondary" title="Scan mã sản phẩm">
-                        <i class="fas fa-qrcode"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="ScannedQuantity" class="form-label">Số lượng</label>
-                <input asp-for="ScannedQuantity" class="form-control" placeholder="Số lượng cần xuất" />
-            </div>
-
-            <button type="submit" class="btn btn-primary mt-3 w-100">
-                Xuất kho
-            </button>
-        </div>
-    </div>
-</form>
-
+</div>
 @section Scripts {
-    <!-- Bootstrap JS (đã thêm rồi ở layout), chỉ cần font-awesome -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                $('#assignTaskBtn').click(function () {
+                    const button = $(this);
+                    button.prop('disabled', true).text('Đang xử lý...');
+
+                    const token = getCookie("JWTToken");
+                    console.log("Token:", token);
+
+
+                    $.ajax({
+                        url: 'https://hcm-628-madehuman-api.onrender.com/api/RefillTask/assign',
+                        type: 'POST',
+                        headers: {
+                            Authorization: 'Bearer ' + token // 👈 Gửi token trong header
+                        },
+                        success: function (response) {
+                            alert("✅ Đã nhận nhiệm vụ thành công!");
+                            window.location.href = `https://hcm-628-madehuman-api.onrender.com/RefillTask/Details/${response.taskId}`;
+
+                        },
+                        error: function (xhr) {
+                            button.prop('disabled', false).html('<i class="bi bi-person-check"></i> Nhận nhiệm vụ');
+                            if (xhr.status === 401) {
+                                alert("❌ Bạn chưa đăng nhập hoặc token đã hết hạn.");
+                            } else if (xhr.status === 400) {
+                                alert("⚠️ " + xhr.responseText);
+                            } else if (xhr.status === 404) {
+                                alert("🎉 Không còn nhiệm vụ nào để nhận.");
+                            } else {
+                                alert("🚨 Lỗi hệ thống: " + xhr.responseText);
+                            }
+                        }
+                    });
+                });
+
+                function getCookie(name) {
+                    const value = `; ${document.cookie}`;
+                    const parts = value.split(`; ${name}=`);
+                    if (parts.length === 2) return parts.pop().split(';').shift();
+                    return null;
+                }
+            });
+        </script>
 }

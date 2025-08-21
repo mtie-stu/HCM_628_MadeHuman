@@ -1,0 +1,45 @@
+﻿@model List<Madehuman_Share.ViewModel.Inbound.InboundTaskViewModel>
+
+@{
+    ViewData["Title"] = "Danh sách Inbound Tasks";
+}
+
+<h2 class="mb-4">📋 Danh sách Inbound Tasks</h2>
+
+@if (!Model.Any(x => x.Status != "Completed"))
+{
+    <div class="alert alert-info">Tất cả nhiệm vụ đều đã hoàn tất.</div>
+}
+else
+{
+    <table class="table table-bordered table-hover table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Người tạo</th>
+                <th>Ngày tạo</th>
+                @* <th>Trạng thái</th> *@
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var task in Model.Where(x => x.Status != "Completed"))
+            {
+                <tr>
+                    <td>@task.Id</td>
+                    <td>@task.CreateBy</td>
+                    <td>@task.CreateAt.ToString("dd/MM/yyyy HH:mm")</td>
+                    @* <td>@task.Status</td> *@
+                    <td>
+                        <a asp-controller="Inbound" asp-action="ValidateScan"
+                           asp-route-inboundTaskId="@task.Id"
+                           class="btn btn-sm btn-outline-success">
+                            <i class="bi bi-upc-scan"></i> Validate Scan
+                        </a>
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

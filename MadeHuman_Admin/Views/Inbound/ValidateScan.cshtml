@@ -1,0 +1,54 @@
+﻿@model Madehuman_Share.ViewModel.Inbound.ScanInboundTaskValidationRequest
+@{
+    ViewData["Title"] = "Inbound";
+}
+
+<div class="container mt-4">
+    <h3 class="text-primary">📦 Xác nhận nhập kho</h3>
+
+    <form asp-action="ValidateScan" method="post" class="card shadow-sm p-4 mt-3">
+        <div class="mb-3">
+            <label class="form-label">Mã nhiệm vụ nhập kho (InboundTaskId)</label>
+            <input asp-for="InboundTaskId" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Mã lô sản phẩm (ProductBatchId)</label>
+            <input asp-for="ProductBatchId" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Tên vị trí kho (NameLocation)</label>
+            <input asp-for="NameLocation" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">SKU</label>
+            <input asp-for="SKU" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Số lượng</label>
+            <input asp-for="Quantity" class="form-control" />
+        </div>
+
+        <button type="submit" class="btn btn-success">✅ Xác nhận lưu kho</button>
+    </form>
+
+    @if (ViewBag.Success != null)
+    {
+        <div class="alert alert-success mt-3">@ViewBag.Success</div>
+    }
+
+    @if (ViewBag.Errors != null)
+    {
+        <div class="alert alert-danger mt-3">
+            <ul>
+                @foreach (var err in (List<string>)ViewBag.Errors)
+                {
+                    <li>@err</li>
+                }
+            </ul>
+        </div>
+    }
+</div>

@@ -38,7 +38,8 @@ namespace MadeHuman_Server.Service.Outbound
             {
                 Id = Guid.NewGuid(),
                 StatusPackTask = StatusPackTask.Created,
-                OutboundTaskItemId = outboundTaskItemId
+                OutboundTaskItemId = outboundTaskItemId,
+                OutboundTaskItems = outboundItem // ✅ thêm dòng này
             };
 
             _context.PackTask.Add(packTask);
@@ -67,8 +68,19 @@ namespace MadeHuman_Server.Service.Outbound
             }
 
             var packTask = await _context.PackTask
-                .Include(p => p.OutboundTaskItems)
-                .FirstOrDefaultAsync(p => p.OutboundTaskItemId == outboundTaskItemId);
+            .Include(p => p.OutboundTaskItems)
+                .ThenInclude(oti => oti.OutboundTask)
+            .FirstOrDefaultAsync(p => p.OutboundTaskItemId == outboundTaskItemId);
+
+            if (packTask?.OutboundTaskItems?.OutboundTask == null)
+            {
+                logs.Add("❌ Không tìm thấy OutboundTask.");
+                return logs;
+            }
+
+            var outboundTaskId = packTask.OutboundTaskItems.OutboundTask.Id;
+            logs.Add($"📦 OutboundTaskId là: {outboundTaskId}");
+
 
             if (packTask == null)
             {
@@ -95,7 +107,7 @@ namespace MadeHuman_Server.Service.Outbound
                 userTask.TotalKPI += 1;
                 userTask.HourlyKPIs += 1;
             }
-             packTask.StatusPackTask= StatusPackTask.Finished;
+            packTask.StatusPackTask= StatusPackTask.Finished;
             packTask.FinishAt = DateTime.UtcNow;
             await _dispatchTaskServices.CreateDisPactchPackTaskAsync(outboundTaskItemId);
             await _context.SaveChangesAsync();

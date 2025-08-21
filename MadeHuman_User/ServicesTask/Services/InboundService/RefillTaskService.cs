@@ -1,4 +1,6 @@
 ﻿using Madehuman_Share.ViewModel.Inbound;
+using MadeHuman_User.ServicesTask.Services.ShopService;
+using MadeHuman_User.ServicesTask.Services.Warehouse;
 using System.Text.Json;
 
 namespace MadeHuman_User.ServicesTask.Services.InboundService
@@ -9,6 +11,8 @@ namespace MadeHuman_User.ServicesTask.Services.InboundService
         Task<List<RefillTaskFullViewModel>> GetAllRefillTasksAsync(HttpContext httpContext);
         Task<RefillTaskFullViewModel?> GetByIdAsync(Guid id, HttpContext httpContext);
         Task<List<RefillTaskDetailWithHeaderViewModel>> GetAllDetailsAsync(HttpContext httpContext);
+        Task<List<string>> ValidateRefillScanAsync(ScanRefillTaskValidationRequest request, HttpContext httpContext);
+
 
 
     }
@@ -16,10 +20,14 @@ namespace MadeHuman_User.ServicesTask.Services.InboundService
     {
         private readonly HttpClient _client;
         private readonly ILogger<RefillTaskService> _logger;
-        public RefillTaskService(IHttpClientFactory httpClientFactory, ILogger<RefillTaskService> logger)
+        private readonly IWarehouseLookupApiService _locationService;
+        private readonly IProductService _productService;
+        public RefillTaskService(IHttpClientFactory httpClientFactory, ILogger<RefillTaskService> logger, IWarehouseLookupApiService locationService, IProductService productService)
         {
             _client = httpClientFactory.CreateClient("API"); // 🔧 dùng đúng client "API" như bạn
             _logger = logger;
+            _locationService = locationService;
+            _productService = productService;
         }
         public async Task<List<RefillTaskFullViewModel>> GetAllRefillTasksAsync(HttpContext httpContext)
         {
@@ -124,6 +132,34 @@ namespace MadeHuman_User.ServicesTask.Services.InboundService
                 }
 
                 var data = await response.Content.ReadFromJsonAsync<RefillTaskFullViewModel>();
+                if (data == null) return null;
+
+                // ✅ Bổ sung SKU + From/To Location Name
+                foreach (var detail in data.Details)
+                {
+                    if (detail.ProductSKUId != null)
+                    {
+                        var skuInfo = await _productService.GetSKUInfoAsync(detail.ProductSKUId.Value);
+                        if (skuInfo != null)
+                            detail.SKU = skuInfo.SkuCode;
+                    }
+
+                    var from = await _locationService.GetLocationInfoAsync(detail.FromLocation);
+                    if (from != null)
+                        detail.FromLocationName = from.NameLocation;
+
+                    var to = await _locationService.GetLocationInfoAsync(detail.ToLocation);
+                    if (to != null)
+                        detail.ToLocationName = to.NameLocation;
+                }
+
+                //// ✅ Gán email người tạo (nếu CreateBy là Guid userId)
+                //if (Guid.TryParse(data.CreateBy, out var userId))
+                //{
+                //    var user = await _userService.GetUserByIdAsync(userId);
+                //    data.CreateByName = user?.Email ?? data.CreateBy;
+                //}
+
                 return data;
             }
             catch (Exception ex)
@@ -132,6 +168,7 @@ namespace MadeHuman_User.ServicesTask.Services.InboundService
                 return null;
             }
         }
+
         public async Task<List<RefillTaskDetailWithHeaderViewModel>> GetAllDetailsAsync(HttpContext httpContext)
         {
             var jwt = httpContext.Request.Cookies["JWTToken"];
@@ -156,12 +193,64 @@ namespace MadeHuman_User.ServicesTask.Services.InboundService
                 }
 
                 var data = await response.Content.ReadFromJsonAsync<List<RefillTaskDetailWithHeaderViewModel>>();
-                return data ?? new();
+                if (data == null || !data.Any()) return new();
+                // ✅ Dùng cache để tránh gọi lại với cùng 1 locationId
+                var locationNameCache = new Dictionary<Guid, string>();
+
+                foreach (var item in data)
+                {
+                    if (!locationNameCache.TryGetValue(item.FromLocation, out var fromName))
+                    {
+                        var fromInfo = await _locationService.GetLocationInfoAsync(item.FromLocation);
+                        fromName = fromInfo?.NameLocation ?? "(Không rõ)";
+                        locationNameCache[item.FromLocation] = fromName;
+                    }
+
+                    if (!locationNameCache.TryGetValue(item.ToLocation, out var toName))
+                    {
+                        var toInfo = await _locationService.GetLocationInfoAsync(item.ToLocation);
+                        toName = toInfo?.NameLocation ?? "(Không rõ)";
+                        locationNameCache[item.ToLocation] = toName;
+                    }
+
+                    item.FromLocationName = fromName;
+                    item.ToLocationName = toName;
+                }
+
+                return data;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "❌ Exception khi gọi GetAllDetailsAsync");
                 return new();
+            }
+        }
+
+        public async Task<List<string>> ValidateRefillScanAsync(ScanRefillTaskValidationRequest request, HttpContext httpContext)
+        {
+            var jwt = httpContext.Request.Cookies["JWTToken"];
+            if (string.IsNullOrEmpty(jwt))
+            {
+                _logger.LogWarning("❌ Không tìm thấy JWTToken.");
+                return new() { "❌ Chưa đăng nhập." };
+            }
+
+            var requestMsg = new HttpRequestMessage(HttpMethod.Post, "/api/RefillTask/validate-scan")
+            {
+                Content = JsonContent.Create(request)
+            };
+            requestMsg.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwt);
+
+            try
+            {
+                var response = await _client.SendAsync(requestMsg);
+                var result = await response.Content.ReadFromJsonAsync<List<string>>();
+                return result ?? new() { "❌ Lỗi không xác định từ server." };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Lỗi khi gọi ValidateRefillScanAsync");
+                return new() { "❌ Lỗi kết nối tới server." };
             }
         }
 

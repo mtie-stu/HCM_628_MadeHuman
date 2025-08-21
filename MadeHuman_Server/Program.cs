@@ -7,6 +7,7 @@ using MadeHuman_Server.Service.Outbound;
 using MadeHuman_Server.Service.Shop;
 using MadeHuman_Server.Service.UserTask;
 using MadeHuman_Server.Service.WareHouse;
+using MadeHuman_Server.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
@@ -94,7 +95,8 @@ builder.Services.AddSingleton<GoogleDriveService>();
 builder.Services.AddSingleton<GoogleDriveOAuthService>();
 builder.Services.AddHostedService<InventoryQuantityUpdateService>();
 builder.Services.AddHostedService<OutboundTaskBackgroundService>();
-builder.Services.AddScoped<OutboundTaskService>();
+
+builder.Services.AddScoped<IOutboundTaskServices, OutboundTaskService>();
 builder.Services.AddScoped<IProductImageService, ProductImageService>();
 builder.Services.AddScoped<IBasketService, BasketService>();
 builder.Services.AddScoped<ICheckTaskServices, CheckTaskServices>();

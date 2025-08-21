@@ -35,21 +35,51 @@ namespace MadeHuman_User.Controllers.ShopControllers
         }
 
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            return View();
+            var categories = await _categoryService.GetAllAsync(); // trả về List<CreateCategoryViewModel>
+            ViewBag.Categories = categories
+                .Select(c => new SelectListItem
+                {
+                    Value = c.CategoryId.ToString(),
+                    Text = c.Name
+                })
+                .ToList();
+
+            return View(new CreateProduct_ProdcutSKU_ViewModel());
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateProduct_ProdcutSKU_ViewModel model)
         {
             if (!ModelState.IsValid)
+            {
+                var categories = await _categoryService.GetAllAsync();
+                ViewBag.Categories = categories
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.CategoryId.ToString(),
+                        Text = c.Name
+                    })
+                    .ToList();
+
                 return View(model);
+            }
 
             var success = await _productService.CreateAsync(model);
             if (!success)
             {
                 ModelState.AddModelError(string.Empty, "Tạo sản phẩm thất bại.");
+
+                var categories = await _categoryService.GetAllAsync();
+                ViewBag.Categories = categories
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.CategoryId.ToString(),
+                        Text = c.Name
+                    })
+                    .ToList();
+
                 return View(model);
             }
 

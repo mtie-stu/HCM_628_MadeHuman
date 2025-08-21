@@ -24,7 +24,7 @@ namespace MadeHuman_User.ServicesTask.Services.ShopService
 
         public async Task<List<ProductListItemViewModel>> GetAllAsync()
         {
-            var res = await _client.GetAsync("api/Product");
+            var res = await _client.GetAsync("/api/Product");
             if (!res.IsSuccessStatusCode) return new();
 
             var products = await res.Content.ReadFromJsonAsync<List<ProductListItemViewModel>>();
@@ -34,7 +34,7 @@ namespace MadeHuman_User.ServicesTask.Services.ShopService
 
         public async Task<ProductDetailViewModel?> GetProductDetailAsync(Guid id)
         {
-            var res = await _client.GetAsync($"api/product/{id}");
+            var res = await _client.GetAsync($"/api/product/{id}");
             if (!res.IsSuccessStatusCode) return null;
 
             return await res.Content.ReadFromJsonAsync<ProductDetailViewModel>();
@@ -65,13 +65,13 @@ namespace MadeHuman_User.ServicesTask.Services.ShopService
                 }
             }
 
-            var response = await _client.PostAsync("api/Product", form);
+            var response = await _client.PostAsync("/api/Product", form);
             return response.IsSuccessStatusCode;
         }
 
         public async Task<ProductSKUInfoViewmodel?> GetSKUInfoAsync(Guid productSKUId)
         {
-            var response = await _client.GetAsync($"api/product/sku/{productSKUId}");
+            var response = await _client.GetAsync($"/api/product/sku/{productSKUId}");
 
             if (response.IsSuccessStatusCode)
             {

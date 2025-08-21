@@ -4,8 +4,11 @@
     ViewData["Title"] = "Tạo sản phẩm mới";
 }
 
+<button type="submit" class="btn btn-primary">Tạo sản phẩm</button>
 
 <form asp-action="Create" method="post" enctype="multipart/form-data">
+
+
     <div class="mb-3">
         <label asp-for="Name" class="form-label"></label>
         <input asp-for="Name" class="form-control" />
@@ -37,10 +40,13 @@
     </div>
  *@
     <div class="mb-3">
-        <label asp-for="CategoryId" class="form-label"></label>
-        <input asp-for="CategoryId" class="form-control" />
-        <span asp-validation-for="CategoryId" class="text-danger"></span>
-    </div>
+    <label asp-for="CategoryId" class="form-label"></label>
+    <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-select">
+        <option value="">-- Chọn danh mục --</option>
+    </select>
+    <span asp-validation-for="CategoryId" class="text-danger"></span>
+</div>
+
 
     <div class="mb-3">
         <label asp-for="ImageFiles" class="form-label fw-semibold">Hình ảnh</label>
@@ -56,7 +62,7 @@
     </div>
 
 
-    <button type="submit" class="btn btn-primary">Tạo sản phẩm</button>
+
     <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
 </form>
 

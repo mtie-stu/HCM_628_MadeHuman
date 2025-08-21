@@ -57,5 +57,11 @@ namespace MadeHuman_Server.Controllers.Inbound
             // Nếu có nhiều lỗi → trả 400 BadRequest
             return BadRequest(new { success = false, errors = result });
         }
+        [HttpGet]
+        public async Task<ActionResult<List<InboundTaskViewModel>>> GetAll()
+        {
+            var result = await _inboundTaskSvc.GetAllAsync();
+            return Ok(result);
+        }
     }
 }

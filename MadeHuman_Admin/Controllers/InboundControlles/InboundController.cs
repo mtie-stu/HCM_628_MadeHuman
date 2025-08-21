@@ -1,10 +1,64 @@
-﻿using MadeHuman_Admin.Models.Inbound;
+﻿using MadeHuman_Admin.ServicesTask.Services.InboundService;
+using MadeHuman_Admin.Models;
 using Microsoft.AspNetCore.Mvc;
+using Madehuman_Share.ViewModel.Inbound;
+using MadeHuman_Admin.Models.Inbound;
 
-namespace MadeHuman_Admin.Controllers
+
+namespace MadeHuman_User.Controllers.InboundControlles
 {
     public class InboundController : Controller
     {
+        private readonly IInboundTaskService _inboundTaskService;
+
+        public InboundController(IInboundTaskService inboundTaskService)
+        {
+            _inboundTaskService = inboundTaskService;
+        }
+        [HttpGet]
+        public IActionResult Import()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Import(Guid receiptId)
+        {
+            var success = await _inboundTaskService.CreateAsync(receiptId, HttpContext);
+
+            if (!success)
+            {
+                ViewBag.Error = "❌ Tạo nhiệm vụ thất bại.";
+                return View(); // Không redirect
+            }
+
+            ViewBag.Success = "✅ Tạo nhiệm vụ nhập kho thành công.";
+            ViewBag.ReceiptId = receiptId; // Gửi ID nếu muốn sử dụng sau này
+            return View(); // Giữ nguyên tại trang
+        }
+
+        [HttpGet]
+        public IActionResult ValidateScan()
+        {
+            return View(new ScanInboundTaskValidationRequest());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ValidateScan(ScanInboundTaskValidationRequest request)
+        {
+            var (success, message, errors) = await _inboundTaskService.ValidateScanAsync(request, HttpContext);
+
+            if (success)
+                ViewBag.Success = message;
+            else
+                ViewBag.Errors = errors;
+
+            return View(request);
+        }
+
+
+
+
         private static readonly List<(string ExportCode, ProductExportViewModel Product)> exportData = new()
         {
             ("EXP001", new ProductExportViewModel
@@ -32,7 +86,6 @@ namespace MadeHuman_Admin.Controllers
                 ProductItemId = "SP001",
                 ProductName = "Sản phẩm A",
                 Quantity = 100,
-                ImportedQuantity = 0,
                 LocationStorage = "Kệ A1",
                 ImageUrl = "https://via.placeholder.com/300x180.png?text=SanPham+A"
             },
@@ -42,22 +95,17 @@ namespace MadeHuman_Admin.Controllers
                 ProductItemId = "SP002",
                 ProductName = "Sản phẩm B",
                 Quantity = 50,
-                ImportedQuantity = 0,
                 LocationStorage = "Kệ A2",
                 ImageUrl = "https://via.placeholder.com/300x180.png?text=SanPham+B"
             }
         };
 
-
-
         // Trang nhập mã để quét task export
         [HttpGet]
         public IActionResult Export()
         {
-            var model = new ExportTaskViewModel();
-            return View(model); // View này phải đặt trong Views/Export/Export.cshtml hoặc Views/YourController/Export.cshtml
+            return View(new ExportTaskViewModel());
         }
-
 
         [HttpPost]
         public IActionResult Export(ExportTaskViewModel model)
@@ -104,73 +152,5 @@ namespace MadeHuman_Admin.Controllers
             ViewBag.Success = "Xuất kho thành công!";
             return View(model);
         }
-
-        [HttpGet]
-        public IActionResult Import()
-        {
-            var model = new ImportTaskViewModel();
-            return View(model);
-        }
-
-        [HttpPost]
-        public IActionResult Import(ImportTaskViewModel model)
-        {
-            // Bước 1: Lấy danh sách sản phẩm theo mã nhiệm vụ
-            model.Products = taskProducts
-                .Where(p => p.TaskCode == model.TaskCode)
-                .ToList();
-
-            if (!model.Products.Any())
-            {
-                ModelState.AddModelError("", "Không tìm thấy nhiệm vụ nhập hàng.");
-                return View(model);
-            }
-
-            // Bước 2: Nếu người dùng quét mã sản phẩm
-            if (!string.IsNullOrWhiteSpace(model.ScannedProductCode))
-            {
-                var product = model.Products.FirstOrDefault(p => p.ProductItemId == model.ScannedProductCode);
-
-                if (product == null)
-                {
-                    ModelState.AddModelError("", "Không tìm thấy sản phẩm trong nhiệm vụ này.");
-                    return View(model);
-                }
-
-                model.SelectedProduct = product;
-
-                // Bước 3: Nếu người dùng nhập số lượng
-                if (model.ScannedQuantity.HasValue)
-                {
-                    var remaining = product.Quantity - product.ImportedQuantity;
-
-                    if (remaining <= 0)
-                    {
-                        ModelState.AddModelError("", "Sản phẩm này đã được nhập đủ.");
-                        return View(model);
-                    }
-
-                    if (model.ScannedQuantity <= 0 || model.ScannedQuantity > remaining)
-                    {
-                        ModelState.AddModelError("", $"Số lượng không hợp lệ. Còn lại: {remaining}");
-                        return View(model);
-                    }
-
-                    // ✅ Nhập hàng thành công (giả lập)
-                    product.ImportedQuantity += model.ScannedQuantity.Value;
-
-                    ViewBag.Success = $"✅ Nhập thành công {model.ScannedQuantity.Value} sản phẩm: {product.ProductName}";
-
-                    // Reset để tiếp tục nhập
-                    model.ScannedProductCode = "";
-                    model.ScannedQuantity = null;
-                    model.SelectedProduct = null;
-                }
-            }
-
-            return View(model);
-        }
-
-
     }
 }

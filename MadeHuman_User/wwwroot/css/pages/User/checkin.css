@@ -1,0 +1,216 @@
+﻿/* ===== Scope & palette ===== */
+.checkin-page {
+    --accent: #ee4d2d;
+    --accent-weak: #ffede8;
+    --gray-900: #1f2937;
+    --gray-700: #374151;
+    --gray-500: #6b7280;
+    --gray-300: #d1d5db;
+    --gray-200: #e5e7eb;
+    --gray-100: #f6f4f6;
+    --radius: 18px;
+    background: #fff; /* nền trắng theo yêu cầu */
+    font-family: "Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+}
+
+/* Header banner */
+.header-banner {
+    background: linear-gradient(45deg, var(--accent), #f08a5d);
+    color: #fff;
+    padding: 1.6rem 1.2rem;
+    border-radius: 14px;
+    text-align: center;
+    box-shadow: 0 10px 24px rgba(0,0,0,.08);
+}
+
+    .header-banner .title {
+        font-weight: 800;
+        letter-spacing: .3px;
+        margin-bottom: .25rem;
+    }
+
+    .header-banner .sub {
+        opacity: .95;
+    }
+
+.clock-pill {
+    display: inline-block;
+    margin-top: .5rem;
+    padding: .25rem .6rem;
+    border-radius: 999px;
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.35);
+    font-weight: 600;
+}
+
+/* Card section */
+.card-section {
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.card-header-orange {
+    background: var(--accent);
+    color: #fff;
+}
+
+/* Buttons */
+.btn-orange {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: .6rem 1rem;
+    font-weight: 600;
+}
+
+    .btn-orange:hover {
+        filter: brightness(.95);
+    }
+
+    .btn-orange[disabled] {
+        opacity: .75;
+    }
+
+/* Inputs with icons */
+.with-icon {
+    position: relative;
+}
+
+    .with-icon .bi {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--accent);
+    }
+
+    .with-icon .form-control {
+        padding-left: 40px;
+    }
+
+.form-control, .form-select {
+    border: 1.5px solid var(--gray-200);
+    border-radius: 12px;
+}
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 .2rem rgba(238,77,45,.12);
+    }
+
+/* Break field smooth expand */
+.collapse-anim {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height .25s ease, opacity .2s ease;
+}
+
+    .collapse-anim.show {
+        max-height: 120px;
+        opacity: 1;
+    }
+
+/* Badges (trắng–cam–xám) */
+.badge {
+    border-radius: 999px;
+    padding: .35rem .6rem;
+    font-weight: 700;
+}
+
+.badge-checkin {
+    background: var(--accent);
+    color: #fff;
+}
+/* cam */
+.badge-checkout {
+    background: #e5e7eb;
+    color: #374151;
+}
+/* xám nhạt */
+.badge-overtime {
+    background: var(--accent-weak);
+    color: var(--accent);
+}
+/* cam nhạt */
+
+/* ===== TABLE: gọn lại + chữ to hơn + header sticky ===== */
+.table-wrap { /* giới hạn bề rộng & căn giữa */
+    max-width: 920px; /* đổi 840px/760px nếu muốn hẹp hơn */
+    margin: 0 auto;
+}
+
+.scroll-table { /* vùng cuộn */
+    max-height: 360px;
+    overflow: auto;
+    border-radius: 12px;
+}
+
+.table {
+    font-size: 15.5px; /* chữ lớn, dễ đọc */
+    --bs-table-border-color: var(--gray-200);
+}
+
+    .table td, .table th {
+        padding: .6rem .8rem;
+    }
+
+    .table thead th {
+        background: #f3f4f6 !important; /* gray-100 */
+        color: #374151; /* gray-700 */
+        font-weight: 700;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+.scroll-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: #f3f4f6 !important;
+}
+
+/* Inline toast */
+.inline-alert {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1080;
+    min-width: 240px;
+    border-radius: 12px;
+    padding: .75rem 1rem;
+    border: 1px solid transparent;
+    box-shadow: 0 10px 24px rgba(0,0,0,.1);
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity .2s ease, transform .2s ease;
+}
+
+    .inline-alert.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .inline-alert.success {
+        background: #ecfdf5;
+        border-color: #d1fae5;
+        color: #065f46;
+    }
+
+    .inline-alert.error {
+        background: #fef2f2;
+        border-color: #fee2e2;
+        color: #991b1b;
+    }
+
+/* Small */
+.section-title {
+    font-weight: 700;
+    color: var(--gray-900);
+}
+
+.alert {
+    border-radius: 12px;
+}
