@@ -171,3 +171,75 @@
     border-radius: 6px;
     font-size: .85rem;
 }
+/* Thu nhỏ form, phóng to panel thông tin */
+.form-card--narrow {
+    max-width: 640px;
+    margin-left: auto;
+}
+
+.task-card--wide { /* card thông tin lớn hơn, chữ thoáng hơn */
+}
+
+    .task-card--wide .card-title {
+        font-size: 1.15rem;
+    }
+
+    .task-card--wide .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: .5rem 1rem;
+        font-size: .975rem;
+    }
+
+/* Bảng đọc rõ hơn và có header sticky */
+.table-wrap {
+    max-height: 56vh;
+    overflow: auto;
+}
+
+.table--dense th,
+.table--dense td {
+    padding: .55rem .75rem;
+}
+
+.table-head-sticky {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 1;
+}
+
+/* Chip SKU to hơn một chút */
+.sku-chip {
+    display: inline-block;
+    padding: .15rem .5rem;
+    border-radius: 999px;
+    background: #f6f7f8;
+    font-weight: 600;
+    font-size: .9rem;
+}
+
+/* Tinh chỉnh form cho gọn */
+.form-card--narrow .form-label {
+    font-weight: 600;
+}
+
+.form-card--narrow .input-wrap i {
+    opacity: .75;
+}
+
+.form-card--narrow .form-control {
+    padding-top: .55rem;
+    padding-bottom: .55rem;
+}
+
+/* Responsive */
+@media (max-width: 991.98px) {
+    .task-card--wide .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .table-wrap {
+        max-height: none;
+    }
+}

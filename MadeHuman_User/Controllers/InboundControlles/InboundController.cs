@@ -39,30 +39,73 @@ namespace MadeHuman_User.Controllers.InboundControlles
             return View(); // Giữ nguyên tại trang
         }
 
+        //[HttpGet]
+        //public IActionResult ValidateScan(Guid? inboundTaskId = null)
+        //{
+        //    var vm = new ScanInboundTaskValidationRequest();
+
+        //    if (inboundTaskId.HasValue)
+        //        vm.InboundTaskId = inboundTaskId.Value; // gán vào ViewModel
+
+        //    return View(vm); // truyền sang View => tự đổ vào input
+        //}
+
+
+        //[HttpPost]
+        //public async Task<IActionResult> ValidateScan(ScanInboundTaskValidationRequest request)
+        //{
+        //    var (success, message, errors) = await _inboundTaskService.ValidateScanAsync(request, HttpContext);
+
+        //    if (success)
+        //        ViewBag.Success = message;
+        //    else
+        //        ViewBag.Errors = errors;
+
+        //    return View(request);
+        //}
         [HttpGet]
-        public IActionResult ValidateScan(Guid? inboundTaskId = null)
+        public async Task<IActionResult> ValidateScan(Guid? inboundTaskId = null)
         {
-            var vm = new ScanInboundTaskValidationRequest();
+            var vm = new InboundValidatePageViewModel { ScanRequest = new ScanInboundTaskValidationRequest() };
 
             if (inboundTaskId.HasValue)
-                vm.InboundTaskId = inboundTaskId.Value; // gán vào ViewModel
-
-            return View(vm); // truyền sang View => tự đổ vào input
+            {
+                vm.ScanRequest.InboundTaskId = inboundTaskId.Value;
+                vm.TaskInfo = await _inboundTaskService.GetByIdAsync(inboundTaskId.Value, HttpContext);
+            }
+            return View(vm);
         }
-
 
         [HttpPost]
-        public async Task<IActionResult> ValidateScan(ScanInboundTaskValidationRequest request)
+        public async Task<IActionResult> ValidateScan(InboundValidatePageViewModel vm)
         {
-            var (success, message, errors) = await _inboundTaskService.ValidateScanAsync(request, HttpContext);
+            var (success, message, errors) =
+                await _inboundTaskService.ValidateScanAsync(vm.ScanRequest, HttpContext);
 
-            if (success)
-                ViewBag.Success = message;
-            else
-                ViewBag.Errors = errors;
+            if (success) ViewBag.Success = message;
+            else ViewBag.Errors = errors;
 
-            return View(request);
+            // ✅ Luôn load lại thông tin InboundTask
+            if (vm.ScanRequest.InboundTaskId != Guid.Empty)
+            {
+                vm.TaskInfo = await _inboundTaskService.GetByIdAsync(vm.ScanRequest.InboundTaskId, HttpContext);
+
+                // 👉 Nếu tất cả ProductBatches đã có trạng thái "Store" thì redirect về Index
+                if (vm.TaskInfo != null
+                    && vm.TaskInfo.ProductBatches != null
+                    && vm.TaskInfo.ProductBatches.All(b => b.StatusProductBatch.Equals("Stored", StringComparison.OrdinalIgnoreCase)))
+                {
+                    // Có thể set TempData để báo thành công
+                    TempData["Success"] = "✅ Tất cả lô đã được lưu kho thành công.";
+                    return RedirectToAction("Index", "Inbound");
+                }
+            }
+
+            return View(vm);
         }
+
+
+
         public async Task<IActionResult> Index()
         {
             var token = Request.Cookies["JWTToken"] ?? "";

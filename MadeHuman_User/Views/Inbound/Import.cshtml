@@ -180,7 +180,7 @@
           }
 
           // ===== Config =====
-          const API_BASE = 'https://hcm-628-madehuman-api.onrender.com';
+          const API_BASE = 'https://localhost:7204/';
 
           // ===== Elements =====
           const receiptInput = qs('#receiptIdInput');
@@ -207,7 +207,7 @@
             items.forEach((item) => {
               // 1) Tên SKU ưu tiên field phẳng
               let skuName =
-                getAny(item, ['productSKUName','ProductSKUName','productSkuName','skuName','SKU','sku']);
+                getAny(item, ['productSKUName','ProductSKUName','productSkuName','skuName','SKU','sku','Items']);
 
               // 2) Fallback nếu là object lồng productSKUs/ProductSKUs
               if (!skuName) {
@@ -223,7 +223,7 @@
               li.className = 'list-group-item d-flex justify-content-between align-items-center';
               li.innerHTML = `
                 <div class="sku-wrap">
-                  <span class="sku-chip"><i class="bi bi-upc"></i>${skuName || '(Không có tên)'}</span>
+                  <span class="sku-chip"><i class="bi bi-upc"></i>${skuName}</span>
                   ${skuId ? `<div class="sku-id">ID: ${skuId}</div>` : ''}
                 </div>
                 <span class="qty-chip">${qty}</span>
@@ -245,7 +245,7 @@
             }
             setLoading(true);
 
-            jQuery.getJSON(`${API_BASE}/api/InboundReceipt/${id}`)
+            jQuery.getJSON(`${API_BASE}api/InboundReceipt/${id}`)
               .done(function (data) {
                 setLoading(false);
 

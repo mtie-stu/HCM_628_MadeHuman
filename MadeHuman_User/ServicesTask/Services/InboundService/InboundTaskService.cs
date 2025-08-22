@@ -8,6 +8,8 @@ namespace MadeHuman_User.ServicesTask.Services.InboundService
         Task<bool> CreateAsync(Guid receiptId, HttpContext httpContext);
         Task<List<InboundTaskViewModel>> GetAllAsync(string token);
         Task<(bool Success, string? Message, List<string>? Errors)> ValidateScanAsync(ScanInboundTaskValidationRequest request, HttpContext httpContext);
+        // ✅ Thêm hàm GetById
+        Task<GetInboundTaskById_Viewmodel?> GetByIdAsync(Guid inboundTaskId, HttpContext httpContext);
     }
 
     public class InboundTaskService : IInboundTaskService
@@ -91,6 +93,38 @@ namespace MadeHuman_User.ServicesTask.Services.InboundService
 
             var data = await response.Content.ReadFromJsonAsync<List<InboundTaskViewModel>>();
             return data ?? new List<InboundTaskViewModel>();
+        }
+        public async Task<GetInboundTaskById_Viewmodel?> GetByIdAsync(Guid inboundTaskId, HttpContext httpContext)
+        {
+            // Lấy JWT từ cookie
+            var token = httpContext.Request.Cookies["JWTToken"];
+            if (string.IsNullOrEmpty(token))
+            {
+                Console.WriteLine("❌ Không tìm thấy token người dùng khi gọi GetByIdAsync.");
+                return null;
+            }
+
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/api/InboundTask/{inboundTaskId}");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(request);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                // API của bạn đang trả NotFound("Không tìm thấy InboundTask.")
+                return null;
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var err = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("❌ Lỗi GetByIdAsync: " + err);
+                return null;
+            }
+
+            // Map về ViewModel đã có sẵn ở share project
+            var data = await response.Content.ReadFromJsonAsync<GetInboundTaskById_Viewmodel>();
+            return data;
         }
 
 
