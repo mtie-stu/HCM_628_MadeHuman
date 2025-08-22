@@ -18,11 +18,10 @@ namespace Madehuman_Share.ViewModel.Inbound.InboundReceipt
 
         public List<InboundReceiptItemDetail> Items { get; set; } = new();
     }
-
     public class InboundReceiptItemDetail
     {
         public Guid ProductSKUId { get; set; }
-        public string? ProductSKUName { get; set; } // cần lấy tên SKU từ ProductSKU
+        public string ProductSKUName { get; set; } // cần lấy tên SKU từ ProductSKU
         public int Quantity { get; set; }
     }
 

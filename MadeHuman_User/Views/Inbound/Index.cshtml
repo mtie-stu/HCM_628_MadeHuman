@@ -2,44 +2,198 @@
 
 @{
     ViewData["Title"] = "Danh sách Inbound Tasks";
+
+    var total = Model?.Count ?? 0;
+    var completed = Model?.Count(x => x.Status == "Completed") ?? 0;
+    var pending = total - completed;
 }
 
-<h2 class="mb-4">📋 Danh sách Inbound Tasks</h2>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+<link rel="stylesheet" href="~/css/pages/Inbound/inbound-index.css" asp-append-version="true" />
 
-@if (!Model.Any(x => x.Status != "Completed"))
-{
-    <div class="alert alert-info">Tất cả nhiệm vụ đều đã hoàn tất.</div>
-}
-else
-{
-    <table class="table table-bordered table-hover table-striped">
-        <thead class="table-dark">
-            <tr>
-                <th>ID</th>
-                <th>Người tạo</th>
-                <th>Ngày tạo</th>
-                @* <th>Trạng thái</th> *@
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var task in Model.Where(x => x.Status != "Completed"))
-            {
-                <tr>
-                    <td>@task.Id</td>
-                    <td>@task.CreateBy</td>
-                    <td>@task.CreateAt.ToString("dd/MM/yyyy HH:mm")</td>
-                    @* <td>@task.Status</td> *@
-                    <td>
-                        <a asp-controller="Inbound" asp-action="ValidateScan"
-                           asp-route-inboundTaskId="@task.Id"
-                           class="btn btn-sm btn-outline-success">
-                            <i class="bi bi-upc-scan"></i> Validate Scan
-                        </a>
+<div class="inbound-page">
+    <div class="container mt-4">
 
-                    </td>
-                </tr>
+        <!-- Header / Banner -->
+        <div class="page-head">
+            <div>
+                <h2 class="page-title"><i class="bi bi-truck"></i> Danh sách Inbound Tasks</h2>
+                <div class="page-subtext">Theo dõi & xử lý nhiệm vụ nhập kho một cách nhanh chóng.</div>
+            </div>
+
+            <div class="toolbar">
+                <div class="filter-row">
+                    <div class="input-search with-icon">
+                        <i class="bi bi-search"></i>
+                        <input id="searchBox" class="form-control" placeholder="Tìm theo ID hoặc người tạo..." />
+                    </div>
+
+                    <select id="statusFilter" class="form-select">
+                        <option value="">Tất cả</option>
+                        <option value="Incomplete" selected>Đang xử lý</option>
+                        <option value="Completed">Đã hoàn thành</option>
+                    </select>
+
+                    <button id="btnClear" class="btn btn-outline">
+                        <i class="bi bi-eraser"></i> Xoá lọc
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-ico"><i class="bi bi-collection"></i></div>
+                <div class="stat-meta">
+                    <div class="label">Tổng nhiệm vụ</div>
+                    <div class="value">@total</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-ico"><i class="bi bi-hourglass-split"></i></div>
+                <div class="stat-meta">
+                    <div class="label">Đang xử lý</div>
+                    <div class="value">@pending</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-ico"><i class="bi bi-check2-circle"></i></div>
+                <div class="stat-meta">
+                    <div class="label">Đã hoàn thành</div>
+                    <div class="value">@completed</div>
+                </div>
+            </div>
+        </div>
+
+        @if (total == 0)
+        {
+            <div class="alert alert-warning">
+                <i class="bi bi-info-circle"></i> Chưa có nhiệm vụ nào.
+            </div>
+        }
+        else
+        {
+            <div class="table-wrap card shadow-sm">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="taskTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Người tạo</th>
+                                <th>Ngày tạo</th>
+                                <th>Trạng thái</th>
+                                <th class="text-end">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var task in Model.OrderByDescending(x => x.CreateAt))
+                            {
+                                var isCompleted = string.Equals(task.Status, "Completed", StringComparison.OrdinalIgnoreCase);
+                                var badge = isCompleted ? "text-bg-success" : "text-bg-warning";
+                                <tr data-status="@task.Status"
+                                    data-search="@(task.Id.ToString() + " " + (task.CreateBy ?? ""))">
+                                    <td><span class="id-chip">@task.Id</span></td>
+                                    <td>@task.CreateBy</td>
+                                    <td>@task.CreateAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td><span class="badge @badge">@task.Status</span></td>
+                                    <td class="text-end">
+                                        <a asp-controller="Inbound"
+                                           asp-action="ValidateScan"
+                                           asp-route-inboundTaskId="@task.Id"
+                                           class="btn btn-orange btn-sm btn-validate @(isCompleted ? "disabled" : "")"
+                                           aria-disabled="@(isCompleted ? "true" : null)"
+                                           tabindex="@(isCompleted ? "-1" : null)">
+                                            <i class="bi bi-upc-scan me-1"></i>
+                                            <span>Validate Scan</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @* Thông báo nếu chỉ còn Completed *@
+                <div id="emptyHint" class="p-3 d-none">
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-check2-all"></i> Không còn nhiệm vụ đang xử lý theo bộ lọc hiện tại.
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Inline toast -->
+    <div id="inlineAlert" class="inline-alert d-none"></div>
+</div>
+
+@section Scripts {
+    <script>
+        (function(){
+          const $ = (sel, ctx=document) => ctx.querySelector(sel);
+          const all = (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel));
+
+          const statusFilter = $('#statusFilter');
+          const searchBox = $('#searchBox');
+          const table = $('#taskTable');
+          const rows = () => all('tbody tr', table);
+          const emptyHint = $('#emptyHint');
+          const toast = $('#inlineAlert');
+
+          function showToast(type, text){
+            toast.className = 'inline-alert ' + (type==='success'?'success':'error');
+            toast.textContent = text;
+            toast.classList.remove('d-none');
+            requestAnimationFrame(()=> toast.classList.add('show'));
+            setTimeout(()=>{ toast.classList.remove('show'); setTimeout(()=> toast.classList.add('d-none'), 160); }, 2000);
+          }
+
+          function applyFilter(){
+            const st = statusFilter.value;                  // "", "Incomplete", "Completed"
+            const kw = (searchBox.value || '').trim().toLowerCase();
+
+            let visible = 0;
+            rows().forEach(tr => {
+              const rowSt = (tr.getAttribute('data-status') || '');
+              const hay   = (tr.getAttribute('data-search') || '').toLowerCase();
+              const passStatus = !st || (st === 'Incomplete' ? rowSt !== 'Completed' : rowSt === st);
+              const passKw     = !kw || hay.includes(kw);
+              const show = passStatus && passKw;
+              tr.style.display = show ? '' : 'none';
+              if (show) visible++;
+            });
+
+            emptyHint?.classList.toggle('d-none', visible !== 0);
+          }
+
+          statusFilter?.addEventListener('change', applyFilter);
+          searchBox?.addEventListener('input', ()=> {
+            // debounce nhẹ
+            clearTimeout(searchBox._t);
+            searchBox._t = setTimeout(applyFilter, 120);
+          });
+          $('#btnClear')?.addEventListener('click', ()=>{
+            statusFilter.value = 'Incomplete';
+            searchBox.value = '';
+            applyFilter();
+          });
+
+          // spinner cho validate
+          table?.addEventListener('click', function(e){
+            const a = e.target.closest('.btn-validate');
+            if (!a) return;
+            if (a.getAttribute('aria-disabled') === 'true') {
+              e.preventDefault();
+              showToast('error','Nhiệm vụ đã hoàn thành.');
+              return;
             }
-        </tbody>
-    </table>
+            a.classList.add('loading');
+            a.setAttribute('aria-disabled','true');
+          });
+
+          // khởi tạo: mặc định hiển thị "Đang xử lý"
+          applyFilter();
+        })();
+    </script>
 }

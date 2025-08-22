@@ -1,0 +1,245 @@
+﻿/* Scope */
+.inbound-validate-page {
+    --orange: #ee4d2d;
+    --gray-100: #f7f7f8;
+    --gray-200: #ececec;
+    --gray-500: #828282;
+    --text: #1f2328;
+    --shadow: 0 6px 18px rgba(0,0,0,.06);
+    color: var(--text);
+}
+
+    /* Typography & base */
+    .inbound-validate-page .page-title {
+        font-weight: 700;
+        letter-spacing: .2px;
+        margin: 0;
+    }
+
+    .inbound-validate-page .page-subtext {
+        font-size: .95rem;
+    }
+
+    /* Chips */
+    .inbound-validate-page .step-chips .chip {
+        background: var(--gray-100);
+        color: #444;
+        border: 1px solid var(--gray-200);
+        padding: .35rem .75rem;
+        border-radius: 999px;
+        font-size: .9rem;
+        margin-left: .5rem;
+        transition: .2s ease;
+    }
+
+        .inbound-validate-page .step-chips .chip.active {
+            background: #fff;
+            color: var(--orange);
+            border-color: var(--orange);
+            box-shadow: var(--shadow);
+        }
+
+    /* Cards */
+    .inbound-validate-page .card {
+        border: 1px solid var(--gray-200);
+        border-radius: 18px;
+    }
+
+    .inbound-validate-page .form-card:hover,
+    .inbound-validate-page .info-card:hover {
+        transform: translateY(-2px);
+        transition: transform .2s ease;
+    }
+
+    /* Inputs with icon */
+    .inbound-validate-page .input-wrap {
+        position: relative;
+    }
+
+        .inbound-validate-page .input-wrap > i {
+            position: absolute;
+            left: .85rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-500);
+            pointer-events: none;
+        }
+
+        .inbound-validate-page .input-wrap .form-control {
+            padding-left: 2.4rem;
+            height: 44px;
+            border-radius: 12px;
+            border: 1px solid var(--gray-200);
+            background: #fff;
+            transition: box-shadow .2s ease, border-color .2s ease;
+        }
+
+            .inbound-validate-page .input-wrap .form-control:focus {
+                border-color: var(--orange);
+                box-shadow: 0 0 0 4px rgba(238,77,45,.12);
+            }
+
+    /* Labels */
+    .inbound-validate-page .form-label {
+        font-weight: 600;
+        margin-bottom: .35rem;
+    }
+
+    /* Required mark */
+    .inbound-validate-page .req {
+        color: var(--orange);
+    }
+
+    /* Buttons */
+    .inbound-validate-page .btn-orange {
+        position: relative;
+        overflow: hidden;
+        background: var(--orange);
+        border: none;
+        color: #fff;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        transition: transform .05s ease, filter .2s ease;
+    }
+
+        .inbound-validate-page .btn-orange:hover {
+            filter: brightness(1.02);
+        }
+
+        .inbound-validate-page .btn-orange:active {
+            transform: translateY(1px) scale(.995);
+        }
+
+        .inbound-validate-page .btn-orange .btn-ripple {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: rgba(255,255,255,.6);
+            border-radius: 50%;
+            transform: scale(0);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+            .inbound-validate-page .btn-orange .btn-ripple.show {
+                animation: ripple .5s ease-out forwards;
+            }
+
+@keyframes ripple {
+    from {
+        transform: scale(0);
+        opacity: .7;
+    }
+
+    to {
+        transform: scale(25);
+        opacity: 0;
+    }
+}
+
+/* Alerts */
+.inbound-validate-page .alert {
+    border-radius: 14px;
+}
+
+.inbound-validate-page .fade-in {
+    animation: fadeIn .25s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Utilities */
+.inbound-validate-page .text-orange {
+    color: var(--orange);
+}
+
+.inbound-validate-page kbd {
+    background: var(--gray-100);
+    border: 1px solid var(--gray-200);
+    border-bottom-width: 2px;
+    padding: .1rem .35rem;
+    border-radius: 6px;
+    font-size: .85rem;
+}
+/* Thu nhỏ form, phóng to panel thông tin */
+.form-card--narrow {
+    max-width: 640px;
+    margin-left: auto;
+}
+
+.task-card--wide { /* card thông tin lớn hơn, chữ thoáng hơn */
+}
+
+    .task-card--wide .card-title {
+        font-size: 1.15rem;
+    }
+
+    .task-card--wide .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: .5rem 1rem;
+        font-size: .975rem;
+    }
+
+/* Bảng đọc rõ hơn và có header sticky */
+.table-wrap {
+    max-height: 56vh;
+    overflow: auto;
+}
+
+.table--dense th,
+.table--dense td {
+    padding: .55rem .75rem;
+}
+
+.table-head-sticky {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 1;
+}
+
+/* Chip SKU to hơn một chút */
+.sku-chip {
+    display: inline-block;
+    padding: .15rem .5rem;
+    border-radius: 999px;
+    background: #f6f7f8;
+    font-weight: 600;
+    font-size: .9rem;
+}
+
+/* Tinh chỉnh form cho gọn */
+.form-card--narrow .form-label {
+    font-weight: 600;
+}
+
+.form-card--narrow .input-wrap i {
+    opacity: .75;
+}
+
+.form-card--narrow .form-control {
+    padding-top: .55rem;
+    padding-bottom: .55rem;
+}
+
+/* Responsive */
+@media (max-width: 991.98px) {
+    .task-card--wide .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .table-wrap {
+        max-height: none;
+    }
+}
