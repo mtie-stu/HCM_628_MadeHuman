@@ -9,15 +9,15 @@
     --gray-200: #e5e7eb;
     --gray-100: #f6f4f6;
     --radius: 18px;
-    background: #fff; /* nền trắng theo yêu cầu */
+    background: #fff;
     font-family: "Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
 }
 
-/* Header banner */
+/* ===== Header banner ===== */
 .header-banner {
     background: linear-gradient(45deg, var(--accent), #f08a5d);
     color: #fff;
-    padding: 1.6rem 1.2rem;
+    padding: 1.25rem 1rem; /* gọn hơn */
     border-radius: 14px;
     text-align: center;
     box-shadow: 0 10px 24px rgba(0,0,0,.08);
@@ -26,7 +26,7 @@
     .header-banner .title {
         font-weight: 800;
         letter-spacing: .3px;
-        margin-bottom: .25rem;
+        margin-bottom: .2rem;
     }
 
     .header-banner .sub {
@@ -43,38 +43,73 @@
     font-weight: 600;
 }
 
-/* Card section */
+/* ===== Cards ===== */
 .card-section {
     background: #fff;
     border: 1px solid var(--gray-200);
     border-radius: 16px;
     overflow: hidden;
+    transition: transform .15s ease, box-shadow .15s ease;
 }
+
+    .card-section:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px rgba(0,0,0,.08);
+    }
 
 .card-header-orange {
     background: var(--accent);
     color: #fff;
 }
 
-/* Buttons */
+/* ===== Buttons ===== */
 .btn-orange {
     background: var(--accent);
     color: #fff;
     border: none;
     border-radius: 12px;
-    padding: .6rem 1rem;
-    font-weight: 600;
+    padding: .55rem .9rem; /* gọn hơn */
+    font-weight: 700;
+    transition: filter .15s ease, transform .04s ease;
 }
 
     .btn-orange:hover {
-        filter: brightness(.95);
+        filter: brightness(.96);
+    }
+
+    .btn-orange:active {
+        transform: translateY(1px);
     }
 
     .btn-orange[disabled] {
         opacity: .75;
     }
 
-/* Inputs with icons */
+    /* Ripple (áp dụng khi nút có class .ripple) */
+    .btn-orange.ripple {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-orange .btn-ripple {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        pointer-events: none;
+        background: rgba(255,255,255,.9);
+        transform: translate(-50%,-50%) scale(0);
+        animation: btnr .6s ease-out forwards;
+    }
+
+@keyframes btnr {
+    to {
+        transform: translate(-50%,-50%) scale(16);
+        opacity: 0;
+    }
+}
+
+/* ===== Inputs with icons ===== */
 .with-icon {
     position: relative;
 }
@@ -94,6 +129,7 @@
 .form-control, .form-select {
     border: 1.5px solid var(--gray-200);
     border-radius: 12px;
+    transition: border-color .15s ease, box-shadow .15s ease;
 }
 
     .form-control:focus, .form-select:focus {
@@ -101,7 +137,28 @@
         box-shadow: 0 0 0 .2rem rgba(238,77,45,.12);
     }
 
-/* Break field smooth expand */
+/* Nút tiện ích trong input (ví dụ nút dán clipboard) */
+.input-with-icon .icon-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    border: none;
+    background: transparent;
+    color: #6b7280;
+}
+
+    .input-with-icon .icon-btn:hover {
+        background: #f3f4f6;
+        color: #111827;
+    }
+
+/* ===== Break field smooth expand ===== */
 .collapse-anim {
     overflow: hidden;
     max-height: 0;
@@ -114,7 +171,30 @@
         opacity: 1;
     }
 
-/* Badges (trắng–cam–xám) */
+/* ===== Chips (nếu có dùng) ===== */
+.chip {
+    border: 1px solid var(--gray-200);
+    background: #fff;
+    color: var(--gray-700);
+    border-radius: 999px;
+    padding: .32rem .75rem;
+    font-weight: 700;
+    transition: all .15s ease;
+}
+
+    .chip:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: var(--accent-weak);
+    }
+
+    .chip.active {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+    }
+
+/* ===== Badges ===== */
 .badge {
     border-radius: 999px;
     padding: .35rem .6rem;
@@ -137,30 +217,30 @@
 }
 /* cam nhạt */
 
-/* ===== TABLE: gọn lại + chữ to hơn + header sticky ===== */
-.table-wrap { /* giới hạn bề rộng & căn giữa */
-    max-width: 920px; /* đổi 840px/760px nếu muốn hẹp hơn */
+/* ===== Table (gọn + sticky head) ===== */
+.table-wrap {
+    max-width: 900px;
     margin: 0 auto;
 }
-
-.scroll-table { /* vùng cuộn */
-    max-height: 360px;
+/* hẹp nhẹ cho tập trung nội dung */
+.scroll-table {
+    max-height: 340px; /* gọn hơn 1 chút */
     overflow: auto;
     border-radius: 12px;
 }
 
 .table {
-    font-size: 15.5px; /* chữ lớn, dễ đọc */
+    font-size: 15px;
     --bs-table-border-color: var(--gray-200);
 }
 
     .table td, .table th {
-        padding: .6rem .8rem;
+        padding: .55rem .75rem;
     }
 
     .table thead th {
-        background: #f3f4f6 !important; /* gray-100 */
-        color: #374151; /* gray-700 */
+        background: #f3f4f6 !important;
+        color: #374151;
         font-weight: 700;
         border-bottom: 1px solid #e5e7eb;
     }
@@ -172,7 +252,12 @@
     background: #f3f4f6 !important;
 }
 
-/* Inline toast */
+.table tbody tr:hover {
+    background: #fff7f4;
+}
+/* hover nhè nhẹ tone cam */
+
+/* ===== Inline toast ===== */
 .inline-alert {
     position: fixed;
     top: 1rem;
@@ -205,7 +290,90 @@
         color: #991b1b;
     }
 
-/* Small */
+/* ===== Timeline (nếu bật chế độ timeline) ===== */
+.timeline {
+    position: relative;
+    padding-left: 10px;
+}
+
+    .timeline::before {
+        content: "";
+        position: absolute;
+        left: 22px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #eee;
+    }
+
+.timeline-item {
+    position: relative;
+    display: flex;
+    gap: 12px;
+    padding: 10px 0 10px 6px;
+}
+
+    .timeline-item .dot {
+        position: absolute;
+        left: 14px;
+        top: 18px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #fff;
+        border: 3px solid #d1d5db;
+    }
+
+    .timeline-item.in .dot {
+        border-color: var(--accent);
+    }
+
+    .timeline-item.out .dot {
+        border-color: #6b7280;
+    }
+
+    .timeline-item .content {
+        margin-left: 26px;
+        width: 100%;
+    }
+
+    .timeline-item .time {
+        font-weight: 800;
+        color: #111827;
+    }
+
+    .timeline-item .meta {
+        margin: .25rem 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: .35rem;
+    }
+
+    .timeline-item .chip {
+        border: 1px dashed #e5e7eb;
+        border-radius: 999px;
+        padding: .18rem .55rem;
+        font-weight: 600;
+    }
+
+    .timeline-item .chip-ot {
+        background: var(--accent-weak);
+        color: var(--accent);
+        border-color: #ffd5c9;
+    }
+
+    .timeline-item .label {
+        margin-top: .1rem;
+    }
+
+/* ===== View switch active ===== */
+.btn-group .btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
+
+/* ===== Small ===== */
 .section-title {
     font-weight: 700;
     color: var(--gray-900);
@@ -213,4 +381,212 @@
 
 .alert {
     border-radius: 12px;
+}
+/* ==== Nice Select (trắng–cam–xám) ==== */
+.select-decor {
+    position: relative;
+}
+
+    .select-decor > .bi {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--accent);
+        font-size: 18px;
+    }
+
+/* Làm “đẹp” select, có icon trái + chừa chỗ caret phải */
+.nice-select {
+    appearance: none; /* ẩn arrow mặc định */
+    padding-left: 44px; /* chừa icon trái */
+    padding-right: 44px; /* chừa caret phải */
+    min-height: 44px; /* cao vừa tay */
+    border-radius: 12px;
+    border: 1.5px solid var(--gray-200);
+    background-color: #fff;
+    color: var(--gray-900);
+    font-weight: 600;
+    transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+
+    .nice-select:hover {
+        border-color: var(--accent);
+        background-color: #fff7f4; /* hơi ngả cam khi hover */
+    }
+
+    .nice-select:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 .2rem rgba(238,77,45,.12);
+        outline: none;
+    }
+
+/* Caret custom bên phải */
+.select-caret {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    color: var(--gray-700);
+    pointer-events: none; /* chỉ trang trí */
+    transition: background-color .15s ease, color .15s ease;
+}
+
+.select-decor:hover .select-caret {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+/* Caret quay khi focus vào select */
+.select-decor .nice-select:focus ~ .select-caret i {
+    transform: rotate(180deg);
+    transition: transform .18s ease;
+}
+
+/* Nhỏ gọn hơn một nấc nếu cần */
+.nice-select.nice-select--sm {
+    min-height: 40px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+/* Tùy chọn: trạng thái lỗi (nếu MVC gắn class input-validation-error) */
+.nice-select.input-validation-error {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 .2rem rgba(239,68,68,.10);
+}
+/* ==== MH Select (custom dropdown) ==== */
+.mh-select-wrap {
+    position: relative;
+}
+
+.mh-select-src {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0; /* ẩn nhưng vẫn submit */
+}
+
+.mh-select {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 44px;
+    text-align: left;
+    padding: .55rem .9rem;
+    padding-left: 44px;
+    padding-right: 44px;
+    border-radius: 12px;
+    border: 1.5px solid var(--gray-200);
+    background: #fff;
+    color: var(--gray-900);
+    font-weight: 700;
+    cursor: pointer;
+    transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+
+    .mh-select:hover {
+        border-color: var(--accent);
+        background: #fff7f4;
+    }
+
+    .mh-select:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 .2rem rgba(238,77,45,.12);
+        border-color: var(--accent);
+    }
+
+    .mh-select.is-open .mh-select__caret i {
+        transform: rotate(180deg);
+        transition: transform .18s ease;
+    }
+
+.mh-select__caret {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    color: var(--gray-700);
+    pointer-events: none;
+}
+
+/* menu */
+.mh-select__menu {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 6px);
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    box-shadow: 0 10px 24px rgba(0,0,0,.08);
+    padding: 6px;
+    margin: 0;
+    list-style: none;
+    z-index: 2000;
+    display: none;
+    max-height: 260px;
+    overflow: auto;
+}
+
+    .mh-select__menu.show {
+        display: block;
+    }
+
+    .mh-select__menu li {
+        border-radius: 10px;
+        padding: .5rem .6rem;
+        font-weight: 600;
+        color: #111827;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+    }
+
+        .mh-select__menu li .op-muted {
+            color: #6b7280;
+        }
+
+        .mh-select__menu li:hover {
+            background: #fff1eb;
+        }
+
+        .mh-select__menu li.is-active {
+            background: #fff1eb;
+            border: 1px dashed #ffd5c9;
+        }
+
+        .mh-select__menu li[aria-selected="true"] {
+            background: var(--accent-weak);
+            color: var(--accent);
+        }
+
+/* icon trái (kế thừa from .with-icon) giữ nguyên vị trí */
+.mh-select-wrap > .bi {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--accent);
+    font-size: 18px;
+}
+
+/* nhỏ gọn hơn (tuỳ chọn) */
+.mh-select.mh-sm {
+    min-height: 40px;
+    padding-top: .4rem;
+    padding-bottom: .4rem;
 }

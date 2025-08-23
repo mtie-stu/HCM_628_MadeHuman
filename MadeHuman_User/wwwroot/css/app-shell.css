@@ -1,0 +1,214 @@
+﻿/* ===== Theme ===== */
+:root {
+    --accent: #ee4d2d;
+    --accent-weak: #ffede8;
+    --g900: #1f2937;
+    --g700: #374151;
+    --g600: #4b5563;
+    --g500: #6b7280;
+    --g300: #d1d5db;
+    --g200: #e5e7eb;
+    --g100: #f6f8fa;
+    --radius: 16px;
+}
+
+body {
+    font-family: "Poppins","Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    color: var(--g900);
+}
+
+/* ===== Topbar ===== */
+header {
+    background: linear-gradient(180deg,#fff,rgba(255,255,255,.92));
+    border-bottom: 1px solid var(--g200);
+    backdrop-filter: blur(6px);
+}
+
+    header .fa-bell {
+        transition: transform .12s ease;
+    }
+
+        header .fa-bell:hover {
+            transform: scale(1.1);
+        }
+
+/* Accent helpers */
+.text-accent, .text-orange, .text-purple {
+    color: var(--accent) !important;
+}
+
+/* ===== Layout ===== */
+main {
+    gap: 1.25rem;
+}
+
+section.flex-grow-1 {
+    background: #fff;
+    border: 1px solid var(--g200);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 24px rgba(0,0,0,.06);
+    animation: fadeUp .25s ease-out both;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* ===== Sidebar ===== */
+.sidebar {
+    position: sticky;
+    top: 1rem;
+    width: 15rem;
+    background: #fff;
+    border-radius: var(--radius);
+    padding: .75rem;
+    border: 1px solid var(--g200);
+    box-shadow: 0 8px 22px rgba(0,0,0,.06);
+}
+
+    .sidebar a,
+    .sidebar button {
+        font-size: .98rem;
+        font-weight: 600;
+        color: var(--g700);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-radius: 12px;
+        padding: .55rem .75rem;
+        width: 100%;
+        background: transparent;
+        border: none;
+        text-decoration: none;
+        transition: background .18s ease, color .18s ease, transform .06s ease;
+        position: relative;
+        overflow: hidden; /* ripple */
+    }
+
+        .sidebar a span, .sidebar button span {
+            display: flex;
+            align-items: center;
+            gap: .7rem;
+        }
+
+        .sidebar a i, .sidebar button i {
+            font-size: 1.1rem;
+        }
+
+        .sidebar a:hover, .sidebar button:hover {
+            background: var(--accent-weak);
+            color: var(--accent);
+        }
+
+        .sidebar a.active,
+        .sidebar button.active,
+        .sidebar button[aria-expanded="true"] {
+            background: var(--accent-weak);
+            color: var(--accent);
+            box-shadow: inset 3px 0 0 var(--accent);
+        }
+
+        .sidebar button .chevron {
+            font-size: .8rem;
+            transition: transform .25s ease;
+        }
+
+        .sidebar button[aria-expanded="true"] .chevron {
+            transform: rotate(180deg);
+        }
+
+    .sidebar .collapse a {
+        font-weight: 600;
+        font-size: .95rem;
+        color: var(--g600);
+        padding-left: 2.25rem;
+    }
+
+        .sidebar .collapse a:hover {
+            color: var(--accent);
+            background: var(--accent-weak);
+        }
+
+    .sidebar .bg-white.rounded {
+        border: 1px dashed var(--g200);
+        border-radius: 12px;
+    }
+
+    /* Buttons & ripple */
+    .btn, .sidebar a, .sidebar button {
+        will-change: transform;
+    }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn:active, .sidebar a:active, .sidebar button:active {
+            transform: translateY(0);
+        }
+
+.ripple-parent {
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--accent);
+    transform: translate(-50%,-50%) scale(0);
+    opacity: .22;
+    pointer-events: none;
+    animation: ripple .6s ease-out forwards;
+}
+
+@keyframes ripple {
+    to {
+        transform: translate(-50%,-50%) scale(9);
+        opacity: 0;
+    }
+}
+
+/* Utilities */
+.badge-accent {
+    background: var(--accent-weak);
+    color: var(--accent);
+    border: 1px solid #ffd5c9;
+}
+
+/* Scrollbar (WebKit) */
+*::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: #dfe3e8;
+    border-radius: 999px;
+}
+
+    *::-webkit-scrollbar-thumb:hover {
+        background: #cfd6de;
+    }
+
+/* Responsive */
+@media (max-width: 992px) {
+    .sidebar {
+        width: 100%;
+        position: static;
+    }
+
+    main {
+        flex-direction: column;
+    }
+}

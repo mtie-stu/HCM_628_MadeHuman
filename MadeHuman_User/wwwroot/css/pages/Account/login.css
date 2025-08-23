@@ -1,6 +1,6 @@
 ﻿/* ===== Scope toàn trang ===== */
 .login-page {
-    --accent: #ee4d2d; /* cam chủ đạo */
+    --accent: #ee4d2d;
     --accent-weak: #ffede8;
     --gray-900: #1f2937;
     --gray-700: #374151;
@@ -14,15 +14,15 @@
     background: #fff;
     position: relative;
     overflow: hidden;
+    font-family: "Poppins","Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
 }
 
-    /* ✅ Chống tràn vì padding/border */
-    .login-page,
-    .login-page * {
-        box-sizing: border-box;
+    /* Box-sizing chỉ trong scope */
+    .login-page, .login-page * {
+        box-sizing: border-box
     }
 
-        /* Ảnh nền + overlay */
+        /* BG + overlay */
         .login-page::before {
             content: "";
             position: absolute;
@@ -35,66 +35,92 @@
             content: "";
             position: absolute;
             inset: 0;
-            /* overlay nhẹ để chữ rõ hơn */
-            background: linear-gradient(180deg, rgba(255,255,255,.15), rgba(0,0,0,.25));
+            background: linear-gradient(180deg,rgba(255,255,255,.15),rgba(0,0,0,.25));
             pointer-events: none;
         }
 
-/* Card glass */
+/* Card */
 .login-card {
     position: relative;
     z-index: 1;
-    width: clamp(300px, 92vw, 440px); /* ✅ co giãn an toàn */
-    padding: 22px 20px; /* ✅ thu padding để dư biên */
+    width: clamp(300px,92vw,440px);
+    padding: 18px 18px; /* compact */
     border-radius: var(--radius);
     background: rgba(255,255,255,.72);
     border: 1px solid rgba(229,231,235,.7);
     box-shadow: 0 10px 30px rgba(0,0,0,.12);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    overflow: hidden; /* ✅ cắt mọi phần lỡ tràn */
+    overflow: hidden;
 }
 
 /* Heading */
 .brand {
-    margin: 0 0 6px;
+    margin: 0 0 4px;
     font-weight: 800;
-    letter-spacing: .8px;
+    letter-spacing: .6px;
     color: var(--gray-900);
 }
 
 .subhead {
-    margin: 0 0 18px;
+    margin: 0 0 12px;
     color: var(--gray-500);
+    font-weight: 600;
 }
 
-/* Form */
+/* Form (flex + gap) */
 .form {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 16px;
 }
+/* compact gap */
 
+/* Field: chừa chỗ lỗi bằng margin-bottom */
 .field {
+    --err-h: 16px; /* chiều cao tối thiểu của dòng lỗi (compact) */
+    --err-gap: 4px; /* khoảng cách input → lỗi (compact) */
     position: relative;
+    margin-bottom: calc(var(--err-h) + var(--err-gap));
 }
 
-    .field .bi {
+    /* Dòng lỗi: absolute, không làm tăng chiều cao field */
+    .field .text-danger {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: calc(100% + var(--err-gap));
+        margin: 0;
+        min-height: var(--err-h);
+        line-height: 1.25;
+        font-size: 11.5px;
+        color: #c62828;
+        overflow-wrap: anywhere;
+    }
+
+    /* ICON TRÁI: chỉ icon trực tiếp (không ăn vào icon trong .toggle-pass) */
+    .field > .bi {
         position: absolute;
         left: 12px;
         top: 50%;
         transform: translateY(-50%);
+        font-size: 18px;
+        line-height: 1;
         color: var(--accent);
+        pointer-events: none;
     }
 
+/* Input ổn định kích thước ở mọi trạng thái */
 .form-control {
     display: block;
     width: 100%;
-    max-width: 100%; /* ✅ không vượt khung */
-    padding: 12px 44px 12px 40px; /* ✅ chừa chỗ icon trái + nút mắt phải */
-    border: 1.5px solid var(--gray-200);
+    max-width: 100%;
+    min-height: 44px; /* compact height */
+    padding: 10px 46px 10px 42px; /* chừa icon & nút mắt (compact) */
+    border: 1.5px solid var(--gray-200); /* cố định độ dày */
     border-radius: 12px;
     font-size: 15px;
+    line-height: 1.25;
     outline: none;
     background: #fff;
     transition: border-color .15s ease, box-shadow .15s ease;
@@ -105,26 +131,49 @@
         box-shadow: 0 0 0 .2rem rgba(238,77,45,.16);
     }
 
-.text-danger {
-    color: #c62828;
-    font-size: 12px;
-    margin-top: 4px;
+    .form-control::placeholder {
+        color: #9aa2ac;
+    }
+
+    /* Trạng thái lỗi MVC: chỉ đổi màu/đổ bóng, KHÔNG đổi độ dày */
+    input.input-validation-error,
+    textarea.input-validation-error,
+    select.input-validation-error,
+    .form-control.input-validation-error {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 .2rem rgba(239,68,68,.10);
+        padding-right: 46px; /* vẫn chừa nút mắt */
+    }
+/* Tắt outline mặc định của :invalid (tránh chồng hiệu ứng) */
+.form .form-control:invalid {
+    outline: none;
+    box-shadow: none;
 }
 
-/* Show/hide password button */
+/* Nút mắt: căn giữa tuyệt đối + xoá padding UA */
 .toggle-pass {
     position: absolute;
     right: 8px;
     top: 50%;
     transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    padding: 0 !important;
+    display: grid;
+    place-items: center;
     border: none;
     background: transparent;
     color: var(--gray-700);
-    width: 36px;
-    height: 36px;
     border-radius: 10px;
     cursor: pointer;
 }
+
+    .toggle-pass i {
+        font-size: 18px;
+        line-height: 1;
+        position: static !important;
+        transform: none !important;
+    }
 
     .toggle-pass:hover {
         background: rgba(0,0,0,.06);
@@ -132,22 +181,22 @@
 
 /* Hint & links */
 .password-hint {
-    font-size: 12px;
+    margin-top: 0;
+    font-size: 11.5px;
     color: var(--gray-500);
-    margin-top: 2px;
 }
 
 .links {
     display: flex;
     justify-content: space-between;
     gap: 8px;
-    margin-top: 8px;
-    flex-wrap: wrap; /* ✅ không đẩy rộng card */
+    margin-top: 6px;
+    flex-wrap: wrap;
 }
 
 /* Submit */
 .btn-submit {
-    margin-top: 6px;
+    margin-top: 4px;
     width: 100%;
     border: none;
     border-radius: 12px;
@@ -155,25 +204,24 @@
     color: #fff;
     font-weight: 700;
     letter-spacing: .3px;
-    padding: 12px 14px;
-    cursor: pointer;
+    padding: 11px 14px;
+    cursor: pointer; /* compact padding */
     transition: filter .15s ease, transform .04s ease;
 }
 
     .btn-submit:hover {
-        filter: brightness(.96);
+        filter: brightness(.96)
     }
 
     .btn-submit:active {
-        transform: translateY(1px);
+        transform: translateY(1px)
     }
 
     .btn-submit[disabled] {
         opacity: .75;
-        cursor: not-allowed;
+        cursor: not-allowed
     }
 
-    /* Spinner trong nút */
     .btn-submit .spinner {
         width: 16px;
         height: 16px;
@@ -188,37 +236,70 @@
 
 @keyframes spin {
     to {
-        transform: rotate(360deg);
+        transform: rotate(360deg)
     }
 }
 
-/* Footer nhỏ */
+/* Footer */
 .footer {
-    margin-top: 14px;
+    margin-top: 10px;
     text-align: center;
     font-size: 12px;
-    color: var(--gray-500);
+    color: var(--gray-500)
 }
 
-/* Mobile tweaks */
-@media (max-width: 420px) {
+/* Mobile */
+@media (max-width:420px) {
     .login-card {
         width: 92vw;
-        padding: 18px 16px;
+        padding: 16px 14px;
         border-radius: 14px;
     }
 
     .form-control {
-        padding-left: 38px;
-        padding-right: 42px;
+        padding-left: 40px;
+        padding-right: 44px;
     }
-    /* iOS/Safari tránh giật do background-attachment: fixed */
+    /* khớp icon/nút mắt */
     .login-page::before {
         background-attachment: scroll;
     }
+    /* fix iOS */
 }
 
-/* Giảm animation nếu người dùng không thích chuyển động */
+/* Màn hình thấp: nén mạnh thêm */
+@media (max-height:700px) {
+    .form {
+        gap: 14px;
+    }
+
+    .form-control {
+        min-height: 42px;
+        padding: 9px 44px 9px 40px;
+    }
+
+    .field {
+        --err-h: 14px;
+        --err-gap: 4px;
+    }
+
+        .field .text-danger {
+            font-size: 11px;
+        }
+
+    .btn-submit {
+        padding: 10px 14px;
+    }
+}
+
+/* Cố định chiều cao card nếu thông điệp lỗi dài (desktop) */
+@media (min-width:360px) {
+    .login-card {
+        min-height: 460px;
+    }
+}
+
+/* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
     .btn-submit .spinner {
         animation: none;
@@ -228,3 +309,6 @@
         transition: none;
     }
 }
+
+/* Tuỳ chọn: nếu một số môi trường render lệch 0.5px, bật dòng dưới */
+/* .field > .bi, .toggle-pass{ top:calc(50% + .5px); } */
