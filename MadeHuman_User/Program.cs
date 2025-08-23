@@ -35,10 +35,10 @@ builder.Services.AddHttpContextAccessor();
 /*https://hcm-628-madehuman-api.onrender.com*/
 builder.Services.AddHttpClient("API", client =>
 {
-    client.BaseAddress = new Uri("https://hcm-628-madehuman-api.onrender.com/"); // Đảm bảo URL chính xác
-
-    /*    client.BaseAddress = new Uri("https://localhost:7204/"); // Đảm bảo URL chính xác
+    /*    client.BaseAddress = new Uri("https://hcm-628-madehuman-api.onrender.com/"); // Đảm bảo URL chính xác
     */
+    client.BaseAddress = new Uri("https://localhost:7204/"); // Đảm bảo URL chính xác
+
     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 });
 
