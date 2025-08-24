@@ -76,7 +76,7 @@ public class GoogleDriveOAuthService
                 var tokenJson = _config["GoogleDrive:TokenJson"] ?? _config["GoogleDrive__TokenJson"];
                 if (string.IsNullOrWhiteSpace(tokenJson))
                 {
-                    var tokenPath = Path.Combine(_env.ContentRootPath, "Data", "Token.json"); // chú ý 'T' hoa nếu file bạn là vậy
+                    var tokenPath = Path.Combine(_env.ContentRootPath, "Data", "token.json"); // chú ý 'T' hoa nếu file bạn là vậy
                     if (!System.IO.File.Exists(tokenPath))
                         throw new FileNotFoundException(
                             "No token in DB and Token.json missing. Provide GoogleDrive:TokenJson (ENV) or add Data/Token.json");
