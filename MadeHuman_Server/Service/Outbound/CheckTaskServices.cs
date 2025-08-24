@@ -42,6 +42,35 @@ namespace MadeHuman_Server.Service.Outbound
             _productLookup = productLookupService;
         }
 
+        private async Task<bool> ResetBasketAsync(Guid checktaskId, CancellationToken ct = default)
+        {
+            // Lấy OutboundTaskId từ CheckTasks
+            Guid? outboundTaskId = await _context.Set<CheckTasks>()
+                .Where(x => x.Id == checktaskId)
+                .Select(x => x.OutboundTaskId)
+                .SingleOrDefaultAsync(ct);
+
+            if (outboundTaskId is null)
+                return false; // CheckTask không có OutboundTaskId -> không cần reset
+
+            // Tìm đúng 1 basket theo OutBoundTaskId
+            var basket = await _context.Set<Baskets>()
+                .SingleOrDefaultAsync(b => b.OutBoundTaskId == outboundTaskId, ct);
+
+            if (basket is null)
+                return false; // Không có basket nào gắn OutboundTaskId này
+
+            // Không làm gì nếu đã rỗng
+            if (basket.OutBoundTaskId is null && basket.Status == StatusBaskets.Empty)
+                return true;
+
+            basket.OutBoundTaskId = null;
+            basket.Status = StatusBaskets.Empty;
+
+            await _context.SaveChangesAsync(ct);
+            return true;
+        }
+
         public async Task<PreviewSingleSKUResponse?> PreviewSingleSKUAsync(Guid basketId, string sku)
         {
             // Bước 1: Lấy OutboundTaskId từ Basket
@@ -163,10 +192,10 @@ namespace MadeHuman_Server.Service.Outbound
             var allFinished = await _context.CheckTaskDetails
                 .Where(d => d.CheckTaskId == detail.CheckTaskId)
                 .AllAsync(d => d.StatusCheckDetailTask == StatusCheckDetailTask.finished);
+            var checkTask = await _context.CheckTasks.FindAsync(detail.CheckTaskId);
 
             if (allFinished)
             {
-                var checkTask = await _context.CheckTasks.FindAsync(detail.CheckTaskId);
                 if (checkTask != null)
                 {
                     checkTask.StatusCheckTask = StatusCheckTask.finished;
@@ -181,14 +210,23 @@ namespace MadeHuman_Server.Service.Outbound
             // Lưu trước khi return
             await _context.SaveChangesAsync();
 
+            // [6] Cộng KPI
+            var userTask = await _context.UsersTasks.FirstOrDefaultAsync(u => u.Id == checkTask.UsersTasksId);
+            if (userTask != null)
+            {
+                userTask.TotalKPI += 1;
+                userTask.HourlyKPIs += 1;
+            }
             // Ưu tiên trả về: 3 (CheckTask xong) > 2 (slot/detail xong) > 1 (chỉ xác nhận)
             if (allFinished)
             {
+                await ResetBasketAsync(detail.CheckTaskId);
                 logs.Add("✅ Đã xác nhận và cập nhật trạng thái.");
                 return (3, logs); // Case 3
             }
             if (allItemFinished)
             {
+                await _packTaskService.CreatePackTaskAsync(detail.OutboundTaskItemId);
                 logs.Add("✅ Đã xác nhận và đã hoàn thành 1 slot.");
                 return (2, logs); // Case 2
             }
@@ -541,6 +579,7 @@ namespace MadeHuman_Server.Service.Outbound
 
                 var outboundTaskItemId = detail.OutboundTaskItems.Id;
 
+
                 var exists = await _context.PackTask.AnyAsync(p => p.OutboundTaskItemId == outboundTaskItemId);
                 if (!exists)
                 {
@@ -562,6 +601,7 @@ namespace MadeHuman_Server.Service.Outbound
 
             // [5] Ghi log 1 dòng
             await LogCheckTaskAction(checkTask.Id, request.SKU, request.Quantity, "✅ Xác nhận kiểm tự động (SingleSKU)", userId);
+            await ResetBasketAsync(checkTask.Id);
 
             // [6] Cộng KPI
             var userTask = await _context.UsersTasks.FirstOrDefaultAsync(u => u.Id == checkTask.UsersTasksId);
@@ -570,7 +610,6 @@ namespace MadeHuman_Server.Service.Outbound
                 userTask.TotalKPI += request.Quantity;
                 userTask.HourlyKPIs += request.Quantity;
             }
-
             // [7] Lưu thay đổi
             await _context.SaveChangesAsync();
             logs.Add("✅ Kiểm hàng thành công.");
