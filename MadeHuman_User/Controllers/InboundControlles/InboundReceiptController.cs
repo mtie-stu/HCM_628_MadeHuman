@@ -13,11 +13,36 @@ namespace MadeHuman_User.Controllers.InboundControlles
             _inboundReceiptService = inboundReceiptService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1, string zone = "", string searchTerm = "")
         {
-            var receipts = await _inboundReceiptService.GetAllAsync();
-            return View(receipts);
+            int pageSize = 6; // ✅ đổi từ 10 -> 6
+
+            var query = await _inboundReceiptService.GetAllAsync();
+
+            //if (!string.IsNullOrEmpty(zone))
+            //    query = query.Where(x => x.Zone == zone).ToList();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+                query = query.Where(x => x.TaskCode != null && x.TaskCode.Contains(searchTerm)).ToList();
+
+            int totalItems = query.Count();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            var data = query
+                .OrderByDescending(x => x.CreateAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.SelectedZone = zone;
+            ViewBag.SearchTerm = searchTerm;
+
+            return View(data);
         }
+
+
 
         [HttpGet]
         public IActionResult Create()

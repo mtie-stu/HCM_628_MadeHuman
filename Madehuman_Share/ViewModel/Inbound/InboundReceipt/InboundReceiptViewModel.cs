@@ -16,5 +16,6 @@ namespace Madehuman_Share.ViewModel.Inbound.InboundReceipt
         public string? TaskCode { get; set; } // nếu có
         public string? TaskStatus { get; set; } // InboundTasks.Status => string
         public int ItemCount { get; set; }
+
     }
 }

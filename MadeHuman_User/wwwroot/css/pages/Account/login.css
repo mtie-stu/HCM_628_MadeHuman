@@ -16,6 +16,11 @@
     overflow: hidden;
     font-family: "Poppins","Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
 }
+body {
+    background: url('~/images/warehouse-bg.jpg') no-repeat center center fixed;
+    background-size: cover;
+    margin: 0;
+}
 
     /* Box-sizing chỉ trong scope */
     .login-page, .login-page * {
