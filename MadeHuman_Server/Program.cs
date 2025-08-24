@@ -1,4 +1,5 @@
-﻿using MadeHuman_Server.Data;
+﻿using Google.Apis.Util.Store;
+using MadeHuman_Server.Data;
 using MadeHuman_Server.JwtMiddleware;
 using MadeHuman_Server.Model.User_Task;
 using MadeHuman_Server.Service;
@@ -93,7 +94,6 @@ builder.Services.AddScoped<IUserTaskSvc, UserTaskSvc>();
 builder.Services.AddScoped<IInboundTaskSvc, InboundTaskSvc>();
 builder.Services.AddHostedService<ResetHourlyKPIsService>();
 builder.Services.AddSingleton<GoogleDriveService>();
-builder.Services.AddSingleton<GoogleDriveOAuthService>();
 builder.Services.AddHostedService<InventoryQuantityUpdateService>();
 builder.Services.AddHostedService<OutboundTaskBackgroundService>();
 builder.Services.AddScoped<OutboundTaskService>();
@@ -106,7 +106,11 @@ builder.Services.AddScoped<IPickTaskServices, PickTaskServices>();
 builder.Services.AddScoped<IDispatchTaskServices, DispatchTaskServices>();
 builder.Services.AddScoped<IProductLookupService, ProductLookupService>();
 builder.Services.AddScoped<IBillRenderService, BillRenderService>();
+// Đăng ký IDataStore dùng EF Core (Singleton an toàn vì dùng DbContextFactory)
+builder.Services.AddSingleton<IDataStore, EfCoreDataStore>();
 
+// GoogleDrive service dùng IDataStore
+builder.Services.AddSingleton<GoogleDriveOAuthService>();
 // (Tùy chọn) Cấu hình upload file lớn nếu cần
 builder.Services.Configure<FormOptions>(options =>
 {
