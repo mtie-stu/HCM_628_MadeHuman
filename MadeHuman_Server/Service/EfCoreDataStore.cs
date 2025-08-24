@@ -2,15 +2,16 @@
 using MadeHuman_Server.Data;
 using MadeHuman_Server.Model;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
 public class EfCoreDataStore : IDataStore
 {
-    private readonly IDbContextFactory<ApplicationDbContext> _factory;
+    private readonly IServiceScopeFactory _scopeFactory;
 
-    public EfCoreDataStore(IDbContextFactory<ApplicationDbContext> factory)
+    public EfCoreDataStore(IServiceScopeFactory scopeFactory)
     {
-        _factory = factory;
+        _scopeFactory = scopeFactory;
     }
 
     private static string MakeKey<T>(string key) => $"{typeof(T).FullName}-{key}";
@@ -20,8 +21,10 @@ public class EfCoreDataStore : IDataStore
         var k = MakeKey<T>(key);
         var json = JsonConvert.SerializeObject(value);
 
-        await using var db = _factory.CreateDbContext();
-        var existing = await db.OAuthData.AsTracking().FirstOrDefaultAsync(x => x.Key == k);
+        using var scope = _scopeFactory.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        var existing = await db.OAuthData.FirstOrDefaultAsync(x => x.Key == k);
         if (existing == null)
         {
             db.OAuthData.Add(new OAuthDataItem
@@ -36,13 +39,16 @@ public class EfCoreDataStore : IDataStore
             existing.Value = json;
             existing.UpdatedAt = DateTimeOffset.UtcNow;
         }
+
         await db.SaveChangesAsync();
     }
 
     public async Task<T?> GetAsync<T>(string key)
     {
         var k = MakeKey<T>(key);
-        await using var db = _factory.CreateDbContext();
+        using var scope = _scopeFactory.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
         var row = await db.OAuthData.AsNoTracking().FirstOrDefaultAsync(x => x.Key == k);
         if (row == null) return default;
         return JsonConvert.DeserializeObject<T>(row.Value);
@@ -51,7 +57,9 @@ public class EfCoreDataStore : IDataStore
     public async Task DeleteAsync<T>(string key)
     {
         var k = MakeKey<T>(key);
-        await using var db = _factory.CreateDbContext();
+        using var scope = _scopeFactory.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
         var row = await db.OAuthData.FirstOrDefaultAsync(x => x.Key == k);
         if (row != null)
         {
@@ -62,7 +70,8 @@ public class EfCoreDataStore : IDataStore
 
     public async Task ClearAsync()
     {
-        await using var db = _factory.CreateDbContext();
+        using var scope = _scopeFactory.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         db.OAuthData.RemoveRange(db.OAuthData);
         await db.SaveChangesAsync();
     }

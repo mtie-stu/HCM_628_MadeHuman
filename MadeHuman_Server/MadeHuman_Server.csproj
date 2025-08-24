@@ -6,19 +6,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 
-	<!-- Copy các asset cần cho runtime (template in, Google Drive creds/token) -->
-	<ItemGroup>
-		<Content Include="Data/Bill/**">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Include="Data/credentials_oauth.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-		<Content Include="Data/Token.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
-
+	<!-- Packages -->
 	<ItemGroup>
 		<PackageReference Include="Google.Apis.Drive.v3" Version="1.70.0.3834" />
 		<PackageReference Include="Google.Apis.Sheets.v4" Version="1.70.0.3819" />
@@ -35,13 +23,31 @@
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
 	</ItemGroup>
 
+	<!-- Project refs (Admin có thể không tồn tại trong build env) -->
 	<ItemGroup>
-		<ProjectReference Include="..\MadeHuman_Admin\MadeHuman_Admin.csproj" />
 		<ProjectReference Include="..\Madehuman_Share\Madehuman_Share.csproj" />
+		<ProjectReference Include="..\MadeHuman_Admin\MadeHuman_Admin.csproj"
+						  Condition="Exists('..\MadeHuman_Admin\MadeHuman_Admin.csproj')" />
 	</ItemGroup>
 
+	<!-- Thư mục tĩnh -->
 	<ItemGroup>
-		<Folder Include="Uploads/" />
+		<Folder Include="Uploads\" />
+	</ItemGroup>
+
+	<!-- Chỉ UPDATE metadata để copy ra output, tránh duplicate implicit Content -->
+	<ItemGroup>
+		<Content Update="Data/Bill/**">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+
+		<!-- Nếu còn đọc file cục bộ: giữ 2 dòng dưới; nếu đã dùng ENV thì có thể bỏ để tránh đóng gói secrets -->
+		<Content Update="Data/credentials_oauth.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="Data/Token.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 	</ItemGroup>
 
 </Project>
