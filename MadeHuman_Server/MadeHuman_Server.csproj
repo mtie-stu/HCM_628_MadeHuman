@@ -33,7 +33,12 @@
 	<ItemGroup>
 		<Folder Include="Uploads\" />
 	</ItemGroup>
-
+	<ItemGroup>
+		<Content Update="Data/Bill/**">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+	</ItemGroup>
 	<!-- Chỉ UPDATE metadata để copy ra output, tránh duplicate implicit Content -->
 	<ItemGroup>
 		<Content Update="Data/Bill/**">

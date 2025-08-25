@@ -89,7 +89,7 @@ namespace MadeHuman_Server.Service.Outbound
             if (userTaskId == null)
                 throw new InvalidOperationException("❌ Không tìm thấy phân công công việc hôm nay cho người dùng.");
 
-            var task = await _context.PickTasks
+            var task = await _context.PickTasks                                                                                                                                                                                            
                 .Where(p => p.UsersTasksId == null || p.UsersTasksId == Guid.Empty)
                 .OrderBy(p => p.CreateAt)
                 .FirstOrDefaultAsync();
@@ -203,7 +203,7 @@ namespace MadeHuman_Server.Service.Outbound
                     userTask.HourlyKPIs += totalQty;
                 }
 
-                await _checkTaskService.CreateCheckTaskAsync(task.OutboundTaskId);
+              
                 result.IsPickTaskFinished = true;
             }
             else
@@ -225,6 +225,15 @@ namespace MadeHuman_Server.Service.Outbound
             }
 
             await _context.SaveChangesAsync();
+            try
+            {
+                await _checkTaskService.CreateCheckTaskAsync(task.OutboundTaskId);
+            }
+            catch (Exception ex)
+            {
+                // ❌ Bỏ qua lỗi, chỉ log lại (nếu cần theo dõi)
+                _logger?.LogWarning(ex, $"Lỗi khi tạo CheckTask cho OutboundTaskId {task.OutboundTaskId}, bỏ qua vì đã được tạo từ nhiệm vụ trước đó.");
+            }
             return result;
 
             ConfirmPickResult Fail(params string[] msgs) => new() { Messages = msgs.ToList(), IsPickTaskFinished = false };
