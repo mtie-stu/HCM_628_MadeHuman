@@ -72,6 +72,7 @@ builder.Services.AddAuthentication(auth =>
         ValidateIssuerSigningKey = true
     };
 });
+builder.Services.AddHttpClient();
 
 // 🧩 Services
 builder.Services.AddTransient<ITokenService, TokenService>();
@@ -110,7 +111,6 @@ builder.Services.AddScoped<IProductLookupService, ProductLookupService>();
 builder.Services.AddScoped<IBillRenderService, BillRenderService>();
 // Đăng ký IDataStore dùng EF Core (Singleton an toàn vì dùng DbContextFactory)
 builder.Services.AddSingleton<IDataStore, EfCoreDataStore>();
-   builder.Host.UseContentRoot(AppContext.BaseDirectory);
 
 // GoogleDrive service dùng IDataStore
 builder.Services.AddSingleton<GoogleDriveOAuthService>();
@@ -122,7 +122,6 @@ builder.Services.Configure<FormOptions>(options =>
 // 📦 Controller & Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Host.UseContentRoot(AppContext.BaseDirectory);
 
 builder.Services.AddSwaggerGen(opt =>
 {

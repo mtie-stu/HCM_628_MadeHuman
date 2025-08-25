@@ -1,5 +1,6 @@
-﻿using System.Text;
-using System.Net;
+﻿using System.Net;
+using System.Net.Http;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using MadeHuman_Server.Data;
 using Madehuman_Share.ViewModel.Outbound;
@@ -15,21 +16,21 @@ namespace MadeHuman_Server.Service.Outbound
     public class BillRenderService : IBillRenderService
     {
         private readonly ApplicationDbContext _context;
-        private readonly IWebHostEnvironment _env;
         private readonly ILogger<BillRenderService> _logger;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public BillRenderService(ApplicationDbContext context, IWebHostEnvironment env, ILogger<BillRenderService> logger)
+        public BillRenderService(
+            ApplicationDbContext context,
+            ILogger<BillRenderService> logger,
+            IHttpClientFactory httpClientFactory)
         {
             _context = context;
-            _env = env;
             _logger = logger;
+            _httpClientFactory = httpClientFactory;
         }
 
-        // ===== PUBLIC APIS =====================================================
+        // =============== PUBLIC APIS ===================
 
-        /// <summary>
-        /// Render nhiều bill theo CheckTaskId. An toàn: không ném lỗi ra ngoài, trả [] nếu lỗi.
-        /// </summary>
         public async Task<List<PrintBillViewModel>> GenerateBillHtmlByCheckTaskIdAsync(
             Guid checkTaskId,
             CancellationToken ct = default)
@@ -48,24 +49,22 @@ namespace MadeHuman_Server.Service.Outbound
                     return [];
                 }
 
-                var templateContent = await GetBillTemplateAsync(ct);
-                if (templateContent is null)
+                var template = await GetTemplateAsync(ct);
+                if (template is null)
                 {
-                    _logger.LogWarning("Template bill không khả dụng, bỏ qua render cho CheckTaskId {CheckTaskId}", checkTaskId);
+                    _logger.LogWarning("Không lấy được template (mọi nguồn đều fail).");
                     return [];
                 }
 
                 var result = new List<PrintBillViewModel>(details.Count);
-                foreach (var detail in details)
+                foreach (var d in details)
                 {
                     ct.ThrowIfCancellationRequested();
 
-                    var outboundId = detail.OutboundTaskItemId == Guid.Empty
-                        ? string.Empty
-                        : detail.OutboundTaskItemId.ToString();
-
+                    var outboundId = d.OutboundTaskItemId == Guid.Empty ? string.Empty : d.OutboundTaskItemId.ToString();
                     var safeOutboundId = WebUtility.HtmlEncode(outboundId);
-                    var html = templateContent.Replace("{{OUTBOUND_TASK_ITEM_ID}}", safeOutboundId);
+
+                    var html = template.Replace("{{OUTBOUND_TASK_ITEM_ID}}", safeOutboundId);
 
                     result.Add(new PrintBillViewModel
                     {
@@ -84,9 +83,6 @@ namespace MadeHuman_Server.Service.Outbound
             }
         }
 
-        /// <summary>
-        /// Render một bill theo CheckTaskDetailId. An toàn: không ném lỗi ra ngoài, trả [] nếu lỗi.
-        /// </summary>
         public async Task<List<PrintBillViewModel>> GenerateBillHtmlByCheckTaskDetailIdAsync(
             Guid checkTaskDetailId,
             CancellationToken ct = default)
@@ -105,19 +101,17 @@ namespace MadeHuman_Server.Service.Outbound
                     return [];
                 }
 
-                var outboundId = detail.OutboundTaskItemId == Guid.Empty
-                    ? string.Empty
-                    : detail.OutboundTaskItemId.ToString();
+                var outboundId = detail.OutboundTaskItemId == Guid.Empty ? string.Empty : detail.OutboundTaskItemId.ToString();
+                var safeOutboundId = WebUtility.HtmlEncode(outboundId);
 
-                var templateContent = await GetBillTemplateAsync(ct);
-                if (templateContent is null)
+                var template = await GetTemplateAsync(ct);
+                if (template is null)
                 {
-                    _logger.LogWarning("Template bill không khả dụng, bỏ qua render cho CheckTaskDetailId {CheckTaskDetailId}", checkTaskDetailId);
+                    _logger.LogWarning("Không lấy được template (mọi nguồn đều fail).");
                     return [];
                 }
 
-                var safeOutboundId = WebUtility.HtmlEncode(outboundId);
-                var html = templateContent.Replace("{{OUTBOUND_TASK_ITEM_ID}}", safeOutboundId);
+                var html = template.Replace("{{OUTBOUND_TASK_ITEM_ID}}", safeOutboundId);
 
                 return new List<PrintBillViewModel>
                 {
@@ -136,49 +130,61 @@ namespace MadeHuman_Server.Service.Outbound
             }
         }
 
-        // ===== PRIVATE HELPERS =================================================
+        // =============== TEMPLATE RESOLUTION (no filesystem) ===================
 
-        private string? _billTemplateCache;
+        private string? _cachedTemplate; // cache trong RAM
 
         /// <summary>
-        /// Đọc template từ ContentRootPath/Data/Bill/shoporder-bill.html (có cache).
-        /// Nếu thiếu file, thử fallback EmbeddedResource (nếu đã khai báo trong .csproj).
+        /// Nguồn ưu tiên: ENV BILL_TEMPLATE_HTML -> ENV BILL_TEMPLATE_URL (HTTP) -> EmbeddedResource -> BuiltIn.
+        /// Trả null chỉ khi mọi nguồn đều fail (thực tế luôn có BuiltIn).
         /// </summary>
-        private async Task<string?> GetBillTemplateAsync(CancellationToken ct)
+        private async Task<string?> GetTemplateAsync(CancellationToken ct)
         {
-            if (!string.IsNullOrEmpty(_billTemplateCache))
-                return _billTemplateCache;
+            if (!string.IsNullOrEmpty(_cachedTemplate))
+                return _cachedTemplate;
 
-            var path = Path.Combine(_env.ContentRootPath, "Data", "Bill", "shoporder-bill.html");
-
+            // 1) ENV: BILL_TEMPLATE_HTML (ưu tiên cao nhất)
             try
             {
-                if (File.Exists(path))
+                var fromEnv = Environment.GetEnvironmentVariable("BILL_TEMPLATE_HTML");
+                if (!string.IsNullOrWhiteSpace(fromEnv))
                 {
-                    var content = await File.ReadAllTextAsync(path, Encoding.UTF8, ct);
-                    if (!string.IsNullOrWhiteSpace(content))
-                    {
-                        _billTemplateCache = content;
-                        return _billTemplateCache;
-                    }
-                    _logger.LogError("Nội dung template rỗng: {Path}", path);
+                    _cachedTemplate = fromEnv;
+                    _logger.LogInformation("Template lấy từ ENV BILL_TEMPLATE_HTML.");
+                    return _cachedTemplate;
                 }
-                else
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Đọc ENV BILL_TEMPLATE_HTML thất bại.");
+            }
+
+            // 2) ENV: BILL_TEMPLATE_URL (tải 1 lần và cache)
+            try
+            {
+                var url = Environment.GetEnvironmentVariable("BILL_TEMPLATE_URL");
+                if (!string.IsNullOrWhiteSpace(url))
                 {
-                    _logger.LogError("Template không tìm thấy tại {Path}", path);
+                    var http = _httpClientFactory.CreateClient();
+                    using var req = new HttpRequestMessage(HttpMethod.Get, url);
+                    using var res = await http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
+                    res.EnsureSuccessStatusCode();
+                    var body = await res.Content.ReadAsStringAsync(ct);
+                    if (!string.IsNullOrWhiteSpace(body))
+                    {
+                        _cachedTemplate = body;
+                        _logger.LogInformation("Template tải từ URL: {Url}", url);
+                        return _cachedTemplate;
+                    }
                 }
             }
             catch (OperationCanceledException) { throw; }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Không thể đọc template tại {Path}", path);
+                _logger.LogWarning(ex, "Tải template từ BILL_TEMPLATE_URL thất bại.");
             }
 
-            // ===== Fallback: Embedded Resource (tuỳ chọn) =====
-            // Thêm vào .csproj:
-            // <ItemGroup>
-            //   <EmbeddedResource Include="Data/Bill/shoporder-bill.html" />
-            // </ItemGroup>
+            // 3) EmbeddedResource (nếu bạn bật trong .csproj)
             try
             {
                 var asm = typeof(BillRenderService).Assembly;
@@ -193,9 +199,9 @@ namespace MadeHuman_Server.Service.Outbound
                         var content = await r.ReadToEndAsync();
                         if (!string.IsNullOrWhiteSpace(content))
                         {
-                            _billTemplateCache = content;
-                            _logger.LogInformation("Đã dùng EmbeddedResource làm template fallback: {Res}", resName);
-                            return _billTemplateCache;
+                            _cachedTemplate = content;
+                            _logger.LogInformation("Template dùng EmbeddedResource: {Res}", resName);
+                            return _cachedTemplate;
                         }
                     }
                 }
@@ -203,15 +209,45 @@ namespace MadeHuman_Server.Service.Outbound
             catch (OperationCanceledException) { throw; }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Fallback EmbeddedResource thất bại.");
+                _logger.LogWarning(ex, "Đọc EmbeddedResource thất bại.");
             }
 
-            return null; // Caller sẽ xử lý việc trả [] thay vì ném lỗi
-
-
-
-
-
+            // 4) Built-in (luôn có)
+            _cachedTemplate = BuiltInTemplate;
+            _logger.LogInformation("Template dùng Built-in (fallback cuối).");
+            return _cachedTemplate;
         }
+
+        // =============== BUILT-IN TEMPLATE (80x80mm, có placeholder) ============
+        // Bạn có thể chỉnh sửa HTML này theo ý muốn. Placeholder: {{OUTBOUND_TASK_ITEM_ID}}
+        private const string BuiltInTemplate = @"<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=""utf-8"" />
+    <title>Phiếu xuất kho – MadeHuman</title>
+    <style>
+        @page { size: 80mm 80mm; margin: 0; }
+        html, body { width: 80mm; height: 80mm; margin: 0; padding: 0; }
+        body {
+            font-family: Arial, sans-serif;
+            box-sizing: border-box;
+            padding: 0.2mm;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .qr { width: 58mm; height: 58mm; display: flex; align-items: center; justify-content: center; }
+        .qr img { width: 100%; height: 100%; object-fit: contain; }
+        .brand { position: absolute; right: 1.2mm; bottom: 1.2mm; font-size: 9pt; }
+    </style>
+</head>
+<body>
+    <div class=""qr"">
+        <img src=""https://api.qrserver.com/v1/create-qr-code/?data={{OUTBOUND_TASK_ITEM_ID}}&size=800x800&margin=0"" alt=""QR Code"" />
+    </div>
+    <div class=""brand"">MadeHuman</div>
+</body>
+</html>";
     }
 }
