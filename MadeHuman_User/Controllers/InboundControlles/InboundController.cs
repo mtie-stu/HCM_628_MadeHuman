@@ -2,6 +2,7 @@
 using MadeHuman_User.Models;
 using Microsoft.AspNetCore.Mvc;
 using Madehuman_Share.ViewModel.Inbound;
+using MadeHuman_User.Helper;
 
 
 namespace MadeHuman_User.Controllers.InboundControlles
@@ -106,12 +107,70 @@ namespace MadeHuman_User.Controllers.InboundControlles
 
 
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+            int page = 1,
+            int pageSize = 6,
+            string? status = "",
+            string? searchTerm = "")
         {
             var token = Request.Cookies["JWTToken"] ?? "";
-            var tasks = await _inboundTaskService.GetAllAsync(token);
-            return View(tasks);
+            var allTasks = await _inboundTaskService.GetAllAsync(token);
+
+            // >>> THÊM: Lưu lại giá trị filter để view còn dùng
+            ViewBag.CurrentStatus = status;
+            ViewBag.CurrentSearch = searchTerm;
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                searchTerm = searchTerm.ToLower();
+                allTasks = allTasks.Where(x =>
+                    x.Id.ToString().Contains(searchTerm) ||
+                    (x.CreateBy ?? "").ToLower().Contains(searchTerm)
+                ).ToList();
+            }
+
+            // filter server-side
+            if (!string.IsNullOrEmpty(status))
+            {
+                if (status == "Incomplete")
+                    allTasks = allTasks.Where(x => x.Status != "Completed").ToList();
+                else
+                    allTasks = allTasks.Where(x => x.Status == status).ToList();
+            }
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                searchTerm = searchTerm.ToLower();
+                allTasks = allTasks.Where(x =>
+                    x.Id.ToString().Contains(searchTerm) ||
+                    (x.CreateBy ?? "").ToLower().Contains(searchTerm)
+                ).ToList();
+            }
+
+            int totalCount = allTasks.Count;
+            int totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+            var items = allTasks
+                .OrderByDescending(x => x.CreateAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // >>> SỬA: Pagination luôn gắn kèm filter hiện tại
+            ViewBag.Pagination = PaginationHelper.GeneratePagination(
+                page,
+                totalPages,
+                Url.Action("Index", "Inbound")!,
+                new Dictionary<string, string>
+                {
+                    ["status"] = status ?? "",
+                    ["searchTerm"] = searchTerm ?? ""
+                }
+            );
+
+            return View(items);
         }
+
+
 
         // Trang nhập mã để quét task export
         [HttpGet]
