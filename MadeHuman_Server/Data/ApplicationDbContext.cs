@@ -1,4 +1,5 @@
-﻿using MadeHuman_Server.Model.Inbound;
+﻿using MadeHuman_Server.Model;
+using MadeHuman_Server.Model.Inbound;
 using MadeHuman_Server.Model.Outbound;
 using MadeHuman_Server.Model.Shop;
 using MadeHuman_Server.Model.User_Task;
@@ -53,6 +54,7 @@ namespace MadeHuman_Server.Data
         public DbSet<PendingSKU> PendingSKU { get; set; }
         public DbSet<PackTask> PackTask { get; set; }
         public DbSet<DispatchTasks> DispatchTasks { get; set; }
+        public DbSet<OAuthDataItem> OAuthData => Set<OAuthDataItem>();
 
 
 
@@ -95,6 +97,14 @@ namespace MadeHuman_Server.Data
                     }
                 }
             }
+
+
+            var e = modelBuilder.Entity<OAuthDataItem>();
+            e.ToTable("OAuthDataStore");
+            e.HasKey(x => x.Key);
+            e.Property(x => x.Key).HasMaxLength(512);
+            e.Property(x => x.Value).IsRequired();
+            e.Property(x => x.UpdatedAt).IsRequired();
 
             modelBuilder.Entity<Product>()
                 .HasOne(p => p.ProductSKU)

@@ -1,4 +1,5 @@
-﻿using MadeHuman_Server.Data;
+﻿using Google.Apis.Util.Store;
+using MadeHuman_Server.Data;
 using MadeHuman_Server.JwtMiddleware;
 using MadeHuman_Server.Model.User_Task;
 using MadeHuman_Server.Service;
@@ -28,6 +29,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
         npgsqlOptions => npgsqlOptions.CommandTimeout(180) // ⏰ tăng timeout lên 3 phút
     ));
+
+
 /*builder.Services.AddDbContext<ApplicationDbContext>(options =>
    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection1")));*/
 
@@ -36,7 +39,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("https://localhost:7112") // Giao diện FE
+        policy.WithOrigins("https://localhost:7112",
+            "https://hcm-628-madehuman-fe.onrender.com") // Giao diện FE
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials(); // Nếu dùng Cookie
@@ -92,10 +96,10 @@ builder.Services.AddScoped<IUserTaskSvc, UserTaskSvc>();
 builder.Services.AddScoped<IInboundTaskSvc, InboundTaskSvc>();
 builder.Services.AddHostedService<ResetHourlyKPIsService>();
 builder.Services.AddSingleton<GoogleDriveService>();
-builder.Services.AddSingleton<GoogleDriveOAuthService>();
 builder.Services.AddHostedService<InventoryQuantityUpdateService>();
 builder.Services.AddHostedService<OutboundTaskBackgroundService>();
 builder.Services.AddScoped<OutboundTaskService>();
+builder.Services.AddScoped<IOutboundTaskServices, OutboundTaskService>();
 builder.Services.AddScoped<IProductImageService, ProductImageService>();
 builder.Services.AddScoped<IBasketService, BasketService>();
 builder.Services.AddScoped<ICheckTaskServices, CheckTaskServices>();
@@ -104,7 +108,11 @@ builder.Services.AddScoped<IPickTaskServices, PickTaskServices>();
 builder.Services.AddScoped<IDispatchTaskServices, DispatchTaskServices>();
 builder.Services.AddScoped<IProductLookupService, ProductLookupService>();
 builder.Services.AddScoped<IBillRenderService, BillRenderService>();
+// Đăng ký IDataStore dùng EF Core (Singleton an toàn vì dùng DbContextFactory)
+builder.Services.AddSingleton<IDataStore, EfCoreDataStore>();
 
+// GoogleDrive service dùng IDataStore
+builder.Services.AddSingleton<GoogleDriveOAuthService>();
 // (Tùy chọn) Cấu hình upload file lớn nếu cần
 builder.Services.Configure<FormOptions>(options =>
 {

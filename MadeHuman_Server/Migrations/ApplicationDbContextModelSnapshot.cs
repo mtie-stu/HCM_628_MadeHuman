@@ -72,6 +72,10 @@ namespace MadeHuman_Server.Migrations
                     b.Property<Guid>("ProductSKUId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("ProductSKUName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
@@ -298,6 +302,24 @@ namespace MadeHuman_Server.Migrations
                     b.HasIndex("UserTaskId");
 
                     b.ToTable("RefillTasks");
+                });
+
+            modelBuilder.Entity("MadeHuman_Server.Model.OAuthDataItem", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Key");
+
+                    b.ToTable("OAuthDataStore", (string)null);
                 });
 
             modelBuilder.Entity("MadeHuman_Server.Model.Outbound.Baskets", b =>

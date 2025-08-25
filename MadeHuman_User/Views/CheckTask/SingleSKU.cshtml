@@ -99,7 +99,7 @@
                 if (!basketId || !jwt) return showMessage("❌ Thiếu BasketId hoặc JWT", "danger");
 
                 try {
-                    const res = await fetch(`https://localhost:7204/api/CheckTask/assign-user/${basketId}`, {
+                    const res = await fetch(`https://hcm-628-madehuman-api.onrender.com/api/CheckTask/assign-user/${basketId}`, {
                         method: "POST",
                         headers: { "Authorization": `Bearer ${jwt}` }
                     });
@@ -131,7 +131,7 @@
                 return showMessage("❌ Thiếu thông tin SKU hoặc Basket hoặc Token", "danger");
 
             try {
-                const response = await fetch(`https://localhost:7204/api/CheckTask/preview-single-sku/${basketId}/${sku}`, {
+                const response = await fetch(`https://hcm-628-madehuman-api.onrender.com/api/CheckTask/preview-single-sku/${basketId}/${sku}`, {
                     headers: { "Authorization": `Bearer ${jwt}` }
                 });
 
@@ -171,7 +171,7 @@
                 return showMessage("❌ Thiếu dữ liệu", "danger");
 
             try {
-                const response = await fetch("https://localhost:7204/api/CheckTask/single-sku", {
+                const response = await fetch("https://hcm-628-madehuman-api.onrender.com/api/CheckTask/single-sku", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -188,7 +188,7 @@
 
                 successSFX.play();
 
-                const billRes = await fetch(`https://localhost:7204/api/Bill/print-bills/${checkTaskId}`, {
+                const billRes = await fetch(`https://hcm-628-madehuman-api.onrender.com/api/Bill/print-bills/${checkTaskId}`, {
                     headers: { "Authorization": `Bearer ${jwt}` }
                 });
 

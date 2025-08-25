@@ -9,5 +9,7 @@ namespace Madehuman_Share.ViewModel.Outbound
     public class AssignDispatchTaskResultViewModel
     {
         public List<string> Logs { get; set; } = new();
+        public string? Message { get; set; }
     }
+
 }

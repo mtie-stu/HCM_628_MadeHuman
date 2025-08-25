@@ -58,13 +58,23 @@ namespace MadeHuman_Server.Service.Inbound
 
 
 
+        //public async Task<InboundReceipts?> GetByIdAsync(Guid receiptId)
+        //{
+        //    return await _context.InboundReceipt
+        //        .Include(r => r.InboundTasks)
+        //        .Include(r => r.InboundReceiptItems) // cần sửa model để có navigation property ngược
+        //        .FirstOrDefaultAsync(r => r.Id == receiptId);
+        //}
         public async Task<InboundReceipts?> GetByIdAsync(Guid receiptId)
         {
             return await _context.InboundReceipt
+                .AsNoTracking()
                 .Include(r => r.InboundTasks)
-                .Include(r => r.InboundReceiptItems) // cần sửa model để có navigation property ngược
+                .Include(r => r.InboundReceiptItems)
+                    .ThenInclude(i => i.ProductSKUs) // phải load SKU
                 .FirstOrDefaultAsync(r => r.Id == receiptId);
         }
+
 
         public async Task<List<InboundReceipts>> GetAllAsync()
         {

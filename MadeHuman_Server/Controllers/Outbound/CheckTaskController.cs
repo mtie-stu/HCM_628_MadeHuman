@@ -104,6 +104,23 @@ namespace MadeHuman_Server.Controllers.Outbound
                 // Có thể log ex tại đây
                 return StatusCode(500, new { code = 0, logs = new[] { "❌ Lỗi xử lý: " + ex.Message } });
             }
+
+
+        }
+
+        /// <summary>
+        /// Lấy danh sách log theo CheckTaskId (log mới nhất ở đầu)
+        /// </summary>
+        /// <param name="checkTaskId">Id của CheckTask</param>
+        [HttpGet("{checkTaskId:guid}")]
+        [ProducesResponseType(typeof(IEnumerable<CheckTaskLogViewModel>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<CheckTaskLogViewModel>>> GetByCheckTaskId(
+            Guid checkTaskId,
+            CancellationToken cancellationToken)
+        {
+            // Service đã xử lý sắp xếp theo Time desc và map sang ViewModel
+            var logs = await _checkTaskService.GetLogsByCheckTaskIdAsync(checkTaskId);
+            return Ok(logs);
         }
     }
 }

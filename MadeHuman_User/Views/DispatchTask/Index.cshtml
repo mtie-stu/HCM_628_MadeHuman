@@ -5,94 +5,204 @@
 <div class="container mt-4">
     <h3 class="text-primary">🚚 Gán & Hoàn thành nhiệm vụ DispatchTask</h3>
 
+    @* Log từ TempData (giống PackTask) *@
+    @if (TempData["Logs"] != null)
+    {
+        <div class="alert alert-info">
+            @Html.Raw(TempData["Logs"])
+        </div>
+    }
+
     <div class="card shadow-sm mt-3">
         <div class="card-body">
-            <label for="outboundTaskItemId" class="form-label">🔍 Mã OutboundTaskItem:</label>
-            <input type="text" id="outboundTaskItemId" class="form-control" placeholder="Nhập hoặc quét mã..." />
+            <form asp-action="Assign" method="post" onsubmit="return validateAndPlaySound();">
+                <label for="outboundTaskItemId" class="form-label">🔍 Mã OutboundTaskItem:</label>
+                <input type="text" id="outboundTaskItemId" name="outboundTaskItemId" class="form-control" placeholder="Nhập hoặc quét mã..." required />
 
-            <button id="assignBtn" class="btn btn-success mt-3 w-100">
-                🚀 Gán và hoàn thành DispatchTask
-            </button>
+                <button type="submit" class="btn btn-success mt-3 w-100">
+                    🚀 Gán và hoàn thành DispatchTask
+                </button>
+            </form>
+        </div>
+
+        <div class="card-body">
+            <h6 class="text-primary mb-2">🔎 Kết quả tra cứu</h6>
+            <div id="previewArea" class="small text-muted">Chưa có dữ liệu.</div>
         </div>
     </div>
-
-    <div class="mt-4" id="logResult"></div>
 </div>
 
 @section Scripts {
     <script>
+        // ====== SFX + refs ======
         const successSFX = new Audio("/sounds/success.mp3");
-        const errorSFX = new Audio("/sounds/error.mp3");
+        const errorSFX   = new Audio("/sounds/error.mp3");
+        const $input     = document.getElementById("outboundTaskItemId");
+        const $preview   = document.getElementById("previewArea");
 
+        // ====== Helpers ======
+        function isGuid(v){
+          return /^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$/.test(v);
+        }
         function getCookie(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
-            return null;
+          const m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+          return m ? decodeURIComponent(m[2]) : null;
         }
 
-        async function safeReadJson(response) {
-            try {
-                return await response.json();
-            } catch {
-                return null;
-            }
-        }
+        // ====== Preview logic: 2 cột (Info | Detail dạng thẻ) ======
+       async function fetchPreview(id) {
+  try {
+    if ($preview) $preview.innerHTML = "Đang tải...";
 
-        document.getElementById("assignBtn").addEventListener("click", async function () {
-            const id = document.getElementById("outboundTaskItemId").value.trim();
-            const resultBox = document.getElementById("logResult");
+    const token = getCookie("JWTToken");
+    const res = await fetch(`https://localhost:7204/api/OutboundTask/${id}/preview`, {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        ...(token ? { "Authorization": `Bearer ${token}` } : {})
+      }
+    });
 
-            if (!id) {
-                resultBox.innerHTML = `<div class="alert alert-warning">⚠️ Vui lòng nhập mã OutboundTaskItemId.</div>`;
-                errorSFX.play();
-                return;
-            }
+    if (res.status === 401 || res.status === 403) {
+      errorSFX.play();
+      $preview.innerHTML = `<div class="text-danger">❌ Chưa đăng nhập hoặc token hết hạn (HTTP ${res.status}).</div>`;
+      return;
+    }
 
-            const jwt = getCookie("JWTToken");
-            if (!jwt) {
-                resultBox.innerHTML = `<div class="alert alert-danger">❌ Không tìm thấy JWTToken trong cookie.</div>`;
-                errorSFX.play();
-                return;
-            }
+    const contentType = res.headers.get("content-type") || "";
+    if (!res.ok) {
+      let msg = `Lỗi ${res.status}`;
+      if (contentType.includes("application/json")) {
+        const j = await res.json().catch(()=>null);
+        if (j?.message) msg = j.message;
+      } else {
+        const t = await res.text().catch(()=>null);
+        if (t) msg = t;
+      }
+      errorSFX.play();
+      $preview.innerHTML = `<div class="text-danger">❌ ${msg}</div>`;
+      return;
+    }
 
-            resultBox.innerHTML = `<div class="alert alert-info">⏳ Đang xử lý, vui lòng chờ...</div>`;
+    const data = contentType.includes("application/json") ? await res.json() : null;
+    if (!data) {
+      errorSFX.play();
+      $preview.innerHTML = `<div class="text-danger">❌ Phản hồi không phải JSON hoặc rỗng.</div>`;
+      return;
+    }
 
-            try {
-                const response = await fetch(`https://localhost:7204/api/DispatchTask/assign/${id}`, {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${jwt}`
-                    }
-                });
+    successSFX.play();
 
-                const data = await safeReadJson(response);
+    // 🔔 Chỉ xét Finished
+    const isFinished = (data.status || "").toLowerCase() === "finished";
+    const statusNoteHtml = isFinished
+      ? `<div class="alert alert-success mb-3">🎉 Đơn hàng đã hoàn thành.</div>`
+      : "";
+    const badgeClass = isFinished ? "bg-success" : "bg-secondary";
 
-                if (response.ok) {
-                    const logs = Array.isArray(data?.logs) ? data.logs : [];
-                    let successMessage = logs.some(l => l.includes("✅ OutboundTask đã hoàn thành"))
-                        ? `<div class="alert alert-success mt-3">🎉 Nhiệm vụ DispatchTask đã hoàn thành toàn bộ!</div>` 
-                        : "";
+    const details        = data.details || [];
+    const totalQty       = details.reduce((s, d) => s + (d.quantity || 0), 0);
+    const uniqueSkuCount = new Set(details.map(d => d.sku ?? "")).size;
 
-                    resultBox.innerHTML = `
-                        <div class="alert alert-success">
-                            <strong>✅ Kết quả:</strong>
-                            <ul>${logs.map(log => `<li>${log}</li>`).join("")}</ul>
-                        </div>
-                        ${successMessage}`;
+    const detailCards = details.map(d => `
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center border rounded-3 px-3 py-2 bg-body">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-secondary">SKU</span>
+            <span class="fw-semibold">${d.sku ?? ""}</span>
+          </div>
+          <div class="text-end">
+            <div class="fs-5 fw-bold">${d.quantity}</div>
+            <small class="text-muted">Số lượng</small>
+          </div>
+        </div>
+      </div>
+    `).join("");
 
-                    successSFX.play();
-                } else {
-                    resultBox.innerHTML = `
-                        <div class="alert alert-danger">
-                            ❌ ${data?.message || "Lỗi không xác định từ máy chủ."}
-                        </div>`;
-                    errorSFX.play();
-                }
-            } catch (err) {
-                resultBox.innerHTML = `<div class="alert alert-danger">❌ Lỗi khi gọi API: ${err.message}</div>`;
-                errorSFX.play();
-            }
+    $preview.innerHTML = `
+      ${statusNoteHtml}
+      <div class="row g-3">
+        <!-- Cột 1: Thông tin OutboundTaskItem -->
+        <div class="col-12 col-md-6">
+          <div class="border rounded p-3 h-100">
+            <h6 class="mb-3 text-primary">📦 Thông tin OutboundTaskItem</h6>
+            <div class="mb-2"><strong>OutboundTaskItemId:</strong><br><code>${data.outboundTaskItemId}</code></div>
+            <div class="mb-2"><strong>OutboundTaskId:</strong><br><code>${data.outboundTaskId}</code></div>
+            <div class="mb-2"><strong>ShopOrderId:</strong><br><code>${data.shopOrderId}</code></div>
+            <div class="mb-2"><strong>Trạng thái:</strong> <span class="badge ${badgeClass}">${data.status}</span></div>
+            <div class="mb-1"><strong>Tổng dòng chi tiết:</strong> ${details.length}</div>
+            <div class="mb-0"><strong>SKU khác nhau:</strong> ${uniqueSkuCount}</div>
+          </div>
+        </div>
+
+        <!-- Cột 2: Chi tiết dạng thẻ -->
+        <div class="col-12 col-md-6">
+          <div class="border rounded p-3 h-100">
+            <h6 class="mb-3 text-primary">🧾 Chi tiết OutboundTaskItem</h6>
+            <div class="row g-2">
+              ${detailCards || `<div class="col"><div class="text-center text-muted">Không có detail</div></div>`}
+              <!-- Tổng số lượng -->
+              <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center bg-light border rounded-3 px-3 py-2">
+                  <div class="fw-semibold">Tổng số lượng</div>
+                  <div class="fs-5 fw-bold">${totalQty}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  } catch (e) {
+    console.error(e);
+    errorSFX.play();
+    if ($preview) $preview.innerHTML = `<div class="text-danger">❌ Không thể tải dữ liệu.</div>`;
+  }
+}
+
+
+        // ====== Events giống PackTask ======
+        $input.addEventListener("change", () => {
+          const val = $input.value.trim();
+          if (!isGuid(val)) {
+            errorSFX.play();
+            $preview.innerHTML = `<div class="text-danger">⚠️ Mã không phải GUID hợp lệ.</div>`;
+            return;
+          }
+          fetchPreview(val);
         });
+
+        $input.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            const val = $input.value.trim();
+            if (!isGuid(val)) {
+              errorSFX.play();
+              $preview.innerHTML = `<div class="text-danger">⚠️ Mã không phải GUID hợp lệ.</div>`;
+              return;
+            }
+            fetchPreview(val);
+          }
+        });
+
+        window.addEventListener("load", () => $input?.focus());
+
+        // ====== Validate trước khi submit (form POST) ======
+        function validateAndPlaySound() {
+          const val = $input.value.trim();
+          if (!val) {
+            errorSFX.play();
+            alert("⚠️ Vui lòng nhập mã OutboundTaskItemId.");
+            return false;
+          }
+          if (!isGuid(val)) {
+            errorSFX.play();
+            alert("⚠️ Mã OutboundTaskItemId không phải GUID hợp lệ.");
+            return false;
+          }
+          successSFX.play();
+          return true;
+        }
+        window.validateAndPlaySound = validateAndPlaySound;
     </script>
 }

@@ -1,127 +1,87 @@
 ﻿@model Madehuman_Share.ViewModel.LoginModel
-
 @{
     Layout = null;
     ViewData["Title"] = "Login";
 }
 
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
-    <title>Login</title>
-    <link rel="stylesheet" href="~/css/login.css" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>@ViewData["Title"] - MadeHuman</title>
+
+    <!-- Icons + CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="~/css/pages/Account/login.css" asp-append-version="true" />
 </head>
 <body>
-    <div class="login-container">
-        <h1>MADEHUMAN</h1>
-        <h3>Welcome back!</h3>
+    <main class="login-page">
+        <section class="login-card" role="form" aria-labelledby="loginTitle">
+            <h1 id="loginTitle" class="brand">MADEHUMAN</h1>
+            <h3 class="subhead">Welcome back!</h3>
 
-        <form asp-action="Login" method="post">
-            <input asp-for="EmailOrID" class="form-control" placeholder="Email or ID" />
-            <span asp-validation-for="EmailOrID" class="text-danger"></span>
+            <form asp-action="Login" method="post" class="form" id="loginForm" novalidate>
+                @Html.AntiForgeryToken()
 
-            <input asp-for="Password" type="password" class="form-control" placeholder="Password" />
-            <span asp-validation-for="Password" class="text-danger"></span>
+                <div class="field">
+                    <i class="bi bi-person"></i>
+                    <input asp-for="EmailOrID" class="form-control" placeholder="Email hoặc ID" autocomplete="username" />
+                    <span asp-validation-for="EmailOrID" class="text-danger"></span>
+                </div>
 
-            <span class="password-hint">Use at least 8 characters with 1 number and one special character.</span>
+                <div class="field">
+                    <i class="bi bi-shield-lock"></i>
+                    <input asp-for="Password" type="password" class="form-control" placeholder="Mật khẩu" autocomplete="current-password" id="passwordInput" />
+                    <button type="button" class="toggle-pass" aria-label="Hiện/ẩn mật khẩu" id="togglePassBtn">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
 
-            <button type="submit">LOG IN</button>
-        </form>
-        
+                <div class="password-hint">Use at least 8 characters with 1 number and one special character.</div>
 
-        <a href="#">Forgot password?</a>
-        <a href="@Url.Action("Register", "Account")">Chưa có tài khoản? Đăng ký ngay</a>
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <span class="btn-text">LOG IN</span>
+                </button>
 
-    </div>
+                <div class="links">
+                    <a href="@Url.Action("ForgotPassword","Account")">Forgot password?</a>
+                    <a href="@Url.Action("Register","Account")">Chưa có tài khoản? Đăng ký ngay</a>
+                </div>
+            </form>
+
+            <div class="footer">© @DateTime.Now.Year MadeHuman</div>
+        </section>
+    </main>
 
     @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script>
+        (function(){
+            const pass = document.getElementById('passwordInput');
+            const toggle = document.getElementById('togglePassBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const form = document.getElementById('loginForm');
+
+            // Toggle show/hide password
+            toggle.addEventListener('click', function(){
+                const isPwd = pass.getAttribute('type') === 'password';
+                pass.setAttribute('type', isPwd ? 'text' : 'password');
+                this.innerHTML = `<i class="bi ${isPwd ? 'bi-eye-slash' : 'bi-eye'}"></i>`;
+                pass.focus();
+            });
+
+            // Submit spinner + disable
+            form.addEventListener('submit', function(){
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `<span class="spinner"></span>Đang đăng nhập...`;
+            });
+
+            // Autofocus
+            const email = document.querySelector('input[name="EmailOrID"]');
+            if (email) email.focus();
+        })();
+    </script>
 </body>
 </html>
-
-<style>
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background-color: #ffffff;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-    }
-
-    .login-container {
-        text-align: center;
-        width: 100%;
-        max-width: 320px;
-        margin: auto;
-    }
-
-        .login-container h1 {
-            font-weight: bold;
-            letter-spacing: 1px;
-            margin-bottom: 40px;
-        }
-
-        .login-container h3 {
-            margin-bottom: 20px;
-            font-size: 16px;
-        }
-
-    form {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    input[type="text"],
-    input[type="password"] {
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        font-size: 14px;
-    }
-
-    input::placeholder {
-        color: #999;
-    }
-
-    button[type="submit"] {
-        background-color: #f7a340;
-        color: white;
-        border: none;
-        padding: 10px;
-        font-weight: bold;
-        border-radius: 20px;
-        cursor: pointer;
-        margin-top: 10px;
-        transition: background-color 0.2s;
-    }
-
-        button[type="submit"]:hover {
-            background-color: #d4882e;
-        }
-
-    .text-danger {
-        font-size: 12px;
-        color: red;
-        text-align: left;
-    }
-
-    .password-hint {
-        font-size: 11px;
-        color: #666;
-    }
-
-    a {
-        display: block;
-        margin-top: 10px;
-        font-size: 11px;
-        color: #888;
-        text-decoration: none;
-    }
-
-        a:hover {
-            text-decoration: underline;
-        }
-</style>

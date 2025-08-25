@@ -1,0 +1,226 @@
+﻿/* Scope toàn trang trong .refill-page để tránh “tràn” style */
+.refill-page {
+    --accent: #ee4d2d; /* cam */
+    --accent-weak: #ffede8;
+    --gray-900: #1f2937;
+    --gray-700: #374151;
+    --gray-500: #6b7280;
+    --gray-200: #e5e7eb;
+    --gray-100: #f3f4f6;
+    --radius: 18px;
+    background: #fff;
+}
+
+    /* TIÊU ĐỀ */
+    .refill-page .page-title {
+        font-weight: 700;
+        color: var(--gray-900);
+        letter-spacing: .2px;
+    }
+
+    /* CARD */
+    .refill-page .card {
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+    }
+
+        .refill-page .card .card-title {
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: .75rem;
+        }
+
+    .refill-page .muted {
+        color: var(--gray-500);
+    }
+
+    /* INPUT SCAN */
+    .refill-page #scanInput {
+        height: 58px;
+        font-size: 1.05rem;
+        border-radius: 14px;
+        border: 1.5px solid var(--gray-200);
+    }
+
+        .refill-page #scanInput:focus {
+            box-shadow: 0 0 0 .25rem rgba(238,77,45,.12);
+            border-color: var(--accent);
+        }
+
+    /* STEP CHIPS */
+    .refill-page .steps {
+        display: flex;
+        gap: .5rem;
+        flex-wrap: wrap;
+    }
+
+    .refill-page .step-chip {
+        padding: .35rem .6rem;
+        border-radius: 999px;
+        font-size: .85rem;
+        background: var(--gray-100);
+        color: var(--gray-700);
+        border: 1px solid var(--gray-200);
+    }
+
+        .refill-page .step-chip.active {
+            background: var(--accent-weak);
+            color: var(--accent);
+            border-color: var(--accent);
+            font-weight: 600;
+        }
+
+    /* ALERT */
+    .refill-page .alert {
+        border-radius: 12px;
+        padding: .75rem 1rem;
+        margin: 0;
+    }
+
+    .refill-page .alert-success {
+        border: 1px solid #d1fae5;
+        background: #ecfdf5;
+        color: #065f46;
+    }
+
+    .refill-page .alert-danger {
+        border: 1px solid #fee2e2;
+        background: #fef2f2;
+        color: #991b1b;
+    }
+
+    /* HÀNG THÔNG TIN */
+    .refill-page .info-row {
+        display: flex;
+        gap: .5rem;
+        margin-bottom: .25rem;
+    }
+
+        .refill-page .info-row strong {
+            width: 140px;
+            color: var(--gray-700);
+        }
+
+    .refill-page .badge-sku {
+        background: var(--accent-weak);
+        color: var(--accent);
+        border: 1px solid var(--accent);
+        border-radius: 999px;
+        padding: .15rem .55rem;
+        font-weight: 600;
+        font-size: .85rem;
+    }
+
+    /* ẢNH SẢN PHẨM */
+    .refill-page .product-img {
+        max-height: 250px;
+        object-fit: contain;
+        border-radius: 12px;
+        border: 1px solid var(--gray-200);
+    }
+
+    /* NÚT */
+    .refill-page .btn-accent {
+        background: var(--accent);
+        border: none;
+        color: #fff;
+        border-radius: 12px;
+        padding: .6rem 1rem;
+    }
+
+        .refill-page .btn-accent:hover {
+            filter: brightness(.95);
+        }
+
+/* RESPONSIVE */
+@media (max-width: 991.98px) {
+    .refill-page .info-row strong {
+        width: 120px;
+    }
+}
+/* ===== Product panel tidy ===== */
+.refill-page .sku-chip {
+    background: var(--accent-weak);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    padding: .2rem .6rem;
+    font-weight: 600;
+    font-size: .85rem;
+    white-space: nowrap;
+}
+
+.refill-page .info-grid {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    row-gap: .35rem;
+    column-gap: .75rem;
+    margin-bottom: .75rem;
+}
+
+    .refill-page .info-grid .label {
+        color: var(--gray-700);
+        font-weight: 600;
+    }
+
+/* Ảnh/Carousel khung gọn */
+.refill-page .carousel-minimal .carousel-inner {
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    background: var(--gray-100);
+    overflow: hidden;
+    aspect-ratio: 4/3; /* giữ tỷ lệ ảnh thống nhất */
+    display: block;
+}
+
+.refill-page .carousel-minimal .carousel-item,
+.refill-page .carousel-minimal .carousel-item > img {
+    height: 100%;
+}
+
+    .refill-page .carousel-minimal .carousel-item > img {
+        width: 100%;
+        object-fit: contain;
+    }
+
+/* Nút điều hướng nhỏ gọn */
+.refill-page .carousel-minimal .carousel-control-prev,
+.refill-page .carousel-minimal .carousel-control-next {
+    width: 2.25rem;
+    height: 2.25rem;
+    top: .5rem;
+    transform: none;
+    opacity: .9;
+    background: rgba(0,0,0,.35);
+    border-radius: 999px;
+}
+
+.refill-page .carousel-minimal .carousel-control-prev {
+    left: .5rem;
+}
+
+.refill-page .carousel-minimal .carousel-control-next {
+    right: .5rem;
+}
+
+/* Chấm chỉ báo gọn */
+.refill-page .carousel-minimal .carousel-indicators {
+    bottom: .35rem;
+}
+
+    .refill-page .carousel-minimal .carousel-indicators [data-bs-target] {
+        width: .5rem;
+        height: .5rem;
+        border-radius: 999px;
+        background: var(--accent);
+    }
+
+/* Trạng thái không có ảnh */
+.refill-page .empty-img {
+    border: 1px dashed var(--gray-200);
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    color: var(--gray-500);
+    background: var(--gray-100);
+}

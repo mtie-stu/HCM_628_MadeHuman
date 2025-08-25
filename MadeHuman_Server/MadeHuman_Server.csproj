@@ -1,34 +1,49 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Google.Apis.Drive.v3" Version="1.70.0.3834" />
-    <PackageReference Include="Google.Apis.Sheets.v4" Version="1.70.0.3819" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.16" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.16" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.16" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.16" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.16">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
-  </ItemGroup>
+	<!-- Packages -->
+	<ItemGroup>
+		<PackageReference Include="Google.Apis.Drive.v3" Version="1.70.0.3834" />
+		<PackageReference Include="Google.Apis.Sheets.v4" Version="1.70.0.3819" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.16" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.16" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.16" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.16" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.16">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\MadeHuman_Admin\MadeHuman_Admin.csproj" />
-    <ProjectReference Include="..\Madehuman_Share\Madehuman_Share.csproj" />
-  </ItemGroup>
+	<!-- Project refs (Admin có thể không tồn tại trong build env) -->
+	<ItemGroup>
+		<ProjectReference Include="..\Madehuman_Share\Madehuman_Share.csproj" />
+		<ProjectReference Include="..\MadeHuman_Admin\MadeHuman_Admin.csproj" Condition="Exists('..\MadeHuman_Admin\MadeHuman_Admin.csproj')" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Uploads\" />
-  </ItemGroup>
+	<!-- Thư mục tĩnh -->
+	<ItemGroup>
+		<Folder Include="Uploads\" />
+	</ItemGroup>
+
+	<!-- Chỉ UPDATE metadata để copy ra output, tránh duplicate implicit Content -->
+	<ItemGroup>
+		<Content Update="Data/Bill/**">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+
+		<!-- Nếu còn đọc file cục bộ: giữ 2 dòng dưới; nếu đã dùng ENV thì có thể bỏ để tránh đóng gói secrets -->
+		<Content Update="Data/credentials_oauth.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 
 </Project>

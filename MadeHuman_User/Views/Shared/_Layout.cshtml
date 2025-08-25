@@ -180,20 +180,20 @@
                    class="@IsActive("PickTasks","Index")">
                     <span><i class="fas fa-truck-loading"></i> Picker</span>
                 </a>
-                <a asp-controller="Outbound" asp-action="CheckerTaskMix"
-                   class="@IsActive("Outbound","CheckerTaskMix")">
+                <a asp-controller="CheckTask" asp-action="MixSKU"
+                   class="@IsActive("CheckTask","MixSKU")">
                     <span><i class="fas fa-tasks"></i> Checker Task Mix</span>
-                </a>`
-                <a asp-controller="Outbound" asp-action="CheckerTaskSingle"
-                   class="@IsActive("Outbound","CheckerTaskSingle")">
+                </a>
+                <a asp-controller="CheckTask" asp-action="SingleSKU"
+                   class="@IsActive("CheckTask","SingleSKU")">
                     <span><i class="fas fa-tasks"></i> Checker Task Single</span>
                 </a>
                 <a asp-controller="PackTask" asp-action="Index"
-                   class="@IsActive("PackTask","Index")">`
+                   class="@IsActive("PackTask","Index")">
                     <span><i class="fas fa-box"></i> Packer</span>
                 </a>
                 <a asp-controller="DispatchTask" asp-action="Index"
-                   class="@IsActive("DispatchTask","Index")">`
+                   class="@IsActive("DispatchTask","Index")">
                     <span><i class="fas fa-shipping-fast"></i> Dispatch</span>
                 </a>
             </div>
@@ -208,7 +208,7 @@
             <button type="button" class="mb-1 @(isDemoMenuActive ? "active" : "")"
                     data-bs-toggle="collapse" data-bs-target="#demoSubmenu"
                     aria-expanded="@isDemoMenuActive.ToString().ToLower()" aria-controls="demoSubmenu">
-                <span><i class="fas fa-briefcase"></i> Demo</span>
+                <span><i class="fas fa-briefcase"></i> Giả lập dữ liệu</span>
                 <i class="fas fa-chevron-down chevron"></i>
             </button>
 
@@ -235,10 +235,10 @@
                 </a>
             </div>
 
-            <a asp-controller="Support" asp-action="Help"
+            @* <a asp-controller="Support" asp-action="Help"
                class="@IsActive("Support","Help")">
                 <span><i class="fas fa-question-circle"></i> Help</span>
-            </a>
+            </a> *@
 
 			<div class="bg-white rounded text-center py-3 mt-4 border-top">
 				<p class="small fw-bold text-dark mb-0">MADEHUMAN</p>

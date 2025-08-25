@@ -2,73 +2,191 @@
 
 @{
     ViewData["Title"] = "Refill";
+    var total = Model?.Count ?? 0;
+    var done = Model?.Count(x => x.IsRefilled) ?? 0;
+    var pending = total - done;
+
+    var groups = (Model ?? new()).GroupBy(x => x.RefillTaskId)
+        .OrderByDescending(g => g.Max(i => i.CreateAt))
+        .ToList();
 }
 
-<div class="container mt-4">
-    <h2 class="text-primary mb-3">
-        <i class="bi bi-table"></i> Danh sách chi tiết nhiệm vụ bổ sung kho
-    </h2>
+<link rel="stylesheet" href="~/css/pages/Refill/refill-detailflat.css" asp-append-version="true" />
 
-    <p class="text-muted">
-        📦 Tổng số bản ghi: <strong>@(Model?.Count ?? 0)</strong> <br />
-        ✅ Đã hoàn thành: <strong>@(Model?.Count(x => x.IsRefilled) ?? 0)</strong>
-    </p>
+<div class="refill-page">
+    <div class="container mt-4">
 
-    @if (Model == null || !Model.Any())
-    {
-        <div class="alert alert-warning">
-            <i class="bi bi-exclamation-triangle"></i> Không có chi tiết nhiệm vụ nào.
+        <!-- Header -->
+        <div class="page-head mb-2">
+            <div>
+                <h2 class="page-title"><i class="bi bi-table"></i> Danh sách chi tiết nhiệm vụ bổ sung kho</h2>
+                <div class="muted">Dữ liệu gộp theo từng nhiệm vụ (RefillTaskId).</div>
+            </div>
+            <div class="toolbar">
+                <label class="form-check-label me-2">
+                    <input id="togglePending" type="checkbox" class="form-check-input me-1" checked />
+                    Chỉ hiển thị mục <strong>chưa bổ sung</strong>
+                </label>
+            </div>
         </div>
-    }
-    else
-    {
-        <table class="table table-bordered table-striped table-hover table-sm">
-            <thead class="table-light">
-                <tr>
-                    <th>Hành động</th>
-                    <th>Mã nhiệm vụ</th>
-                    <th>Người tạo</th>
-                    <th>Thời gian tạo</th>
-                    <th>From</th>
-                    <th>To</th>
-                    <th>SKU</th>
-                    <th>Số lượng</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.Where(x => !x.IsRefilled))
-                {
-                    var shortId = item.RefillTaskId.ToString();
-                    var displayId = shortId.Length > 6
-                    ? shortId.Substring(0, 3) + "..." + shortId.Substring(shortId.Length - 3)
-                    : shortId;
 
-                    <tr>
-                        <td>
-                            <a asp-controller="RefillTask"
-                               asp-action="ValidateScan"
-                               asp-route-refillTaskId="@item.RefillTaskId"
-                               asp-route-refillTaskDetailId="@item.DetailId"
-                               asp-route-fromLocation="@item.FromLocation"
-                               asp-route-toLocation="@item.ToLocation"
-                               asp-route-sku="@item.SKU"
-                               asp-route-quantity="@item.Quantity"
-                               asp-route-createBy="@item.CreateBy"
-                               asp-route-createAt="@item.CreateAt.ToString("O")"
-                               class="btn btn-sm btn-outline-success">
-                                <i class="bi bi-upc-scan"></i> Quét xác nhận
-                            </a>
-                        </td>
-                        <td>@displayId</td> <!-- 👈 Dùng mã rút gọn -->
-                        <td>@item.CreateBy</td>
-                        <td>@item.CreateAt.ToString("dd/MM/yyyy HH:mm")</td>
-                        <td>@item.FromLocationName</td>
-                        <td>@item.ToLocationName</td>
-                        <td>@item.SKU</td>
-                        <td>@item.Quantity</td>
-                    </tr>
+        <!-- Stats -->
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-ico"><i class="bi bi-collection"></i></div>
+                <div class="stat-meta"><div class="label">Tổng bản ghi</div><div class="value">@total</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-ico"><i class="bi bi-check2-circle"></i></div>
+                <div class="stat-meta"><div class="label">Đã hoàn thành</div><div class="value">@done</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-ico"><i class="bi bi-hourglass-split"></i></div>
+                <div class="stat-meta"><div class="label">Đang chờ</div><div class="value">@pending</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-ico"><i class="bi bi-diagram-3"></i></div>
+                <div class="stat-meta"><div class="label">Số nhiệm vụ</div><div class="value">@groups.Count</div></div>
+            </div>
+        </div>
+
+        @if (groups.Count == 0)
+        {
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle"></i> Không có chi tiết nhiệm vụ nào.
+            </div>
+        }
+        else
+        {
+            <div class="accordion" id="refillDetailAccordion">
+                @for (int gi = 0; gi < groups.Count; gi++)
+                {
+                    var g = groups[gi];
+                    var first = g.First();
+                    var shortId = g.Key.ToString();
+                    var displayId = shortId.Length > 6 ? shortId[..3] + "..." + shortId[^3..] : shortId;
+
+                    <div class="accordion-item mb-2">
+                        <h2 class="accordion-header" id="heading-@gi">
+                            <button class="accordion-button collapsed" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#collapse-@gi"
+                                    aria-expanded="false" aria-controls="collapse-@gi">
+                                <i class="bi bi-clipboard-check"></i>
+                                <span class="ms-2">Nhiệm vụ: <span class="task-chip" title="@g.Key">@displayId</span></span>
+                                <span class="ms-3 text-muted"><i class="bi bi-person-circle"></i> @first.CreateBy</span>
+                                <span class="ms-3 text-muted"><i class="bi bi-clock"></i> @first.CreateAt.ToString("dd/MM/yyyy HH:mm")</span>
+                            </button>
+                        </h2>
+
+                        <div id="collapse-@gi" class="accordion-collapse collapse" aria-labelledby="heading-@gi" data-bs-parent="#refillDetailAccordion">
+                            <div class="accordion-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-sm align-middle">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="th-muted">Hành động</th>
+                                                <th class="th-muted"><i class="bi bi-upc-scan"></i> SKU</th>
+                                                <th class="th-muted"><i class="bi bi-box-arrow-in-left"></i> From</th>
+                                                <th class="th-muted"><i class="bi bi-box-arrow-right"></i> To</th>
+                                                <th class="th-muted text-end"><i class="bi bi-hash"></i> Số lượng</th>
+                                                <th class="th-muted text-center"><i class="bi bi-check2-square"></i> Trạng thái</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in g)
+                                            {
+                                                var isDone = item.IsRefilled;
+                                                var rowCls = isDone ? "row-done" : "row-pending";
+                                                var sku = item.SKU;
+                                                var fromName = item.FromLocationName;
+                                                var toName = item.ToLocationName;
+
+                                                <tr class="@rowCls" data-status="@(isDone ? "done" : "pending")">
+                                                    <td class="text-nowrap">
+                                                        @if (!isDone)
+                                                        {
+                                                            <a class="btn btn-sm btn-outline-success btn-scan"
+                                                               asp-controller="RefillTask"
+                                                               asp-action="ValidateScan"
+                                                               asp-route-refillTaskId="@item.RefillTaskId"
+                                                               asp-route-refillTaskDetailId="@item.DetailId"
+                                                               asp-route-fromLocation="@item.FromLocation"
+                                                               asp-route-toLocation="@item.ToLocation"
+                                                               asp-route-sku="@item.SKU"
+                                                               asp-route-quantity="@item.Quantity"
+                                                               asp-route-createBy="@item.CreateBy"
+                                                               asp-route-createAt="@item.CreateAt.ToString("O")">
+                                                                <i class="bi bi-upc-scan"></i> Quét
+                                                            </a>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        @if (!string.IsNullOrWhiteSpace(sku))
+                                                        {
+                                                            <span class="sku-chip">@sku</span>
+                                                        }
+                                                    </td>
+                                                    <td><span class="loc-chip"><i class="bi bi-geo-alt"></i> @fromName</span></td>
+                                                    <td><span class="loc-chip"><i class="bi bi-geo"></i> @toName</span></td>
+                                                    <td class="text-end qty">@item.Quantity</td>
+                                                    <td class="text-center">
+                                                        @if (isDone)
+                                                        {
+                                                            <span class="badge text-bg-success">Đã bổ sung</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge text-bg-warning">Chưa bổ sung</span>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 }
-            </tbody>
-        </table>
-    }
+            </div>
+        }
+    </div>
+
+    <!-- Inline alert -->
+    <div id="inlineAlert" class="inline-alert d-none"></div>
 </div>
+@section Scripts {
+    <script>
+        (function(){
+          const toggle = document.getElementById('togglePending');
+          const alertEl = document.getElementById('inlineAlert');
+
+          function showInline(type, text){
+            alertEl.className = 'inline-alert ' + (type==='success'?'success':'error');
+            alertEl.textContent = text;
+            alertEl.classList.remove('d-none');
+            requestAnimationFrame(()=> alertEl.classList.add('show'));
+            setTimeout(()=>{ alertEl.classList.remove('show'); setTimeout(()=> alertEl.classList.add('d-none'), 200); }, 2000);
+          }
+
+          // Lọc hàng theo trạng thái
+          function applyFilter(){
+            const onlyPending = toggle.checked;
+            document.querySelectorAll('tr[data-status]').forEach(tr=>{
+              const isPending = tr.getAttribute('data-status') === 'pending';
+              tr.style.display = (onlyPending && !isPending) ? 'none' : '';
+            });
+          }
+          if (toggle){ toggle.addEventListener('change', applyFilter); applyFilter(); }
+
+          // Spinner cho nút Quét
+          document.querySelectorAll('.btn-scan').forEach(btn=>{
+            btn.addEventListener('click', function(){
+              if (this.dataset.loading === '1') return;
+              this.dataset.loading = '1';
+              this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang mở...';
+            });
+          });
+        })();
+    </script>
+}

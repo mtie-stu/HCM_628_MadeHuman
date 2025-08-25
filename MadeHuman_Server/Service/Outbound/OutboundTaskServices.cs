@@ -3,6 +3,7 @@
 using MadeHuman_Server.Data;
 using MadeHuman_Server.Model.Outbound;
 using MadeHuman_Server.Model.Shop;
+using Madehuman_Share.ViewModel.Outbound;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
@@ -17,6 +18,7 @@ namespace MadeHuman_Server.Service.Outbound
         Task<List<OutboundTask>> CreateOutboundTaskMultiProductAsync();
         Task<List<OutboundTask>> CreateOutboundTaskSingleMixProductAsync();
         Task<List<OutboundTask>> CreateOutboundTaskSingleProductAsync();
+        Task<OutboundTaskItemPreviewViewModel?> GetPreviewAsync(Guid outboundTaskItemId, CancellationToken ct = default);
     }
 
     public class OutboundTaskService : IOutboundTaskServices
@@ -364,6 +366,37 @@ namespace MadeHuman_Server.Service.Outbound
             }
 
             return pickTask;
+        }
+
+
+        //làm thêm preview
+        // using Microsoft.EntityFrameworkCore;
+
+        public async Task<OutboundTaskItemPreviewViewModel?> GetPreviewAsync(Guid outboundTaskItemId, CancellationToken ct = default)
+        {
+            // Dùng projection để tránh load navigation không cần thiết và null-safe
+            var dto = await _context.OutboundTaskItems
+                .Where(x => x.Id == outboundTaskItemId)
+                .Select(item => new OutboundTaskItemPreviewViewModel
+                {
+                    OutboundTaskItemId = item.Id,
+                    OutboundTaskId = item.OutboundTaskId,
+                    ShopOrderId = item.ShopOrderId,
+                    Status = item.Status.ToString(),
+                    Details = item.OutboundTaskItemDetails
+                        .Select(d => new OutboundTaskItemDetailViewModel
+                        {
+                            OutboundTaskItemDetailId = d.Id,
+                            ProductSKUId = d.ProductSKUId,
+                            SKU = d.ProductSKU != null ? d.ProductSKU.SKU : null,
+                            Quantity = d.Quantity
+                        })
+                        .ToList()
+                })
+                .AsNoTracking()
+                .FirstOrDefaultAsync(ct);
+
+            return dto;
         }
 
     }
