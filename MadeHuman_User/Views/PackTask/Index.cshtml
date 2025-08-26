@@ -302,7 +302,7 @@
             toggleBtnLoading($btnPreview, true);
 
             const token = getCookie("JWTToken");
-            const res = await fetch(`https://localhost:7204/api/OutboundTask/${id}/preview`, {
+            const res = await fetch(`https://hcm-628-madehuman-api.onrender.com/api/OutboundTask/${id}/preview`, {
                 method: "GET",
                 headers: {
                     "Accept": "application/json",
