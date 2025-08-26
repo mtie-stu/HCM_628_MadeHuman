@@ -317,5 +317,57 @@ namespace MadeHuman_User.ServicesTask.Services.InboundService
 
             return (true, taskId, (int)resp.StatusCode, body);
         }
+
+
+        public async Task<bool> CreateExportTaskAsync(RefillTaskFullViewModel model, HttpContext httpContext)
+        {
+            try
+            {
+                var jwt = httpContext.Request.Cookies["JWTToken"];
+                if (string.IsNullOrEmpty(jwt))
+                {
+                    _logger.LogWarning("❌ Không tìm thấy JWTToken trong cookie.");
+                    return false;
+                }
+
+                var requestUri = "/api/RefillTask";
+
+                var request = new HttpRequestMessage(HttpMethod.Post, requestUri)
+                {
+                    Content = JsonContent.Create(model)
+                };
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwt);
+
+                _logger.LogInformation("📤 Sending RefillTask request to {Uri} with payload: {Payload}", requestUri, JsonSerializer.Serialize(model));
+
+                var response = await _client.SendAsync(request);
+
+                _logger.LogInformation("📥 Response status: {StatusCode}", response.StatusCode);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation("✅ Tạo nhiệm vụ Refill thành công.");
+                    return true;
+                }
+
+                var errorContent = await response.Content.ReadAsStringAsync();
+
+                _logger.LogWarning("❌ Tạo nhiệm vụ Refill thất bại.");
+                _logger.LogWarning("❌ StatusCode: {StatusCode}", response.StatusCode);
+                _logger.LogWarning("❌ Response content: {Error}", errorContent);
+
+                return false;
+            }
+            catch (HttpRequestException httpEx)
+            {
+                _logger.LogError(httpEx, "❌ Lỗi HTTP khi gọi API RefillTask.");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Exception không xác định khi gọi API RefillTask.");
+                return false;
+            }
+        }
     }
 }

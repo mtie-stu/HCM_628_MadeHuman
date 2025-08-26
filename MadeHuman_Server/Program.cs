@@ -40,7 +40,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy.WithOrigins("https://localhost:7112",
-            "https://hcm-628-madehuman-fe.onrender.com") // Giao diện FE
+            "https://hcm-628-madehuman-fe.onrender.com",
+            "https://madehumanwarehouse.io.vn") // Giao diện FE
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials(); // Nếu dùng Cookie
@@ -75,6 +76,7 @@ builder.Services.AddAuthentication(auth =>
 builder.Services.AddHttpClient();
 
 // 🧩 Services
+builder.Services.AddScoped< DashboardService>();
 builder.Services.AddTransient<ITokenService, TokenService>();
 builder.Services.AddScoped<IWarehouseService, WareHouseSvc>();
 builder.Services.AddScoped<IWarehouseZoneService, WareHouseZoneSvc>();

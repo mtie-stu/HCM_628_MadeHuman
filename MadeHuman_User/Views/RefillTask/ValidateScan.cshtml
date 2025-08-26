@@ -254,7 +254,8 @@
 
             try {
                 setLoading(true);
-                const res = await fetch("https://localhost:7204/api/RefillTask/validate-scan", {
+                    const res = await fetch("https://hcm-628-madehuman-api.onrender.com/api/RefillTask/validate-scan", {     //                const res = await fetch("https://localhost:7204/api/RefillTask/validate-scan", {
+
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -271,7 +272,8 @@
                     showSuccess("🎉 Hoàn tất bổ sung", line);
                     // reset nhẹ UI trước khi điều hướng
                     setTimeout(() => {
-                        window.location.href = "https://localhost:7112/RefillTask/DetailFlat";
+                            window.location.href = "https://hcm-628-madehuman-fe.onrender.com/RefillTask/DetailFlat";         //                        window.location.href = "https://localhost:7112/RefillTask/DetailFlat";
+
                     }, 1200);
                 } else {
                     const lines = Array.isArray(body) ? body.join("<br>") : "Đã có lỗi trong quá trình xác nhận.";

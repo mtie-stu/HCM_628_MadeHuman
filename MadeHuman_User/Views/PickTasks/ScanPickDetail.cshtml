@@ -143,7 +143,7 @@
                     try {
                         const jwt = document.cookie.split("; ").find(r => r.startsWith("JWTToken="))?.split("=")[1];
 
-                        const res = await fetch(`https://localhost:7204/api/PickTasks/confirm-basket`, {
+                        const res = await fetch(`https://hcm-628-madehuman-api.onrender.com/api/PickTasks/confirm-basket`, {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
