@@ -1,0 +1,37 @@
+﻿@model Madehuman_Share.ViewModel.WareHouse.WarehouseLocationViewModel
+
+@{
+    ViewData["Title"] = "Tạo vị trí kho";
+}
+
+<link rel="stylesheet" href="~/css/pages/Warehouse/warehouse-index.css" asp-append-version="true" />
+
+<div class="warehouse-page">
+    <div class="container mt-4">
+        <div class="page-head">
+            <div>
+                <h2 class="page-title"><i class="bi bi-plus-circle"></i> Tạo vị trí kho</h2>
+                <div class="page-subtext">Nhập thông tin cơ bản cho location mới.</div>
+            </div>
+        </div>
+
+        <form asp-action="Create" method="post" class="row g-3">
+            <div class="col-12">
+                <label asp-for="NameLocation" class="form-label">Tên vị trí</label>
+                <input asp-for="NameLocation" class="form-control" required />
+                <span asp-validation-for="NameLocation" class="text-danger"></span>
+            </div>
+
+            <div class="col-12">
+                <label asp-for="ZoneId" class="form-label">ZoneId</label>
+                <input asp-for="ZoneId" class="form-control" required />
+                <span asp-validation-for="ZoneId" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 d-flex gap-2">
+                <a asp-action="Index" class="btn btn-outline"><i class="bi bi-arrow-left me-1"></i> Quay lại</a>
+                <button class="btn btn-orange" type="submit"><i class="bi bi-check2-circle me-1"></i> Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>

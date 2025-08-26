@@ -1,4 +1,5 @@
-﻿using MadeHuman_Server.Service.WareHouse;
+﻿using MadeHuman_Server.Model.WareHouse;
+using MadeHuman_Server.Service.WareHouse;
 using Madehuman_Share.ViewModel.WareHouse;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -77,6 +78,38 @@ namespace MadeHuman_Server.Controllers.WareHouse
             return Ok(result);
         }
 
+        /// <summary>
+        /// GET /api/WareHouseLocation/options?zoneId={guid}&status=Stored
+        /// Nhận status dạng enum (Empty/Stored/...)
+        /// </summary>
+        [HttpGet("options")]
+        public async Task<IActionResult> GetOptions([FromQuery] Guid zoneId, [FromQuery] StatusWareHouse status)
+        {
+            if (zoneId == Guid.Empty)
+                return BadRequest(new { message = "zoneId is required." });
 
+            var list = await _service.GetOptionsAsync(zoneId, status);
+            return Ok(list);
+        }
+
+        /// <summary>
+        /// GET /api/WareHouseLocation/options/by-string?zoneId={guid}&status=Stored
+        /// Nhận status dạng chuỗi, tự parse sang enum và báo lỗi nếu sai.
+        /// </summary>
+        [HttpGet("options/by-string")]
+        public async Task<IActionResult> GetOptionsByString([FromQuery] Guid zoneId, [FromQuery] string status)
+        {
+            if (zoneId == Guid.Empty)
+                return BadRequest(new { message = "zoneId is required." });
+
+            if (string.IsNullOrWhiteSpace(status))
+                return BadRequest(new { message = "status is required." });
+
+            if (!Enum.TryParse<StatusWareHouse>(status, ignoreCase: true, out var enumStatus))
+                return BadRequest(new { message = $"Invalid status '{status}'. Accepted: {string.Join(", ", Enum.GetNames(typeof(StatusWareHouse)))}" });
+
+            var list = await _service.GetOptionsAsync(zoneId, enumStatus);
+            return Ok(list);
+        }
     }
 }

@@ -1,12 +1,9 @@
 ﻿@using Madehuman_Share.ViewModel.Inbound
-@model RefillTaskFullViewModel
+@model MadeHuman_User.Views.RefillCreatePageViewModel
 
 @{
     ViewData["Title"] = "Refill";
     Layout = "~/Views/Shared/_Layout.cshtml";
-
-    var currentUser = Context.Request.Cookies["EmailOrId"];
-    Model.CreateBy = currentUser ?? "";
 }
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
@@ -17,7 +14,9 @@
         <div class="page-head mb-3">
             <h2 class="page-title"><i class="bi bi-box-seam"></i> Tạo nhiệm vụ bổ sung kho</h2>
             <div class="d-flex gap-2">
-                <a asp-action="Index" class="btn btn-outline"><i class="bi bi-arrow-left-circle me-1"></i> Quay lại</a>
+                <a asp-action="Index" class="btn btn-outline">
+                    <i class="bi bi-arrow-left-circle me-1"></i> Quay lại
+                </a>
             </div>
         </div>
 
@@ -27,13 +26,16 @@
         }
         @if (TempData["Error"] != null)
         {
-            <div class="alert alert-danger"><i class="bi bi-exclamation-triangle"></i> @TempData["Error"]</div>
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle"></i>
+                @Html.Raw(TempData["Error"])
+            </div>
         }
 
-        <form asp-action="Create" method="post" class="card shadow-sm p-4" id="createForm">
+        <form asp-action="Create" method="post" class="card shadow-sm p-4" id="createForm" autocomplete="off">
             <div class="mb-3">
                 <label class="form-label"><i class="bi bi-person-circle"></i> Người tạo</label>
-                <input asp-for="CreateBy" class="form-control" readonly />
+                <input name="CreateBy" class="form-control" value="@Model.Task.CreateBy" readonly />
             </div>
 
             <hr />
@@ -46,19 +48,43 @@
                 <table class="table table-bordered align-middle" id="detailsTable">
                     <thead class="table-light">
                         <tr>
-                            <th class="th-muted"><i class="bi bi-upc-scan"></i> SKU</th>
-                            <th class="th-muted"><i class="bi bi-box-arrow-in-left"></i> From (GUID)</th>
-                            <th class="th-muted"><i class="bi bi-box-arrow-right"></i> To (GUID)</th>
-                            <th class="th-muted text-end"><i class="bi bi-hash"></i> Số lượng</th>
-                            <th class="text-center th-muted" style="width:54px"><i class="bi bi-x-circle"></i></th>
+                            <th><i class="bi bi-upc-scan"></i> SKU</th>
+                            <th><i class="bi bi-box-arrow-in-left"></i> From (Inbound)</th>
+                            <th><i class="bi bi-box-arrow-right"></i> To (OutBound)</th>
+                            <th class="text-end"><i class="bi bi-hash"></i> Số lượng</th>
+                            <th class="text-center" style="width:54px"><i class="bi bi-x-circle"></i></th>
                         </tr>
                     </thead>
                     <tbody id="detailsBody">
                         <tr class="row-new">
-                            <td><input name="Details[0].SKU" class="form-control sku-input" placeholder="VD: SKU123" autocomplete="off" /></td>
-                            <td><input name="Details[0].FromLocation" class="form-control guid-input" placeholder="GUID từ" autocomplete="off" /></td>
-                            <td><input name="Details[0].ToLocation" class="form-control guid-input" placeholder="GUID đến" autocomplete="off" /></td>
-                            <td><input name="Details[0].Quantity" type="number" min="1" class="form-control qty-input text-end" placeholder="Số lượng" /></td>
+                            <td>
+                                <input name="Details[0].SKU" class="form-control sku-input" placeholder="VD: SKU123" autocomplete="off" />
+                            </td>
+
+                            <!-- From: nhập tay hoặc chọn từ list; map sang GUID bằng JS -->
+                            <td>
+                                <input class="form-control from-input" list="fromOptions"
+                                       placeholder="Nhập/chọn NameLocation nguồn (Stored)"
+                                       data-guid-target="Details[0].FromLocation"
+                                       data-name-target="Details[0].FromLocationName" />
+                                <input type="hidden" name="Details[0].FromLocation" />
+                                <input type="hidden" name="Details[0].FromLocationName" />
+                            </td>
+
+                            <!-- To: nhập tay hoặc chọn từ list; map sang GUID bằng JS -->
+                            <td>
+                                <input class="form-control to-input" list="toOptions"
+                                       placeholder="Nhập/chọn NameLocation đích (Empty)"
+                                       data-guid-target="Details[0].ToLocation"
+                                       data-name-target="Details[0].ToLocationName" />
+                                <input type="hidden" name="Details[0].ToLocation" />
+                                <input type="hidden" name="Details[0].ToLocationName" />
+                            </td>
+
+                            <td>
+                                <input name="Details[0].Quantity" type="number" min="1"
+                                       class="form-control qty-input text-end" placeholder="Số lượng" />
+                            </td>
                             <td class="text-center">
                                 <button type="button" class="btn btn-outline-danger btn-sm btn-remove" title="Xoá dòng">
                                     <i class="bi bi-trash"></i>
@@ -84,141 +110,216 @@
         </form>
     </div>
 
-    <!-- Inline alert -->
     <div id="inlineAlert" class="inline-alert d-none"></div>
 </div>
-@section Scripts {
-<script>
-(function(){
-  const tbody = document.getElementById('detailsBody');
-  const btnAddRow = document.getElementById('btnAddRow');
-  const form = document.getElementById('createForm');
-  const btnSubmit = document.getElementById('btnSubmit');
-  const alertEl = document.getElementById('inlineAlert');
 
-  function showInline(type, text){
-    alertEl.className = 'inline-alert ' + (type==='success'?'success':'error');
-    alertEl.textContent = text;
-    alertEl.classList.remove('d-none');
-    requestAnimationFrame(()=> alertEl.classList.add('show'));
-    setTimeout(()=>{ alertEl.classList.remove('show'); setTimeout(()=> alertEl.classList.add('d-none'), 200); }, 2000);
-  }
-
-  const GUID_RE = /^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$/;
-
-  function isGuid(v){ return GUID_RE.test((v||'').trim()); }
-  function sanitizeSku(v){ return (v||'').trim().toUpperCase(); }
-  function isQty(v){ const n = Number(v); return Number.isFinite(n) && n > 0; }
-
-  function focusLastRowFirstInput(){
-    const last = tbody.rows[tbody.rows.length-1];
-    if (!last) return;
-    const inp = last.querySelector('.sku-input') || last.querySelector('input');
-    inp && inp.focus();
-  }
-
-  function rebuildIndices(){
-    // Đảm bảo index liên tục để ModelBinder bind đúng
-    [...tbody.rows].forEach((tr, idx)=>{
-      tr.querySelectorAll('input[name^="Details["]').forEach(input=>{
-        const name = input.getAttribute('name');
-        const newName = name.replace(/Details\[\d+\]/, `Details[${idx}]`);
-        input.setAttribute('name', newName);
-      });
-    });
-  }
-
-  function addRow(){
-    const idx = tbody.rows.length;
-    const row = document.createElement('tr');
-    row.className = 'row-new';
-    row.innerHTML = `
-      <td><input name="Details[${idx}].SKU" class="form-control sku-input" placeholder="VD: SKU123" autocomplete="off" /></td>
-      <td><input name="Details[${idx}].FromLocation" class="form-control guid-input" placeholder="GUID từ" autocomplete="off" /></td>
-      <td><input name="Details[${idx}].ToLocation" class="form-control guid-input" placeholder="GUID đến" autocomplete="off" /></td>
-      <td><input name="Details[${idx}].Quantity" type="number" min="1" class="form-control qty-input text-end" placeholder="Số lượng" /></td>
-      <td class="text-center">
-        <button type="button" class="btn btn-outline-danger btn-sm btn-remove" title="Xoá dòng">
-          <i class="bi bi-trash"></i>
-        </button>
-      </td>
-    `;
-    tbody.appendChild(row);
-    focusLastRowFirstInput();
-  }
-
-  function removeRow(btn){
-    if (tbody.rows.length <= 1){
-      showInline('error','⚠️ Cần ít nhất 1 dòng chi tiết.');
-      return;
+<!-- Datalist: show NameLocation cho user, giữ GUID trong data-id -->
+<datalist id="fromOptions">
+    @foreach (var o in Model.FromOptions)
+    {
+        <option value="@o.Text" data-id="@o.Value"></option>
     }
-    const tr = btn.closest('tr');
-    tr.classList.add('row-removing');
-    setTimeout(()=>{
-      tr.remove();
-      rebuildIndices();
-    }, 150);
-  }
+</datalist>
 
-  // Delegation: remove row + instant UX helpers
-  tbody.addEventListener('click', (e)=>{
-    const target = e.target.closest('.btn-remove');
-    if (target){ removeRow(target); }
-  });
-
-  // SKU auto-uppercase; GUID quick validate; Qty numeric check
-  tbody.addEventListener('input', (e)=>{
-    const el = e.target;
-    if (el.classList.contains('sku-input')){
-      el.value = sanitizeSku(el.value);
-      el.classList.remove('is-invalid');
+<datalist id="toOptions">
+    @foreach (var o in Model.ToOptions)
+    {
+        <option value="@o.Text" data-id="@o.Value"></option>
     }
-    if (el.classList.contains('guid-input')){
-      const v = el.value.trim();
-      if (v === '' || isGuid(v)) el.classList.remove('is-invalid'); else el.classList.add('is-invalid');
-    }
-    if (el.classList.contains('qty-input')){
-      const ok = isQty(el.value);
-      if (ok) el.classList.remove('is-invalid'); else el.classList.add('is-invalid');
-    }
-  });
+</datalist>
 
-  // Add row button
-  btnAddRow.addEventListener('click', addRow);
-
-  // Ctrl+Enter để thêm dòng
-  document.addEventListener('keydown', (e)=>{
-    if (e.ctrlKey && e.key === 'Enter'){ e.preventDefault(); addRow(); }
-  });
-
-  // Validate trước submit
-  form.addEventListener('submit', (e)=>{
-    // loading state nút submit
-    btnSubmit.disabled = true;
-    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang tạo...';
-
-    let ok = true;
-    const skuEls = form.querySelectorAll('.sku-input');
-    const fromEls = form.querySelectorAll('.guid-input[name$=".FromLocation"]');
-    const toEls   = form.querySelectorAll('.guid-input[name$=".ToLocation"]');
-    const qtyEls  = form.querySelectorAll('.qty-input');
-
-    skuEls.forEach(el=>{ const v=sanitizeSku(el.value); el.value=v; if(!v){ el.classList.add('is-invalid'); ok=false; } });
-    fromEls.forEach(el=>{ if(!isGuid(el.value)){ el.classList.add('is-invalid'); ok=false; } });
-    toEls.forEach(el=>{ if(!isGuid(el.value)){ el.classList.add('is-invalid'); ok=false; } });
-    qtyEls.forEach(el=>{ if(!isQty(el.value)){ el.classList.add('is-invalid'); ok=false; } });
-
-    if (!ok){
-      e.preventDefault();
-      btnSubmit.disabled = false;
-      btnSubmit.innerHTML = '<i class="bi bi-check-circle me-1"></i> Tạo nhiệm vụ';
-      showInline('error','❌ Vui lòng điền đúng SKU, GUID From/To và số lượng > 0.');
-      return;
-    }
-
-    // đảm bảo index liên tục trước khi submit
-    rebuildIndices();
-  });
-})();
+<!-- JSON để map tên -> GUID khi thêm dòng mới -->
+<script id="fromData" type="application/json">
+    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                Model.FromOptions.Select(x => new { id = x.Value, name = x.Text })))
 </script>
+<script id="toData" type="application/json">
+    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                Model.ToOptions.Select(x => new { id = x.Value, name = x.Text })))
+</script>
+
+@section Scripts {
+    <script>
+        (function(){
+          const tbody = document.getElementById('detailsBody');
+          const btnAddRow = document.getElementById('btnAddRow');
+          const form = document.getElementById('createForm');
+          const btnSubmit = document.getElementById('btnSubmit');
+          const alertEl = document.getElementById('inlineAlert');
+
+          function showInline(type, text){
+            alertEl.className = 'inline-alert ' + (type==='success'?'success':'error');
+            alertEl.textContent = text;
+            alertEl.classList.remove('d-none');
+            requestAnimationFrame(()=> alertEl.classList.add('show'));
+            setTimeout(()=>{ alertEl.classList.remove('show'); setTimeout(()=> alertEl.classList.add('d-none'), 200); }, 2000);
+          }
+
+          function sanitizeSku(v){ return (v||'').trim().toUpperCase(); }
+          function isQty(v){ const n = Number(v); return Number.isFinite(n) && n > 0; }
+
+          // Bỏ dấu để so tên không phân biệt dấu/hoa-thường
+          const rmDiacritics = s => (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+          const key = s => rmDiacritics(s).toLowerCase();
+
+          // Build lookup: NameLocation -> GUID (không phân biệt dấu)
+          const fromArr = JSON.parse(document.getElementById('fromData').textContent || '[]'); // [{id,name}]
+          const toArr   = JSON.parse(document.getElementById('toData').textContent || '[]');
+
+          const fromDict = fromArr.reduce((acc, x)=>{ acc[key(x.name)] = x.id; return acc; }, {});
+          const toDict   = toArr.reduce((acc, x)=>{ acc[key(x.name)] = x.id; return acc; }, {});
+
+          function rebuildIndices(){
+            [...tbody.rows].forEach((tr, idx)=>{
+              tr.querySelectorAll('input[name^="Details["]').forEach(el=>{
+                el.name = el.name.replace(/Details\[\d+\]/, `Details[${idx}]`);
+              });
+              tr.querySelectorAll('.from-input,.to-input').forEach(el=>{
+                if (el.dataset.guidTarget)
+                  el.dataset.guidTarget = el.dataset.guidTarget.replace(/Details\[\d+\]/, `Details[${idx}]`);
+                if (el.dataset.nameTarget)
+                  el.dataset.nameTarget = el.dataset.nameTarget.replace(/Details\[\d+\]/, `Details[${idx}]`);
+              });
+            });
+          }
+
+          // Map từ input (giá trị người gõ/chọn) -> set hidden GUID & Name
+          function mapNameToGuid(inputEl, dict){
+            const name = (inputEl.value || '').trim();
+            const id = dict[key(name)] || '';            // so không dấu
+            const guidName = inputEl.dataset.guidTarget;
+            const dispName = inputEl.dataset.nameTarget;
+
+            const hiddenGuid = inputEl.closest('td').querySelector(`input[name="${guidName}"]`);
+            const hiddenName = inputEl.closest('td').querySelector(`input[name="${dispName}"]`);
+
+            if (hiddenName) hiddenName.value = name;
+
+            if (id){
+              if (hiddenGuid) hiddenGuid.value = id;
+              inputEl.classList.remove('is-invalid');
+              return true;
+            } else {
+              if (hiddenGuid) hiddenGuid.value = '';
+              inputEl.classList.add('is-invalid');
+              return false;
+            }
+          }
+
+          function buildRow(idx){
+            const tr = document.createElement('tr');
+            tr.className = 'row-new';
+            tr.innerHTML = `
+              <td><input name="Details[${idx}].SKU" class="form-control sku-input" placeholder="VD: SKU123" autocomplete="off" /></td>
+              <td>
+                <input class="form-control from-input" list="fromOptions"
+                       placeholder="Nhập/chọn NameLocation nguồn (Stored)"
+                       data-guid-target="Details[${idx}].FromLocation"
+                       data-name-target="Details[${idx}].FromLocationName" />
+                <input type="hidden" name="Details[${idx}].FromLocation" />
+                <input type="hidden" name="Details[${idx}].FromLocationName" />
+              </td>
+              <td>
+                <input class="form-control to-input" list="toOptions"
+                       placeholder="Nhập/chọn NameLocation đích (Empty)"
+                       data-guid-target="Details[${idx}].ToLocation"
+                       data-name-target="Details[${idx}].ToLocationName" />
+                <input type="hidden" name="Details[${idx}].ToLocation" />
+                <input type="hidden" name="Details[${idx}].ToLocationName" />
+              </td>
+              <td><input name="Details[${idx}].Quantity" type="number" min="1" class="form-control qty-input text-end" placeholder="Số lượng" /></td>
+              <td class="text-center"><button type="button" class="btn btn-outline-danger btn-sm btn-remove"><i class="bi bi-trash"></i></button></td>
+            `;
+            return tr;
+          }
+
+          function addRow(){
+            const idx = tbody.rows.length;
+            const tr = buildRow(idx);
+            tbody.appendChild(tr);
+          }
+
+          // Remove row
+          tbody.addEventListener('click', (e)=>{
+            const btn = e.target.closest('.btn-remove');
+            if (!btn) return;
+            if (tbody.rows.length <= 1){
+              showInline('error','⚠️ Cần ít nhất 1 dòng chi tiết.');
+              return;
+            }
+            btn.closest('tr').remove();
+            rebuildIndices();
+          });
+
+          // Inline validation + map name -> guid
+          function handleNameInput(e){
+            const el = e.target;
+            if (el.classList.contains('from-input')){
+              mapNameToGuid(el, fromDict);
+            }
+            if (el.classList.contains('to-input')){
+              mapNameToGuid(el, toDict);
+            }
+          }
+
+          tbody.addEventListener('input', (e)=>{
+            const el = e.target;
+            if (el.classList.contains('sku-input')){
+              el.value = sanitizeSku(el.value);
+              el.classList.remove('is-invalid');
+            }
+            if (el.classList.contains('qty-input')){
+              el.classList.toggle('is-invalid', !isQty(el.value));
+            }
+            handleNameInput(e);
+          });
+
+          // Map cả khi change & blur (trường hợp user chọn suggestion xong tab/blur)
+          tbody.addEventListener('change', handleNameInput);
+          tbody.addEventListener('blur', (e)=>{
+            if (e.target.classList && (e.target.classList.contains('from-input') || e.target.classList.contains('to-input'))){
+              handleNameInput(e);
+            }
+          }, true);
+
+          // Validate trước submit
+          form.addEventListener('submit', (e)=>{
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang tạo...';
+
+            let ok = true;
+
+            form.querySelectorAll('.sku-input').forEach(el=>{
+              el.value = sanitizeSku(el.value);
+              if (!el.value){ el.classList.add('is-invalid'); ok=false; }
+            });
+            form.querySelectorAll('.qty-input').forEach(el=>{
+              if (!isQty(el.value)){ el.classList.add('is-invalid'); ok=false; }
+            });
+
+            // Map lại lần cuối cho chắc
+            form.querySelectorAll('.from-input').forEach(el=>{ if (!mapNameToGuid(el, fromDict)) ok = false; });
+            form.querySelectorAll('.to-input').forEach(el=>{ if (!mapNameToGuid(el, toDict)) ok = false; });
+
+            // Hidden GUID bắt buộc có
+            form.querySelectorAll('input[name$=".FromLocation"], input[name$=".ToLocation"]').forEach(el=>{
+              if (!el.value){ ok = false; }
+            });
+
+            if (!ok){
+              e.preventDefault();
+              btnSubmit.disabled = false;
+              btnSubmit.innerHTML = '<i class="bi bi-check-circle me-1"></i> Tạo nhiệm vụ';
+              showInline('error','❌ Điền SKU, số lượng và NameLocation hợp lệ (khớp danh sách).');
+            } else {
+              rebuildIndices();
+            }
+          });
+
+          btnAddRow.addEventListener('click', addRow);
+          document.addEventListener('keydown', (e)=>{
+            if (e.ctrlKey && e.key === 'Enter'){ e.preventDefault(); addRow(); }
+          });
+        })();
+    </script>
 }
