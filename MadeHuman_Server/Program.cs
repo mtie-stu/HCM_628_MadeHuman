@@ -76,6 +76,7 @@ builder.Services.AddAuthentication(auth =>
 builder.Services.AddHttpClient();
 
 // 🧩 Services
+builder.Services.AddScoped< DashboardService>();
 builder.Services.AddTransient<ITokenService, TokenService>();
 builder.Services.AddScoped<IWarehouseService, WareHouseSvc>();
 builder.Services.AddScoped<IWarehouseZoneService, WareHouseZoneSvc>();

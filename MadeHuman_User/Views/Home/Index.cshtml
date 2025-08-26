@@ -1,1 +1,98 @@
-﻿
+﻿@{
+    ViewData["Title"] = "Dashboard Outbound – Donut";
+}
+<div class="container mt-4">
+    <h3 class="mb-3">Cơ cấu trạng thái OutboundTaskItems</h3>
+
+    <div class="card p-3">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <small class="text-muted">Nguồn: GET /api/dashboard/outbound-status-mix</small>
+            <div id="lastUpdated" class="text-muted" style="font-size:.9rem"></div>
+        </div>
+        <canvas id="outboundStatusDonut" height="140"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+
+    const BASE_URL = "https://hcm-628-madehuman-api.onrender.com";
+
+    // --- Plugin: text giữa donut (hiển thị Tổng) ---
+    const CenterText = {
+        id: 'centerText',
+        afterDraw(chart, _, opts) {
+            const { ctx, chartArea: { left, right, top, bottom, width, height } } = chart;
+            ctx.save();
+            ctx.font = '600 16px system-ui, -apple-system, "Segoe UI", Roboto, Arial';
+            ctx.fillStyle = '#333';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`Tổng: ${opts.total ?? 0}`, left + width / 2, top + height / 2);
+            ctx.restore();
+        }
+    };
+    let donutChart;
+
+    async function loadOutboundStatusDonut() {
+        const url = `${BASE_API}/api/dashboard/outbound-status-mix`;
+
+        let data;
+        try {
+            const res = await fetch(url, { cache: 'no-store' });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            data = await res.json();
+        } catch (e) {
+            console.error('Fetch donut error:', e);
+            data = [
+                { label: 'Created', count: 0 },
+                { label: 'Picked', count: 0 },
+                { label: 'Checked', count: 0 },
+                { label: 'Packed', count: 0 },
+                { label: 'Dispatched', count: 0 },
+                { label: 'Finished', count: 0 },
+            ];
+        }
+
+        const labels = data.map(x => x.label);
+        const counts = data.map(x => x.count);
+        const total = counts.reduce((a, b) => a + b, 0);
+
+        if (donutChart) {
+            donutChart.data.labels = labels;
+            donutChart.data.datasets[0].data = counts;
+            donutChart.options.plugins.centerText.total = total;
+            donutChart.update();
+        } else {
+            const ctx = document.getElementById('outboundStatusDonut').getContext('2d');
+            donutChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: { labels, datasets: [{ data: counts, borderWidth: 1 }] },
+                options: {
+                    responsive: true,
+                    cutout: '65%',
+                    plugins: {
+                        legend: { position: 'right' },
+                        tooltip: {
+                            callbacks: {
+                                label: (tt) => {
+                                    const v = tt.raw ?? 0;
+                                    const pct = total ? (v * 100 / total) : 0;
+                                    return ` ${tt.label}: ${v} (${pct.toFixed(1)}%)`;
+                                }
+                            }
+                        },
+                        centerText: { total }
+                    }
+                },
+                plugins: [CenterText]
+            });
+        }
+
+        document.getElementById('lastUpdated').textContent =
+            `Cập nhật: ${new Date().toLocaleString()}`;
+    }
+
+    loadOutboundStatusDonut();
+    setInterval(loadOutboundStatusDonut, 60000);
+</script>
