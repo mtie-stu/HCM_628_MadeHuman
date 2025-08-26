@@ -82,7 +82,10 @@
                                     data-bs-toggle="collapse" data-bs-target="#collapse-@i"
                                     aria-expanded="false" aria-controls="collapse-@i">
                                 <i class="bi bi-clipboard-check"></i>
-                                <span class="ms-2">Mã: <span class="task-id">@task.Id</span></span>
+                                <span class="ms-2">Mã:
+                                    <!-- RÚT GỌN + COPY -->
+                                    <span class="id-chip" title="Bấm để copy ID đầy đủ">@task.Id</span>
+                                </span>
                                 <span class="ms-3 text-muted"><i class="bi bi-clock"></i> @task.CreateAt.ToString("dd/MM/yyyy HH:mm")</span>
                             </button>
                         </h2>
@@ -104,8 +107,9 @@
                                             @foreach (var d in task.Details)
                                             {
                                                 <tr>
-                                                    <td><span class="loc-chip"><i class="bi bi-geo-alt"></i> @d.FromLocation</span></td>
-                                                    <td><span class="loc-chip"><i class="bi bi-geo"></i> @d.ToLocation</span></td>
+                                                    <!-- RÚT GỌN + COPY -->
+                                                    <td><span class="loc-chip"><i class="bi bi-geo-alt"></i> <span class="id-chip" title="Bấm để copy ID đầy đủ">@d.FromLocation</span></span></td>
+                                                    <td><span class="loc-chip"><i class="bi bi-geo"></i> <span class="id-chip" title="Bấm để copy ID đầy đủ">@d.ToLocation</span></span></td>
                                                     <td>@d.Quantity</td>
                                                 </tr>
                                             }
@@ -134,12 +138,14 @@
     <!-- Inline alert -->
     <div id="inlineAlert" class="inline-alert d-none"></div>
 </div> <!-- /.refill-page -->
+
 @section Scripts {
     <script>
         (function(){
           const $btn   = document.getElementById('assignTaskBtn');
           const $alert = document.getElementById('inlineAlert');
 
+          // ===== Toast mini dùng chung =====
           function showInlineAlert(type, text){
             $alert.className = 'inline-alert ' + (type === 'success' ? 'success' : 'error');
             $alert.textContent = text;
@@ -148,12 +154,71 @@
             setTimeout(()=>{ $alert.classList.remove('show'); setTimeout(()=> $alert.classList.add('d-none'), 200); }, 2200);
           }
 
+          // ===== Rút gọn & gắn copy cho mọi .id-chip =====
+          function shortenId(str){
+            if (!str) return str;
+            const s = String(str).trim();
+            // GUID 36 ký tự -> 8...8; chuỗi dài khác -> 4...4
+            if (s.length >= 32) return s.slice(0,8) + '...' + s.slice(-8);
+            if (s.length > 8)   return s.slice(0,4) + '...' + s.slice(-4);
+            return s;
+          }
+          function enhanceIdChips(root=document){
+            const chips = root.querySelectorAll('.id-chip');
+            chips.forEach(chip=>{
+              const full = (chip.getAttribute('data-guid') || chip.textContent || '').trim();
+              if (!full) return;
+              chip.setAttribute('data-guid', full);
+              chip.textContent = shortenId(full);
+              chip.title = chip.title || 'Bấm để copy ID đầy đủ';
+              chip.classList.add('copy-guid');
+              chip.style.cursor = 'pointer';
+            });
+          }
+
+          // ===== Click-to-copy cho mọi .copy-guid =====
+          document.addEventListener('click', function(e){
+            const el = e.target.closest('.copy-guid');
+            if (!el) return;
+
+            // Tránh toggle accordion khi click chip
+            e.preventDefault();
+            e.stopPropagation();
+
+            const full = el.getAttribute('data-guid');
+            if (!full) return;
+
+            if (navigator.clipboard?.writeText) {
+              navigator.clipboard.writeText(full)
+                .then(()=> showInlineAlert('success','✅ Đã copy đầy đủ ID'))
+                .catch(()=> showInlineAlert('error','❌ Không thể copy.'));
+            } else {
+              // Fallback
+              const ta = document.createElement('textarea');
+              ta.value = full;
+              ta.style.position = 'fixed';
+              ta.style.opacity = '0';
+              document.body.appendChild(ta);
+              ta.select();
+              try {
+                document.execCommand('copy');
+                showInlineAlert('success','✅ Đã copy đầy đủ ID');
+              } catch {
+                showInlineAlert('error','❌ Không thể copy.');
+              } finally {
+                document.body.removeChild(ta);
+              }
+            }
+          });
+
+          // ===== Nhận nhiệm vụ =====
           function getAfToken(){
             const el = document.querySelector('#assignAfForm input[name="__RequestVerificationToken"]');
             return el ? el.value : '';
           }
 
           async function assignTask(){
+            if (!$btn) return;
             $btn.disabled = true;
             const oldHtml = $btn.innerHTML;
             $btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang nhận...';
@@ -163,9 +228,9 @@
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
-                  'RequestVerificationToken': getAfToken() // nếu controller có [ValidateAntiForgeryToken]
+                  'RequestVerificationToken': getAfToken()
                 },
-                credentials: 'same-origin' // gửi kèm cookie JWT
+                credentials: 'same-origin'
               });
 
               const raw = await resp.text();
@@ -192,6 +257,9 @@
           }
 
           $btn?.addEventListener('click', assignTask);
+
+          // Khởi tạo rút gọn + copy
+          enhanceIdChips();
         })();
     </script>
 }

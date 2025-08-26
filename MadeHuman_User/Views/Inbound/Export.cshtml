@@ -4,11 +4,11 @@
 @{
     ViewData["Title"] = "Export Refill";
 
-    var taskTotal       = (int)(ViewBag.TaskTotal      ?? 0);
-    var taskCompleted   = (int)(ViewBag.TaskCompleted  ?? 0);
-    var taskCanceled    = (int)(ViewBag.TaskCanceled   ?? 0);
-    var taskProcessing  = (int)(ViewBag.TaskProcessing ?? 0);
-    var detailTotal     = (int)(ViewBag.DetailTotal    ?? 0);
+    var taskTotal = (int)(ViewBag.TaskTotal ?? 0);
+    var taskCompleted = (int)(ViewBag.TaskCompleted ?? 0);
+    var taskCanceled = (int)(ViewBag.TaskCanceled ?? 0);
+    var taskProcessing = (int)(ViewBag.TaskProcessing ?? 0);
+    var detailTotal = (int)(ViewBag.DetailTotal ?? 0);
 
     string currentStatus = Model.Status ?? "";
 }
@@ -17,223 +17,338 @@
 <link rel="stylesheet" href="~/css/pages/Refill/refill-index.css" asp-append-version="true" />
 
 <div class="refill-page">
-  <div class="container mt-4">
+    <div class="container mt-4">
 
-    <!-- Header compact -->
-    <div class="page-head">
-      <div>
-        <h2 class="page-title mb-1"><i class="bi bi-box-arrow-down"></i> Export nhiệm vụ bổ sung kho</h2>
-        <div class="page-subtext">Xuất dữ liệu theo bộ lọc bạn chọn.</div>
-      </div>
+        <!-- Header compact -->
+        <div class="page-head">
+            <div>
+                <h2 class="page-title mb-1"><i class="bi bi-box-arrow-down"></i> Export nhiệm vụ bổ sung kho</h2>
+                <div class="page-subtext">Xuất dữ liệu theo bộ lọc bạn chọn.</div>
+            </div>
 
-      <div class="d-flex align-items-center gap-2">
-        <a class="btn btn-orange" id="btnExportAll"
-           asp-controller="RefillTask" asp-action="DetailFlat"
-           aria-label="Xuất dữ liệu theo bộ lọc hiện tại">
-          <i class="bi bi-cloud-download me-1"></i> Export
-        </a>
-      </div>
-    </div>
+            <div class="d-flex align-items-center gap-2">
+                <a class="btn btn-orange" id="btnExportAll"
+                   asp-controller="RefillTask" asp-action="DetailFlat"
+                   aria-label="Xuất dữ liệu theo bộ lọc hiện tại">
+                    <i class="bi bi-cloud-download me-1"></i> Export
+                </a>
+            </div>
+        </div>
 
-    <!-- Filter toolbar card -->
-    <div class="card shadow-sm border-0 mb-3">
-      <div class="card-body py-3">
-        <form id="filterForm" method="get" action="@Url.Action("Export","Inbound")" class="row g-2 align-items-center">
-          <div class="col-12 col-md-auto">
-            <label class="form-label fw-semibold mb-1 d-block">Trạng thái</label>
-            <select id="statusFilter" name="status" class="form-select" style="min-width:220px" aria-label="Lọc trạng thái">
-              @if (string.IsNullOrEmpty(currentStatus))
-              { <option value="" selected>Tất cả trạng thái</option> }
-              else
-              { <option value="">Tất cả trạng thái</option> }
-
-              @if (currentStatus == "Incomplete")
-              { <option value="Incomplete" selected>Đang xử lý</option> }
-              else
-              { <option value="Incomplete">Đang xử lý</option> }
-
-              @if (currentStatus == "Completed")
-              { <option value="Completed" selected>Đã hoàn thành</option> }
-              else
-              { <option value="Completed">Đã hoàn thành</option> }
-
-              @if (currentStatus == "Canceled")
-              { <option value="Canceled" selected>Đã huỷ</option> }
-              else
-              { <option value="Canceled">Đã huỷ</option> }
-            </select>
-          </div>
-
-          <div class="col-12 col-md-auto ms-md-auto d-flex gap-2">
-            <input type="hidden" id="pageInput" name="page" value="@Model.CurrentPage" />
-            <input type="hidden" name="pageSize" value="@Model.PageSize" />
-
-            <button type="submit" class="btn btn-primary">
-              <i class="bi bi-funnel"></i> Lọc
-            </button>
-
-            <a class="btn btn-outline" href="@Url.Action("Export","Inbound")" aria-label="Xoá lọc">
-              <i class="bi bi-arrow-counterclockwise me-1"></i> Xoá lọc
-            </a>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Stats row -->
-    <div class="stat-grid mb-3">
-      <div class="stat-card">
-        <div class="stat-ico"><i class="bi bi-collection"></i></div>
-        <div class="stat-meta"><div class="label">Tổng nhiệm vụ</div><div class="value">@taskTotal</div></div>
-      </div>
-@*       <div class="stat-card">
-        <div class="stat-ico"><i class="bi bi-list-ul"></i></div>
-        <div class="stat-meta"><div class="label">Tổng dòng chi tiết</div><div class="value">@detailTotal</div></div>
-      </div> *@
-      <div class="stat-card">
-        <div class="stat-ico"><i class="bi bi-check2-circle"></i></div>
-        <div class="stat-meta"><div class="label">Đã hoàn thành</div><div class="value">@taskCompleted</div></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-ico"><i class="bi bi-hourglass-split"></i></div>
-        <div class="stat-meta"><div class="label">Đang xử lý</div><div class="value">@taskProcessing</div></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-ico"><i class="bi bi-slash-circle"></i></div>
-        <div class="stat-meta"><div class="label">Đã huỷ</div><div class="value">@taskCanceled</div></div>
-      </div>
-    </div>
-
-    <!-- Content card -->
-    <div class="card shadow-sm border-0">
-      <div class="card-body">
-
-        @if (!Model.Items.Any())
-        {
-          <div class="alert alert-warning mb-0">
-            <i class="bi bi-info-circle"></i> Không có nhiệm vụ phù hợp bộ lọc.
-          </div>
-        }
-        else
-        {
-          <div class="accordion" id="exportAccordion">
-            @for (int i = 0; i < Model.Items.Count; i++)
-            {
-              var t = Model.Items[i];
-
-              <div class="accordion-item mb-2">
-                <h2 class="accordion-header" id="heading-@i">
-                  <button class="accordion-button collapsed" type="button"
-                          data-bs-toggle="collapse" data-bs-target="#collapse-@i"
-                          aria-expanded="false" aria-controls="collapse-@i">
-                    <i class="bi bi-clipboard-check"></i>
-                    <span class="ms-2">Mã: <span class="task-id">@t.Id</span></span>
-                    <span class="ms-3 text-muted">
-                      <i class="bi bi-clock"></i> @t.CreateAt.ToString("dd/MM/yyyy HH:mm")
-                    </span>
-                    <span class="ms-3">
-                      @{
-                          var badge = t.StatusRefillTasks == "Completed" ? "text-bg-success"
-                                  : (t.StatusRefillTasks == "Canceled" ? "text-bg-secondary" : "text-bg-warning");
-                      }
-                      <span class="badge @badge">@t.StatusRefillTasks</span>
-                    </span>
-                  </button>
-                </h2>
-
-                <div id="collapse-@i" class="accordion-collapse collapse" aria-labelledby="heading-@i" data-bs-parent="#exportAccordion">
-                  <div class="accordion-body">
-                    <div class="table-responsive">
-                      <table class="table table-bordered table-sm align-middle mb-0">
-                        <thead class="table-light">
-                          <tr class="text-center">
-                            <th>SKU</th>
-                            <th><i class="bi bi-box-arrow-in-left"></i> From</th>
-                            <th><i class="bi bi-box-arrow-right"></i> To</th>
-                            <th class="text-end"><i class="bi bi-hash"></i> Số lượng</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          @if (t.Details == null || !t.Details.Any())
-                          {
-                            <tr><td colspan="4" class="text-center text-muted py-3">Không có chi tiết.</td></tr>
-                          }
-                          else
-                          {
-                            @foreach (var d in t.Details)
+        <!-- Filter toolbar card -->
+        <div class="card shadow-sm border-0 mb-3">
+            <div class="card-body py-3">
+                <form id="filterForm" method="get" action="@Url.Action("Export","Inbound")" class="row g-2 align-items-center">
+                    <div class="col-12 col-md-auto">
+                        <label class="form-label fw-semibold mb-1 d-block">Trạng thái</label>
+                        <select id="statusFilter" name="status" class="form-select" style="min-width:220px" aria-label="Lọc trạng thái">
+                            @if (string.IsNullOrEmpty(currentStatus))
                             {
-                                var fromName = !string.IsNullOrWhiteSpace(d.FromLocationName)
-                                    ? d.FromLocationName
-                                    : (d.FromLocation != Guid.Empty ? d.FromLocation.ToString() : "N/A");
-
-                                var toName = !string.IsNullOrWhiteSpace(d.ToLocationName)
-                                    ? d.ToLocationName
-                                    : (d.ToLocation != Guid.Empty ? d.ToLocation.ToString() : "N/A");
-
-                                <tr>
-                                  <td>
-                                    @if (!string.IsNullOrWhiteSpace(d.SKU))
-                                    {
-                                      <span class="task-chip"><i class="bi bi-upc-scan me-1"></i>@d.SKU</span>
-                                    }
-                                    else
-                                    {
-                                      <span class="text-muted">N/A</span>
-                                    }
-                                  </td>
-                                  <td><span class="loc-chip"><i class="bi bi-geo-alt"></i> @fromName</span></td>
-                                  <td><span class="loc-chip"><i class="bi bi-geo"></i> @toName</span></td>
-                                  <td class="text-end">@d.Quantity</td>
-                                </tr>
+                                <option value="" selected>Tất cả trạng thái</option>
                             }
-                          }
-                        </tbody>
-                      </table>
+                            else
+                            {
+                                <option value="">Tất cả trạng thái</option>
+                            }
+
+                            @if (currentStatus == "Incomplete")
+                            {
+                                <option value="Incomplete" selected>Đang xử lý</option>
+                            }
+                            else
+                            {
+                                <option value="Incomplete">Đang xử lý</option>
+                            }
+
+                            @if (currentStatus == "Completed")
+                            {
+                                <option value="Completed" selected>Đã hoàn thành</option>
+                            }
+                            else
+                            {
+                                <option value="Completed">Đã hoàn thành</option>
+                            }
+
+                            @if (currentStatus == "Canceled")
+                            {
+                                <option value="Canceled" selected>Đã huỷ</option>
+                            }
+                            else
+                            {
+                                <option value="Canceled">Đã huỷ</option>
+                            }
+                        </select>
                     </div>
-                  </div>
-                </div>
-              </div>
-            }
-          </div>
 
-          <!-- Pagination -->
-          <div class="mt-3 d-flex justify-content-center">
-            @Html.Raw(ViewBag.Pagination)
-          </div>
-        }
-      </div>
+                    <div class="col-12 col-md-auto ms-md-auto d-flex gap-2">
+                        <input type="hidden" id="pageInput" name="page" value="@Model.CurrentPage" />
+                        <input type="hidden" name="pageSize" value="@Model.PageSize" />
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-funnel"></i> Lọc
+                        </button>
+
+                        <a class="btn btn-outline" href="@Url.Action("Export","Inbound")" aria-label="Xoá lọc">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Xoá lọc
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Stats row -->
+        <div class="stat-grid mb-3">
+            <div class="stat-card">
+                <div class="stat-ico"><i class="bi bi-collection"></i></div>
+                <div class="stat-meta"><div class="label">Tổng nhiệm vụ</div><div class="value">@taskTotal</div></div>
+            </div>
+            @*       <div class="stat-card">
+            <div class="stat-ico"><i class="bi bi-list-ul"></i></div>
+            <div class="stat-meta"><div class="label">Tổng dòng chi tiết</div><div class="value">@detailTotal</div></div>
+            </div> *@
+            <div class="stat-card">
+                <div class="stat-ico"><i class="bi bi-check2-circle"></i></div>
+                <div class="stat-meta"><div class="label">Đã hoàn thành</div><div class="value">@taskCompleted</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-ico"><i class="bi bi-hourglass-split"></i></div>
+                <div class="stat-meta"><div class="label">Đang xử lý</div><div class="value">@taskProcessing</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-ico"><i class="bi bi-slash-circle"></i></div>
+                <div class="stat-meta"><div class="label">Đã huỷ</div><div class="value">@taskCanceled</div></div>
+            </div>
+        </div>
+
+        <!-- Content card -->
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+
+                @if (!Model.Items.Any())
+                {
+                    <div class="alert alert-warning mb-0">
+                        <i class="bi bi-info-circle"></i> Không có nhiệm vụ phù hợp bộ lọc.
+                    </div>
+                }
+                else
+                {
+                    <div class="accordion" id="exportAccordion">
+                        @for (int i = 0; i < Model.Items.Count; i++)
+                        {
+                            var t = Model.Items[i];
+
+                            <div class="accordion-item mb-2">
+                                <h2 class="accordion-header" id="heading-@i">
+                                    <button class="accordion-button collapsed" type="button"
+                                            data-bs-toggle="collapse" data-bs-target="#collapse-@i"
+                                            aria-expanded="false" aria-controls="collapse-@i">
+                                        <i class="bi bi-clipboard-check"></i>
+                                        <span class="ms-2">
+                                            Mã:
+                                            <span class="id-chip" title="Bấm để copy ID đầy đủ">@t.Id</span>
+                                        </span>
+                                        <span class="ms-3 text-muted">
+                                            <i class="bi bi-clock"></i> @t.CreateAt.ToString("dd/MM/yyyy HH:mm")
+                                        </span>
+                                        <span class="ms-3">
+                                            @{
+                                                var badge = t.StatusRefillTasks == "Completed" ? "text-bg-success"
+                                                : (t.StatusRefillTasks == "Canceled" ? "text-bg-secondary" : "text-bg-warning");
+                                            }
+                                            <span class="badge @badge">@t.StatusRefillTasks</span>
+                                        </span>
+                                    </button>
+                                </h2>
+
+                                <div id="collapse-@i" class="accordion-collapse collapse" aria-labelledby="heading-@i" data-bs-parent="#exportAccordion">
+                                    <div class="accordion-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-sm align-middle mb-0">
+                                                <thead class="table-light">
+                                                    <tr class="text-center">
+                                                        <th>SKU</th>
+                                                        <th><i class="bi bi-box-arrow-in-left"></i> From</th>
+                                                        <th><i class="bi bi-box-arrow-right"></i> To</th>
+                                                        <th class="text-end"><i class="bi bi-hash"></i> Số lượng</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @if (t.Details == null || !t.Details.Any())
+                                                    {
+                                                        <tr><td colspan="4" class="text-center text-muted py-3">Không có chi tiết.</td></tr>
+                                                    }
+                                                    else
+                                                    {
+                                                        @foreach (var d in t.Details)
+                                                        {
+                                                            var fromIsGuid = string.IsNullOrWhiteSpace(d.FromLocationName) && d.FromLocation != Guid.Empty;
+                                                            var toIsGuid = string.IsNullOrWhiteSpace(d.ToLocationName) && d.ToLocation != Guid.Empty;
+
+                                                            <tr>
+                                                                <td>
+                                                                    @if (!string.IsNullOrWhiteSpace(d.SKU))
+                                                                    {
+                                                                        <span class="task-chip"><i class="bi bi-upc-scan me-1"></i>@d.SKU</span>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span class="text-muted">N/A</span>
+                                                                    }
+                                                                </td>
+                                                                <td>
+                                                                    <span class="loc-chip">
+                                                                        <i class="bi bi-geo-alt"></i>
+                                                                        @if (fromIsGuid)
+                                                                        {
+                                                                            <span class="id-chip" title="Bấm để copy ID đầy đủ">@d.FromLocation</span>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            @(!string.IsNullOrWhiteSpace(d.FromLocationName) ? d.FromLocationName : "N/A")
+                                                                        }
+                                                                    </span>
+                                                                </td>
+                                                                <td>
+                                                                    <span class="loc-chip">
+                                                                        <i class="bi bi-geo"></i>
+                                                                        @if (toIsGuid)
+                                                                        {
+                                                                            <span class="id-chip" title="Bấm để copy ID đầy đủ">@d.ToLocation</span>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            @(!string.IsNullOrWhiteSpace(d.ToLocationName) ? d.ToLocationName : "N/A")
+                                                                        }
+                                                                    </span>
+                                                                </td>
+                                                                <td class="text-end">@d.Quantity</td>
+                                                            </tr>
+                                                        }
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="mt-3 d-flex justify-content-center">
+                        @Html.Raw(ViewBag.Pagination)
+                    </div>
+                }
+            </div>
+        </div>
     </div>
-  </div>
 
-  <div id="inlineAlert" class="inline-alert d-none"></div>
+    <div id="inlineAlert" class="inline-alert d-none"></div>
 </div>
 
 @section Scripts {
-<script>
-(function(){
-  const $ = (s,c=document)=>c.querySelector(s);
+    <script>
+        (function(){
+          const $ = (s,c=document)=>c.querySelector(s);
 
-  const form      = $('#filterForm');
-  const statusSel = $('#statusFilter');
-  const pageInput = $('#pageInput');
-  const btnAll    = $('#btnExportAll');
+          const form      = $('#filterForm');
+          const statusSel = $('#statusFilter');
+          const pageInput = $('#pageInput');
+          const btnAll    = $('#btnExportAll');
+          const toast     = $('#inlineAlert');
 
-  // Status change -> reset page 1 & submit
-  statusSel?.addEventListener('change', ()=>{
-    if (pageInput) pageInput.value = '1';
-    form?.submit();
-  });
+          // ===== Toast mini =====
+          function showToast(type, text){
+            if (!toast) return;
+            toast.className = 'inline-alert ' + (type==='success'?'success':'error');
+            toast.textContent = text;
+            toast.classList.remove('d-none');
+            requestAnimationFrame(()=> toast.classList.add('show'));
+            setTimeout(()=>{
+              toast.classList.remove('show');
+              setTimeout(()=> toast.classList.add('d-none'), 160);
+            }, 1800);
+          }
 
-  // Export spinner
-  function setLoadingAnchor(a, text){
-    a?.setAttribute('aria-disabled','true');
-    if (!a) return;
-    a.style.pointerEvents = 'none';
-    a.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${text}`;
-  }
-  btnAll?.addEventListener('click', function(){
-    setLoadingAnchor(this, 'Đang xuất...');
-  });
-})();
-</script>
+          // ===== Rút gọn & gắn copy cho mọi .id-chip =====
+          function shortenId(str){
+            if (!str) return str;
+            const s = String(str).trim();
+            // GUID 36 ký tự -> rút gọn 8...8; chuỗi dài khác -> 4...4
+            if (s.length >= 32) return s.slice(0,8) + '...' + s.slice(-8);
+            if (s.length > 8)   return s.slice(0,4) + '...' + s.slice(-4);
+            return s;
+          }
+
+          function enhanceIdChips(root = document){
+            const chips = root.querySelectorAll('.id-chip');
+            chips.forEach(chip=>{
+              const full = (chip.getAttribute('data-guid') || chip.textContent || '').trim();
+              if (!full) return;
+              chip.setAttribute('data-guid', full);   // lưu full để copy
+              chip.textContent = shortenId(full);     // hiển thị rút gọn
+              chip.title = chip.title || 'Bấm để copy ID đầy đủ';
+              chip.classList.add('copy-guid');
+              chip.style.cursor = 'pointer';
+            });
+          }
+
+          // ===== Click-to-copy cho mọi .copy-guid =====
+          document.addEventListener('click', function(e){
+            const el = e.target.closest('.copy-guid');
+            if (!el) return;
+
+            // Tránh làm sập/mở accordion khi bấm vào chip
+            e.preventDefault();
+            e.stopPropagation();
+
+            const full = el.getAttribute('data-guid');
+            if (!full) return;
+
+            if (navigator.clipboard?.writeText) {
+              navigator.clipboard.writeText(full)
+                .then(()=> showToast('success','✅ Đã copy đầy đủ ID'))
+                .catch(()=> showToast('error','❌ Không thể copy.'));
+            } else {
+              // Fallback
+              const ta = document.createElement('textarea');
+              ta.value = full;
+              ta.style.position = 'fixed';
+              ta.style.opacity = '0';
+              document.body.appendChild(ta);
+              ta.select();
+              try {
+                document.execCommand('copy');
+                showToast('success','✅ Đã copy đầy đủ ID');
+              } catch {
+                showToast('error','❌ Không thể copy.');
+              } finally {
+                document.body.removeChild(ta);
+              }
+            }
+          });
+
+          // ===== Status change -> reset page 1 & submit =====
+          statusSel?.addEventListener('change', ()=>{
+            if (pageInput) pageInput.value = '1';
+            form?.submit();
+          });
+
+          // ===== Export spinner =====
+          function setLoadingAnchor(a, text){
+            a?.setAttribute('aria-disabled','true');
+            if (!a) return;
+            a.style.pointerEvents = 'none';
+            a.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${text}`;
+          }
+          btnAll?.addEventListener('click', function(){
+            setLoadingAnchor(this, 'Đang xuất...');
+          });
+
+          // Khởi tạo
+          enhanceIdChips();
+
+          // Nếu sau này bạn render thêm nội dung bằng AJAX, gọi lại enhanceIdChips(container) sau khi gắn vào DOM.
+        })();
+    </script>
 }

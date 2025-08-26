@@ -126,29 +126,29 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var task in Model.Items.OrderByDescending(x => x.CreateAt))
+                           @foreach (var task in Model.Items.OrderByDescending(x => x.CreateAt))
                             {
                                 var isCompleted = string.Equals(task.Status, "Completed", StringComparison.OrdinalIgnoreCase);
                                 var badge = isCompleted ? "text-bg-success" : "text-bg-warning";
+
+                                // ▼▼ RÚT GỌN ID HIỂN THỊ
+                                var idStr = task.Id.ToString();
+                                var displayId = idStr.Length > 8 ? idStr[..4] + "..." + idStr[^4..] : idStr;
+
                                 <tr>
-                                    <td><span class="id-chip">@task.Id</span></td>
+                                    <td>
+                                        <span class="id-chip copy-guid"
+                                              data-guid="@task.Id"
+                                              title="Bấm để copy ID đầy đủ">
+                                            @displayId
+                                        </span>
+                                    </td>
                                     <td>@(string.IsNullOrWhiteSpace(task.CreateBy) ? "—" : task.CreateBy)</td>
                                     <td>@task.CreateAt.ToString("dd/MM/yyyy HH:mm")</td>
                                     <td><span class="badge @badge">@task.Status</span></td>
-                                    @* <td class="text-end">
-                                        <a asp-controller="Inbound"
-                                           asp-action="ValidateScan"
-                                           asp-route-inboundTaskId="@task.Id"
-                                           class="btn btn-orange btn-sm btn-validate @(isCompleted ? "disabled" : "")"
-                                           aria-disabled="@(isCompleted ? "true" : null)"
-                                           tabindex="@(isCompleted ? "-1" : null)"
-                                           title="Mở trang quét xác nhận">
-                                            <i class="bi bi-upc-scan me-1"></i>
-                                            <span>Validate Scan</span>
-                                        </a>
-                                    </td> *@
                                 </tr>
                             }
+
                         </tbody>
                     </table>
                 </div>
@@ -182,7 +182,34 @@
             toast.textContent = text;
             toast.classList.remove('d-none');
             requestAnimationFrame(()=> toast.classList.add('show'));
-            setTimeout(()=>{ toast.classList.remove('show'); setTimeout(()=> toast.classList.add('d-none'), 160); }, 1800);
+            setTimeout(()=>{
+              toast.classList.remove('show');
+              setTimeout(()=> toast.classList.add('d-none'), 160);
+            }, 1800);
+          }
+
+          // ===== Rút gọn & gắn copy cho mọi .id-chip =====
+          function shortenId(str){
+            if (!str) return str;
+            const s = String(str).trim();
+            return s.length > 8 ? s.slice(0,4) + '...' + s.slice(-4) : s;
+          }
+
+          function enhanceIdChips(){
+            const chips = document.querySelectorAll('.id-chip');
+            chips.forEach(chip=>{
+              // Nếu chưa có data-guid thì lấy text hiện tại làm full ID
+              if (!chip.getAttribute('data-guid')) {
+                const full = (chip.textContent || '').trim();
+                if (!full) return;
+                chip.setAttribute('data-guid', full);
+              }
+              const full = chip.getAttribute('data-guid');
+              chip.textContent = shortenId(full);
+              chip.title = 'Bấm để copy ID đầy đủ';
+              chip.classList.add('copy-guid');
+              chip.style.cursor = 'pointer';
+            });
           }
 
           // Auto-submit khi đổi status, reset page về 1
@@ -211,10 +238,45 @@
               return;
             }
 
-            // spinner inline theo CSS .btn-validate.loading
             a.classList.add('loading');
             a.setAttribute('aria-disabled','true');
           });
+
+          // ===== Click-to-copy cho mọi .copy-guid =====
+          document.addEventListener('click', function(e){
+            const el = e.target.closest('.copy-guid');
+            if (!el) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            const full = el.getAttribute('data-guid');
+            if (!full) return;
+
+            if (navigator.clipboard?.writeText) {
+              navigator.clipboard.writeText(full)
+                .then(()=> showToast('success','✅ Đã copy đầy đủ ID'))
+                .catch(()=> showToast('error','❌ Không thể copy.'));
+            } else {
+              const ta = document.createElement('textarea');
+              ta.value = full;
+              ta.style.position = 'fixed';
+              ta.style.opacity = '0';
+              document.body.appendChild(ta);
+              ta.select();
+              try {
+                document.execCommand('copy');
+                showToast('success','✅ Đã copy đầy đủ ID');
+              } catch {
+                showToast('error','❌ Không thể copy.');
+              } finally {
+                document.body.removeChild(ta);
+              }
+            }
+          });
+
+          // Khởi tạo
+          enhanceIdChips();
         })();
     </script>
 }

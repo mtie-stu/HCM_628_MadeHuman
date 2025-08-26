@@ -57,7 +57,6 @@
                                 <i class="bi bi-inboxes"></i>
                                 <div class="title">Chưa có phiếu nhập</div>
                                 <div class="desc">Hãy tạo phiếu nhập đầu tiên của bạn.</div>
-
                             </div>
                         </td>
                     </tr>
@@ -67,11 +66,25 @@
                     foreach (var item in Model)
                     {
                         <tr>
-                            <td><span class="id-chip">@item.Id</span></td>
+                            <!-- Rút gọn + copy -->
+                            <td><span class="id-chip" title="Bấm để copy ID đầy đủ">@item.Id</span></td>
+
                             <td>@item.CreateAt.ToString("dd/MM/yyyy HH:mm")</td>
                             <td>@(item.ReceivedAt == DateTime.MinValue ? "-" : item.ReceivedAt.ToString("dd/MM/yyyy"))</td>
                             <td><span class="status-chip">@item.Status</span></td>
-                            <td class="text-break">@item.TaskCode</td>
+
+                            <!-- Rút gọn + copy cho mã nhiệm vụ (nếu là mã/ID) -->
+                            <td class="text-break">
+                                @if (!string.IsNullOrWhiteSpace(item.TaskCode))
+                                {
+                                    <span class="id-chip" title="Bấm để copy ID đầy đủ">@item.TaskCode</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+
                             <td><span class="status-chip weak">@item.TaskStatus</span></td>
                             <td class="fw-bold">@item.ItemCount</td>
                             <td class="text-end">
@@ -149,4 +162,82 @@
         </nav>
     }
 
+    <!-- Inline alert -->
+    <div id="inlineAlert" class="inline-alert d-none"></div>
 </div>
+
+@section Scripts {
+<script>
+(function(){
+  const toast = document.getElementById('inlineAlert');
+
+  // mini toast
+  function showToast(type, text){
+    if (!toast) return;
+    toast.className = 'inline-alert ' + (type==='success'?'success':'error');
+    toast.textContent = text;
+    toast.classList.remove('d-none');
+    requestAnimationFrame(()=> toast.classList.add('show'));
+    setTimeout(()=>{ toast.classList.remove('show'); setTimeout(()=> toast.classList.add('d-none'), 160); }, 1800);
+  }
+
+  // Rút gọn & gắn copy cho mọi .id-chip
+  function shortenId(str){
+    if (!str) return str;
+    const s = String(str).trim();
+    // GUID/chuỗi dài: ưu tiên 8...8 nếu >= 32 ký tự; còn lại 4...4 nếu > 8
+    if (s.length >= 32) return s.slice(0,8) + '...' + s.slice(-8);
+    if (s.length > 8)  return s.slice(0,4) + '...' + s.slice(-4);
+    return s;
+  }
+  function enhanceIdChips(root=document){
+    root.querySelectorAll('.id-chip').forEach(chip=>{
+      const full = (chip.getAttribute('data-guid') || chip.textContent || '').trim();
+      if (!full) return;
+      chip.setAttribute('data-guid', full);       // lưu full để copy
+      chip.textContent = shortenId(full);         // hiển thị rút gọn
+      chip.title = chip.title || 'Bấm để copy ID đầy đủ';
+      chip.classList.add('copy-guid');
+      chip.style.cursor = 'pointer';
+    });
+  }
+
+  // Click-to-copy
+  document.addEventListener('click', function(e){
+    const el = e.target.closest('.copy-guid');
+    if (!el) return;
+
+    e.preventDefault();    // tránh select text ngẫu nhiên
+    e.stopPropagation();   // nếu đặt trong button/accordion thì không toggle
+
+    const full = el.getAttribute('data-guid');
+    if (!full) return;
+
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(full)
+        .then(()=> showToast('success','✅ Đã copy đầy đủ mã'))
+        .catch(()=> showToast('error','❌ Không thể copy.'));
+    } else {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = full;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        showToast('success','✅ Đã copy đầy đủ mã');
+      } catch {
+        showToast('error','❌ Không thể copy.');
+      } finally {
+        document.body.removeChild(ta);
+      }
+    }
+  });
+
+  // Khởi tạo
+  enhanceIdChips();
+})();
+</script>
+}

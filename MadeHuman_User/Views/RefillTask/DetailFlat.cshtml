@@ -81,7 +81,7 @@
                                     data-bs-toggle="collapse" data-bs-target="#collapse-@gi"
                                     aria-expanded="false" aria-controls="collapse-@gi">
                                 <i class="bi bi-clipboard-check"></i>
-                                <span class="ms-2">Nhiệm vụ: <span class="task-chip" title="@g.Key">@displayId</span></span>
+                                <span class="task-chip copy-guid" data-guid="@g.Key" title="Bấm để copy ID đầy đủ">@displayId</span>
                                 <span class="ms-3 text-muted"><i class="bi bi-person-circle"></i> @first.CreateBy</span>
                                 <span class="ms-3 text-muted"><i class="bi bi-clock"></i> @first.CreateAt.ToString("dd/MM/yyyy HH:mm")</span>
                             </button>
@@ -177,15 +177,19 @@
           const alertEl  = document.getElementById('inlineAlert');
           const accRoot  = document.getElementById('refillDetailAccordion');
 
+          // ===== Inline alert (dùng chung) =====
           function showInline(type, text){
             alertEl.className = 'inline-alert ' + (type==='success'?'success':'error');
             alertEl.textContent = text;
             alertEl.classList.remove('d-none');
             requestAnimationFrame(()=> alertEl.classList.add('show'));
-            setTimeout(()=>{ alertEl.classList.remove('show'); setTimeout(()=> alertEl.classList.add('d-none'), 200); }, 2000);
+            setTimeout(()=>{ 
+              alertEl.classList.remove('show'); 
+              setTimeout(()=> alertEl.classList.add('d-none'), 200); 
+            }, 2000);
           }
 
-          // ⬇⬇⬇ CẬP NHẬT HÀM LỌC
+          // ===== Lọc chỉ hiển thị pending =====
           function applyFilter(){
             const onlyPending = !!toggle?.checked;
             const items = accRoot?.querySelectorAll('.accordion-item') || [];
@@ -204,9 +208,8 @@
                 if (isPending) hasPending = true;
               });
 
-              // Ẩn cả nhóm nếu không còn dòng pending khi bật chế độ "Chỉ hiển thị mục chưa bổ sung"
+              // Ẩn cả nhóm nếu không còn dòng pending
               if (onlyPending && !hasPending) {
-                // đóng nếu đang mở
                 const collapseEl = item.querySelector('.accordion-collapse');
                 const btn = item.querySelector('.accordion-button');
                 if (collapseEl?.classList.contains('show')) {
@@ -220,13 +223,45 @@
               }
             });
           }
-          // ⬆⬆⬆
 
-          // Gắn sự kiện & chạy lần đầu
+          // Gắn sự kiện & chạy lần đầu cho toggle filter
           toggle?.addEventListener('change', applyFilter);
           applyFilter();
 
-          // Spinner cho nút Quét (giữ nguyên)
+          // ===== Click-to-copy GUID đầy đủ =====
+          accRoot?.addEventListener('click', function(e){
+            const el = e.target.closest('.copy-guid');
+            if (!el) return;
+            e.preventDefault();
+            e.stopPropagation();
+
+            const full = el.getAttribute('data-guid');
+            if (!full) return;
+
+            if (navigator.clipboard?.writeText) {
+              navigator.clipboard.writeText(full).then(()=>{
+                showInline('success', '✅ Đã copy đầy đủ RefillTaskId');
+              }).catch(()=>{
+                showInline('error', '❌ Không thể copy.');
+              });
+            } else {
+              // fallback cũ
+              const ta = document.createElement('textarea');
+              ta.value = full;
+              ta.style.position = 'fixed';
+              ta.style.opacity = '0';
+              document.body.appendChild(ta);
+              ta.select();
+              try { 
+                document.execCommand('copy'); 
+                showInline('success', '✅ Đã copy đầy đủ RefillTaskId'); 
+              }
+              catch { showInline('error', '❌ Không thể copy.'); }
+              finally { document.body.removeChild(ta); }
+            }
+          });
+
+          // ===== Spinner cho nút Quét =====
           document.querySelectorAll('.btn-scan').forEach(btn=>{
             btn.addEventListener('click', function(){
               if (this.dataset.loading === '1') return;
@@ -234,6 +269,7 @@
               this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang mở...';
             });
           });
+
         })();
     </script>
 }
