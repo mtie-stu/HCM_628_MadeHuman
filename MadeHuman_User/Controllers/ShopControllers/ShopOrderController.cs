@@ -14,11 +14,70 @@ namespace MadeHuman_User.Controllers.ShopControllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 6, string? q = "", string? status = "")
         {
-            var orders = await _orderService.GetAllAsync();
-            return View(orders);
+            if (page < 1) page = 1;
+            pageSize = (pageSize is < 1 or > 100) ? 6 : pageSize;
+
+            // Lấy toàn bộ đơn
+            var all = await _orderService.GetAllAsync() ?? new List<ShopOrderListItemViewModel>();
+
+            // Danh sách trạng thái (để render dropdown)
+            var statuses = all
+                .Select(o => o.Status)
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(s => s)
+                .ToList();
+
+            // ----- Lọc theo trạng thái -----
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                var st = status.Trim();
+                all = all
+                    .Where(o => string.Equals(o.Status ?? "", st, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            // ----- Tìm kiếm theo từ khoá -----
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                var ql = q.Trim().ToLowerInvariant();
+                all = all.Where(o =>
+                        (!string.IsNullOrEmpty(o.AppUserName) && o.AppUserName.ToLower().Contains(ql)) ||
+                        (!string.IsNullOrEmpty(o.Status) && o.Status.ToLower().Contains(ql)) ||
+                        o.ShopOrderId.ToString().Contains(q, StringComparison.OrdinalIgnoreCase)
+                    )
+                    .ToList();
+            }
+
+            // ----- Phân trang -----
+            var totalItems = all.Count;
+            var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
+            if (page > totalPages) page = totalPages;
+
+            var data = all
+                .OrderByDescending(o => o.OrderDate)       // sắp xếp mới nhất trước
+                .ThenByDescending(o => o.ShopOrderId)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // ViewBags phục vụ View
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.PageSize = pageSize;
+            ViewBag.Q = q ?? "";
+            ViewBag.Status = status ?? "";
+            ViewBag.Statuses = statuses;
+
+            ViewBag.TotalItems = totalItems;
+            ViewBag.FromItem = totalItems == 0 ? 0 : (page - 1) * pageSize + 1;
+            ViewBag.ToItem = Math.Min(page * pageSize, totalItems);
+
+            return View(data);
         }
+
         [HttpGet]
         public IActionResult Create()
         {

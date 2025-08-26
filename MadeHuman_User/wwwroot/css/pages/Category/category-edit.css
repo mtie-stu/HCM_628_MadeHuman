@@ -1,0 +1,73 @@
+﻿/* Dùng lại palette */
+.category-page {
+    --accent: #ee4d2d;
+    --accent-weak: #ffede8;
+    --g900: #1f2937;
+    --g700: #374151;
+    --g500: #6b7280;
+    --g300: #d1d5db;
+    --g200: #e5e7eb;
+    --g100: #f6f8fa;
+    --radius: 18px;
+    font-family: "Segoe UI", system-ui, Roboto, Arial, sans-serif;
+}
+
+/* Header */
+.page-head .page-title {
+    margin: 0;
+    font-weight: 800;
+    color: var(--g900);
+}
+
+.page-subtext {
+    color: var(--g500);
+}
+
+/* Card form */
+.form-card {
+    border: 1px solid var(--g200);
+    border-radius: 14px;
+    padding: 20px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,.04);
+}
+
+/* Input */
+.form-control, textarea {
+    border: 1.5px solid var(--g200);
+    border-radius: 12px;
+    transition: border .2s, box-shadow .2s;
+}
+
+    .form-control:focus, textarea:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 .2rem rgba(238,77,45,.12);
+    }
+
+/* Buttons */
+.btn-orange {
+    background: var(--accent);
+    color: #fff !important;
+    border: none;
+    border-radius: 12px;
+    padding: .55rem .95rem;
+    font-weight: 700;
+}
+
+    .btn-orange:hover {
+        filter: brightness(.96);
+    }
+
+.btn-outline {
+    background: #fff;
+    color: var(--g700) !important;
+    border: 1.5px solid var(--g200);
+    border-radius: 12px;
+    padding: .55rem .95rem;
+    font-weight: 600;
+}
+
+    .btn-outline:hover {
+        border-color: var(--accent);
+        color: var(--accent) !important;
+    }

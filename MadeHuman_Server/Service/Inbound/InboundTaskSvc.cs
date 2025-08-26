@@ -15,6 +15,7 @@ namespace MadeHuman_Server.Service.Inbound
         Task<List<string>> ValidateInboundProductScanAsync(ScanInboundTaskValidationRequest request);
         Task StoreProductBatchAsync(Guid inboundTaskId, Guid productBatchId, Guid userTaskId);
         Task<List<InboundTaskViewModel>> GetAllAsync();
+        Task<Guid?> GetTaskIdByReceiptAsync(Guid receiptId);                  // chỉ cần Id
     }
 
     public class InboundTaskSvc : IInboundTaskSvc
@@ -387,5 +388,16 @@ namespace MadeHuman_Server.Service.Inbound
                 })
                 .ToListAsync();
         }
+        // Service/Inbound/InboundTaskSvc.cs
+        public async Task<Guid?> GetTaskIdByReceiptAsync(Guid receiptId)
+        {
+            return await _context.InboundTasks
+                .AsNoTracking()
+                .Where(t => t.InboundReceiptId == receiptId)
+                .OrderByDescending(t => t.CreateAt)   // nếu có nhiều task cho 1 receipt → lấy mới nhất
+                .Select(t => (Guid?)t.Id)
+                .FirstOrDefaultAsync();
+        }
+
     }
 }

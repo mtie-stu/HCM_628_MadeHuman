@@ -1,5 +1,7 @@
-﻿using Madehuman_Share.ViewModel.Inbound;
+﻿using Madehuman_Share.ViewModel;
+using Madehuman_Share.ViewModel.Inbound;
 using Madehuman_Share.ViewModel.Shop;
+using MadeHuman_User.Helper;
 using MadeHuman_User.ServicesTask.Services.InboundService;
 using MadeHuman_User.ServicesTask.Services.ShopService;
 using MadeHuman_User.ServicesTask.Services.Warehouse;
@@ -22,11 +24,64 @@ namespace MadeHuman_User.Controllers.InboundControlles
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 10)
         {
-            // ✅ Truyền HttpContext
-            var tasks = await _refillTaskService.GetAllRefillTasksAsync(HttpContext);
-            return View(tasks);
+            var all = await _refillTaskService.GetAllRefillTasksAsync(HttpContext);
+
+            // Thống kê tổng (cho stat cards)
+            var total = all.Count;
+            var completed = all.Count(t => string.Equals(t.StatusRefillTasks, "Completed", StringComparison.OrdinalIgnoreCase));
+            var canceled = all.Count(t => string.Equals(t.StatusRefillTasks, "Canceled", StringComparison.OrdinalIgnoreCase));
+            var processing = all.Count(t => string.Equals(t.StatusRefillTasks, "Incomplete", StringComparison.OrdinalIgnoreCase));
+
+            // Danh sách hiển thị: chỉ "Đang xử lý" (giống view cũ)
+            var q = all.Where(t => string.Equals(t.StatusRefillTasks, "Incomplete", StringComparison.OrdinalIgnoreCase));
+
+            // Phân trang
+            if (pageSize <= 0 || pageSize > 200) pageSize = 10;
+            var totalAfter = q.Count(); // số "Đang xử lý"
+            var totalPages = Math.Max(1, (int)Math.Ceiling(totalAfter / (double)pageSize));
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+
+            var items = q
+                .OrderByDescending(t => t.CreateAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // ViewModel chuẩn PagedResult
+            var vm = new PagedResult<RefillTaskFullViewModel>
+            {
+                Items = items,
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalItems = totalAfter,     // tổng "Đang xử lý" (sau lọc để list)
+                Status = "Incomplete",   // ghi nhớ filter đang dùng
+                Q = null,
+                // Các field thống kê optional
+                TotalCompleted = completed,
+                TotalIncomplete = processing
+            };
+
+            // Đẩy số liệu cho stat cards
+            ViewBag.TaskTotal = total;
+            ViewBag.TaskCompleted = completed;
+            ViewBag.TaskCanceled = canceled;
+            ViewBag.TaskProcessing = processing;
+
+            // Pager giữ pageSize (nếu cần thêm filter sau này thì add vào queryParams)
+            ViewBag.Pagination = PaginationHelper.GeneratePagination(
+                currentPage: vm.CurrentPage,
+                totalPages: vm.TotalPages,
+                baseUrl: Url.Action("Index", "RefillTask")!,
+                queryParams: new Dictionary<string, string>
+                {
+                    ["pageSize"] = pageSize.ToString()
+                }
+            );
+
+            return View(vm);
         }
 
         [HttpGet]
@@ -66,10 +121,57 @@ namespace MadeHuman_User.Controllers.InboundControlles
 
             return View(task);
         }
-        public async Task<IActionResult> DetailFlat()
+        [HttpGet]
+        public async Task<IActionResult> DetailFlat(int page = 1, int pageSize = 4)
         {
-            var data = await _refillTaskService.GetAllDetailsAsync(HttpContext);
-            return View(data);
+            // Lấy toàn bộ chi tiết
+            var all = await _refillTaskService.GetAllDetailsAsync(HttpContext);
+
+            // ==== Stats tổng cho header ====
+            var total = all.Count;
+            var done = all.Count(x => x.IsRefilled);
+            var pending = total - done;
+            var groupsQuery = all
+                .GroupBy(x => x.RefillTaskId)
+                .OrderByDescending(g => g.Max(i => i.CreateAt));
+
+            var totalGroups = groupsQuery.Count();
+
+            // ==== Phân trang theo GROUP (RefillTaskId) ====
+            if (pageSize <= 0 || pageSize > 200) pageSize = 5;
+            var totalPages = Math.Max(1, (int)Math.Ceiling(totalGroups / (double)pageSize));
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+
+            var pageGroupKeys = groupsQuery
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(g => g.Key)
+                .ToHashSet();
+
+            // Chỉ gửi lên View các item thuộc các nhóm ở trang hiện tại
+            var pageItems = all
+                .Where(x => pageGroupKeys.Contains(x.RefillTaskId))
+                .ToList();
+
+            // ==== ViewBags ====
+            ViewBag.TotalRecords = total;
+            ViewBag.TotalDone = done;
+            ViewBag.TotalPending = pending;
+            ViewBag.TotalGroups = totalGroups;
+
+            // Pager giữ pageSize
+            ViewBag.Pagination = PaginationHelper.GeneratePagination(
+                currentPage: page,
+                totalPages: totalPages,
+                baseUrl: Url.Action("DetailFlat", "RefillTask")!, // đổi Controller nếu khác
+                queryParams: new Dictionary<string, string>
+                {
+                    ["pageSize"] = pageSize.ToString()
+                }
+            );
+
+            return View(pageItems);
         }
         //[HttpGet]
         //public IActionResult ValidateScan()
