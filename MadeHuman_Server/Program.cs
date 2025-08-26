@@ -72,6 +72,7 @@ builder.Services.AddAuthentication(auth =>
         ValidateIssuerSigningKey = true
     };
 });
+builder.Services.AddHttpClient();
 
 // 🧩 Services
 builder.Services.AddTransient<ITokenService, TokenService>();

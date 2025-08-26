@@ -85,24 +85,51 @@ namespace MadeHuman_Server.Service.Outbound
             if (string.IsNullOrEmpty(userId))
                 throw new UnauthorizedAccessException("❌ Không xác định được người dùng hiện tại.");
 
-            var userTaskId = await _usertaskservice.GetUserTaskIdAsync(userId, DateOnly.FromDateTime(DateTime.UtcNow));
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var userTaskId = await _usertaskservice.GetUserTaskIdAsync(userId, today);
             if (userTaskId == null)
                 throw new InvalidOperationException("❌ Không tìm thấy phân công công việc hôm nay cho người dùng.");
 
-            var task = await _context.PickTasks
-                .Where(p => p.UsersTasksId == null || p.UsersTasksId == Guid.Empty)
+            // 1) Chọn 1 seed PickTask chưa gán (ưu tiên tạo sớm nhất)
+            var seed = await _context.PickTasks
+                .Where(p => (p.UsersTasksId == null || p.UsersTasksId == Guid.Empty)
+                         && p.Status == StatusPickTask.Created)
                 .OrderBy(p => p.CreateAt)
                 .FirstOrDefaultAsync();
 
-            if (task == null)
+            if (seed == null)
                 return null;
 
-            task.UsersTasksId = userTaskId;
-            task.Status = StatusPickTask.Recived;
+            var targetOutboundTaskId = seed.OutboundTaskId;
+
+            // 2) Lấy tất cả PickTasks chưa gán cùng OutboundTaskId của seed
+            var groupTasks = await _context.PickTasks
+                .Where(p => p.OutboundTaskId == targetOutboundTaskId
+                         && (p.UsersTasksId == null || p.UsersTasksId == Guid.Empty)
+                         && p.Status == StatusPickTask.Created)
+                .OrderBy(p => p.CreateAt)
+                .ToListAsync();
+
+            if (groupTasks.Count == 0)
+                return null;
+
+            // 3) Gán đồng loạt
+            foreach (var t in groupTasks)
+            {
+                t.UsersTasksId = userTaskId;
+                t.Status = StatusPickTask.Recived; // (giữ nguyên enum của bạn)
+            }
+
             await _context.SaveChangesAsync();
 
-            return task.Id;
+             //👉 Bạn có thể log groupTasks.Count nếu muốn
+             _logger?.LogInformation("Assigned {Count} pick tasks of OutboundTask {OutboundTaskId} to {UserTaskId}",
+                 groupTasks.Count, targetOutboundTaskId, userTaskId);
+
+            // Trả về Id của seed để không phá vỡ chữ ký cũ
+            return seed.Id;
         }
+
 
         public async Task<List<string>> ValidatePickTaskScanAsync(ScanPickTaskValidationRequest request)
         {
@@ -203,7 +230,7 @@ namespace MadeHuman_Server.Service.Outbound
                     userTask.HourlyKPIs += totalQty;
                 }
 
-                await _checkTaskService.CreateCheckTaskAsync(task.OutboundTaskId);
+              
                 result.IsPickTaskFinished = true;
             }
             else
@@ -225,6 +252,15 @@ namespace MadeHuman_Server.Service.Outbound
             }
 
             await _context.SaveChangesAsync();
+            try
+            {
+                await _checkTaskService.CreateCheckTaskAsync(task.OutboundTaskId);
+            }
+            catch (Exception ex)
+            {
+                // ❌ Bỏ qua lỗi, chỉ log lại (nếu cần theo dõi)
+                _logger?.LogWarning(ex, $"Lỗi khi tạo CheckTask cho OutboundTaskId {task.OutboundTaskId}, bỏ qua vì đã được tạo từ nhiệm vụ trước đó.");
+            }
             return result;
 
             ConfirmPickResult Fail(params string[] msgs) => new() { Messages = msgs.ToList(), IsPickTaskFinished = false };

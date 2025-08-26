@@ -253,6 +253,12 @@
             border-color: #fee2e2;
             color: #991b1b;
         }
+.id-chip.copy-guid::after {
+    margin-left: .35rem;
+    font-size: .9em;
+    opacity: .8;
+}
+
 /* Pagination */
 .pagination {
     display: flex;

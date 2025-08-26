@@ -34,16 +34,34 @@
 		<Folder Include="Uploads\" />
 	</ItemGroup>
 
-	<!-- Chỉ UPDATE metadata để copy ra output, tránh duplicate implicit Content -->
+	<!-- Đảm bảo Bill templates được copy ra cả output & publish -->
 	<ItemGroup>
 		<Content Update="Data/Bill/**">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-
-		<!-- Nếu còn đọc file cục bộ: giữ 2 dòng dưới; nếu đã dùng ENV thì có thể bỏ để tránh đóng gói secrets -->
-		<Content Update="Data/credentials_oauth.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
 		</Content>
 	</ItemGroup>
 
+	<!-- Tuỳ chọn: chỉ copy credentials ở Debug để tránh đóng gói secrets vào image Prod -->
+	<ItemGroup>
+		<Content Update="Data/credentials_oauth.json" Condition="'$(Configuration)' == 'Debug'">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+	</ItemGroup>
+
+	<!-- Tuỳ chọn (đừng bật cùng lúc với Content ở trên cho cùng 1 file):
+       Nếu muốn fallback EmbeddedResource trong Service, bỏ comment block dưới
+       và đọc từ resource khi thiếu file ngoài. -->
+	<!--
+  <ItemGroup>
+    <EmbeddedResource Include="Data/Bill/shoporder-bill.html" />
+  </ItemGroup>
+  -->
+	
+	
+	
+	
+	
+	
 </Project>

@@ -73,7 +73,6 @@ namespace MadeHuman_Server.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("ProductSKUName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("Quantity")
