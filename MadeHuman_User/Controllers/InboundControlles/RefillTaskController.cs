@@ -253,6 +253,25 @@ namespace MadeHuman_User.Controllers.InboundControlles
             // Trả lại view với model đã nhập
             return View(request);
         }
+        [HttpPost]
+        public async Task<IActionResult> Assign(CancellationToken ct)
+        {
+            var (ok, taskId, status, msg) = await _refillTaskService.AssignAsync(HttpContext, ct);
 
+            if (!ok)
+            {
+                if (status == StatusCodes.Status401Unauthorized)
+                    return Unauthorized(msg ?? "Bạn chưa đăng nhập.");
+                if (status == StatusCodes.Status404NotFound)
+                    return NotFound(msg ?? "Không còn nhiệm vụ nào để nhận.");
+                return StatusCode(status == 0 ? 500 : status, msg ?? "Lỗi không xác định.");
+            }
+
+            // Chuẩn hoá: luôn trả JSON có taskId (nếu BE có trả)
+            if (taskId.HasValue) return Ok(new { taskId = taskId.Value });
+
+            // fallback nếu BE trả success mà không có taskId
+            return Ok(new { message = msg ?? "Nhận nhiệm vụ thành công." });
+        }
     }
 }

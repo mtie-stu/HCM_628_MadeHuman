@@ -1,6 +1,7 @@
 ﻿using Madehuman_Share.ViewModel.Inbound;
 using MadeHuman_User.ServicesTask.Services.ShopService;
 using MadeHuman_User.ServicesTask.Services.Warehouse;
+using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace MadeHuman_User.ServicesTask.Services.InboundService
@@ -12,6 +13,9 @@ namespace MadeHuman_User.ServicesTask.Services.InboundService
         Task<RefillTaskFullViewModel?> GetByIdAsync(Guid id, HttpContext httpContext);
         Task<List<RefillTaskDetailWithHeaderViewModel>> GetAllDetailsAsync(HttpContext httpContext);
         Task<List<string>> ValidateRefillScanAsync(ScanRefillTaskValidationRequest request, HttpContext httpContext);
+        // IRefillTaskService
+        Task<(bool IsSuccess, Guid? TaskId, int StatusCode, string? Message)>
+            AssignAsync(HttpContext httpContext, CancellationToken ct = default);
 
 
 
@@ -253,6 +257,63 @@ namespace MadeHuman_User.ServicesTask.Services.InboundService
                 return new() { "❌ Lỗi kết nối tới server." };
             }
         }
+        public async Task<(bool IsSuccess, Guid? TaskId, int StatusCode, string? Message)>
+    AssignAsync(HttpContext httpContext, CancellationToken ct = default)
+        {
+            var jwt = httpContext.Request.Cookies["JWTToken"];
+            if (string.IsNullOrEmpty(jwt))
+            {
+                _logger.LogWarning("❌ JWTToken không có trong cookie.");
+                return (false, null, StatusCodes.Status401Unauthorized, "Bạn chưa đăng nhập.");
+            }
 
+            using var req = new HttpRequestMessage(HttpMethod.Post, "/api/RefillTask/assign");
+            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+
+            HttpResponseMessage resp;
+            string body;
+            try
+            {
+                resp = await _client.SendAsync(req, ct);
+                body = await resp.Content.ReadAsStringAsync(ct);
+                _logger.LogInformation("📥 AssignRefillTask: {StatusCode} - {Body}", resp.StatusCode, body);
+            }
+            catch (TaskCanceledException ex)
+            {
+                _logger.LogError(ex, "⏱️ Timeout khi gọi /api/RefillTask/assign");
+                return (false, null, 0, "Timeout khi gọi API.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "🚨 Lỗi khi gọi /api/RefillTask/assign");
+                return (false, null, 0, ex.Message);
+            }
+
+            if (!resp.IsSuccessStatusCode)
+            {
+                return (false, null, (int)resp.StatusCode, body);
+            }
+
+            // Parse taskId từ response (JSON {taskId} hoặc {id} hoặc text/plain GUID)
+            Guid? taskId = null;
+            try
+            {
+                using var doc = JsonDocument.Parse(body);
+                if (doc.RootElement.TryGetProperty("taskId", out var p1) &&
+                    Guid.TryParse(p1.GetString(), out var g1))
+                    taskId = g1;
+                else if (doc.RootElement.TryGetProperty("id", out var p2) &&
+                         Guid.TryParse(p2.GetString(), out var g2))
+                    taskId = g2;
+            }
+            catch
+            {
+                var txt = body?.Trim('\"', ' ', '\n', '\r');
+                if (Guid.TryParse(txt, out var g3))
+                    taskId = g3;
+            }
+
+            return (true, taskId, (int)resp.StatusCode, body);
+        }
     }
 }
