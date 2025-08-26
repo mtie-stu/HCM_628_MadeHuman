@@ -13,11 +13,56 @@ namespace MadeHuman_User.Controllers.InboundControlles
             _inboundReceiptService = inboundReceiptService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1, string zone = "", string searchTerm = "")
         {
-            var receipts = await _inboundReceiptService.GetAllAsync();
-            return View(receipts);
+            const int pageSize = 6; // bạn đang dùng 6
+            var all = await _inboundReceiptService.GetAllAsync();
+
+            // (Tuỳ chọn) lọc zone nếu cần
+            // if (!string.IsNullOrWhiteSpace(zone))
+            //     all = all.Where(x => x.Zone == zone).ToList();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                all = all.Where(x =>
+                       (!string.IsNullOrEmpty(x.TaskCode) && x.TaskCode.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                    || x.Id.ToString().Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            var totalItems = all.Count;
+            var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
+            var currentPage = Math.Min(Math.Max(1, page), totalPages); // kẹp trong [1..totalPages]
+
+            var data = all.OrderByDescending(x => x.CreateAt)
+                          .Skip((currentPage - 1) * pageSize)
+                          .Take(pageSize)
+                          .ToList();
+
+            // Cửa sổ trang (…)
+            const int window = 2; // hiển thị 2 trang trước/sau
+            var startPage = Math.Max(1, currentPage - window);
+            var endPage = Math.Min(totalPages, currentPage + window);
+
+            // Range hiển thị “X–Y / total”
+            var from = totalItems == 0 ? 0 : ((currentPage - 1) * pageSize) + 1;
+            var to = Math.Min(currentPage * pageSize, totalItems);
+
+            ViewBag.CurrentPage = currentPage;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalItems = totalItems;
+            ViewBag.StartPage = startPage;
+            ViewBag.EndPage = endPage;
+            ViewBag.SelectedZone = zone;
+            ViewBag.SearchTerm = searchTerm;
+            ViewBag.From = from;
+            ViewBag.To = to;
+
+            return View(data);
         }
+
+
 
         [HttpGet]
         public IActionResult Create()

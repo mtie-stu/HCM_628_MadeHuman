@@ -1,5 +1,8 @@
 ﻿using Madehuman_Share.ViewModel.Inbound;
+using Microsoft.Extensions.Logging;
+using System.Net;
 using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace MadeHuman_User.ServicesTask.Services.InboundService
 {
@@ -10,15 +13,19 @@ namespace MadeHuman_User.ServicesTask.Services.InboundService
         Task<(bool Success, string? Message, List<string>? Errors)> ValidateScanAsync(ScanInboundTaskValidationRequest request, HttpContext httpContext);
         // ✅ Thêm hàm GetById
         Task<GetInboundTaskById_Viewmodel?> GetByIdAsync(Guid inboundTaskId, HttpContext httpContext);
+        Task<Guid> GetTaskIdByReceiptAsync(Guid receiptId, HttpContext httpContext);
     }
 
     public class InboundTaskService : IInboundTaskService
     {
         private readonly HttpClient _client;
+        private readonly ILogger<InboundTaskService> _logger; // ✅ thêm field
 
-        public InboundTaskService(IHttpClientFactory httpClientFactory)
+
+        public InboundTaskService(IHttpClientFactory httpClientFactory, ILogger<InboundTaskService> logger)
         {
             _client = httpClientFactory.CreateClient("API");
+            _logger = logger;
         }
         public async Task<bool> CreateAsync(Guid receiptId, HttpContext httpContext)
         {
@@ -126,6 +133,56 @@ namespace MadeHuman_User.ServicesTask.Services.InboundService
             var data = await response.Content.ReadFromJsonAsync<GetInboundTaskById_Viewmodel>();
             return data;
         }
+
+        public async Task<Guid> GetTaskIdByReceiptAsync(Guid receiptId, HttpContext httpContext)
+        {
+            var token = httpContext?.Request?.Cookies["JWTToken"];
+            if (string.IsNullOrEmpty(token)) return Guid.Empty;
+
+            try
+            {
+                var req = new HttpRequestMessage(HttpMethod.Get, $"/api/InboundTask/id-by-receipt/{receiptId}");
+                req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                var resp = await _client.SendAsync(req);
+
+                if (resp.StatusCode == HttpStatusCode.NotFound)
+                    return Guid.Empty;
+
+                resp.EnsureSuccessStatusCode();
+
+                var mediaType = resp.Content.Headers.ContentType?.MediaType?.ToLowerInvariant();
+                if (!string.IsNullOrEmpty(mediaType) && mediaType.StartsWith("text/plain"))
+                {
+                    var text = (await resp.Content.ReadAsStringAsync()).Trim();
+                    return Guid.TryParse(text, out var idFromText) ? idFromText : Guid.Empty;
+                }
+
+                var json = await resp.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(json);
+
+                if (doc.RootElement.ValueKind == JsonValueKind.Object &&
+                    doc.RootElement.TryGetProperty("taskId", out var idProp) &&
+                    Guid.TryParse(idProp.GetString(), out var idFromJson))
+                {
+                    return idFromJson;
+                }
+
+                if (doc.RootElement.ValueKind == JsonValueKind.String &&
+                    Guid.TryParse(doc.RootElement.GetString(), out var idFromString))
+                {
+                    return idFromString;
+                }
+
+                return Guid.Empty;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetTaskIdByReceiptAsync failed. ReceiptId: {ReceiptId}", receiptId); // ✅ dùng logger
+                return Guid.Empty;
+            }
+        }
+
 
 
     }

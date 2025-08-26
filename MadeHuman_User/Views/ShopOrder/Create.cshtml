@@ -1,119 +1,185 @@
 ﻿@model Madehuman_Share.ViewModel.Shop.CreateShopOrderWithMultipleItems
 
 @{
-    ViewBag.Title = "Tạo Đơn Hàng Mới";
+    ViewData["Title"] = "Tạo Đơn Hàng Mới";
 }
 
-<h2 class="mb-4">Tạo Đơn Hàng Mới</h2>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+<link rel="stylesheet" href="~/css/pages/ShopOrder/order-create.css" asp-append-version="true" />
 
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
+<div class="order-page container mt-4">
 
-<form asp-action="Create" method="post">
-    <div class="mb-3">
-        <label asp-for="AppUserId" class="form-label">App User ID</label>
-        <input asp-for="AppUserId" class="form-control" />
-        <span asp-validation-for="AppUserId" class="text-danger"></span>
+    <!-- Header -->
+    <div class="page-head mb-2">
+        <div>
+            <h2 class="page-title"><i class="bi bi-receipt"></i> Tạo Đơn Hàng Mới</h2>
+            <div class="page-subtext">Nhập thông tin đơn và các dòng sản phẩm</div>
+        </div>
+        <div class="toolbar">
+            <a asp-action="Index" class="btn btn-outline">
+                <i class="bi bi-arrow-left"></i> Quay lại
+            </a>
+        </div>
     </div>
 
-    <div class="mb-3">
-        <label asp-for="Status" class="form-label">Trạng thái đơn hàng</label>
-        <select asp-for="Status" class="form-select">
-            <option value="0">Created</option>
-            <option value="1">Confirmed</option>
-            <option value="2">Processing</option>
-            <option value="3">Delivery</option>
-        </select>
-        <span asp-validation-for="Status" class="text-danger"></span>
-    </div>
+    <!-- Alerts -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="inline-alert show success">
+            <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="inline-alert show error">
+            <i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]
+        </div>
+    }
 
-    <div class="mb-3">
-        <label asp-for="OrderDate" class="form-label">Ngày đặt hàng</label>
-        <input asp-for="OrderDate" class="form-control" type="datetime-local" />
-        <span asp-validation-for="OrderDate" class="text-danger"></span>
-    </div>
+    <div class="form-card">
+        <form asp-action="Create" method="post" id="orderCreateForm">
+            @Html.AntiForgeryToken()
 
-    <hr />
-    <h4>Danh sách sản phẩm</h4>
-    <div id="items-container">
-        @for (int i = 0; i < Model.Items.Count; i++)
-        {
-            <div class="border p-3 mb-3 bg-light rounded item-row">
-                <div class="row">
-                    <div class="col-md-4">
-                        <label class="form-label">Product SKU Id</label>
-                        <input asp-for="Items[@i].ProductSKUsId" class="form-control" />
-                        <span asp-validation-for="Items[@i].ProductSKUsId" class="text-danger"></span>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Số lượng</label>
-                        <input asp-for="Items[@i].Quantity" class="form-control" type="number" />
-                        <span asp-validation-for="Items[@i].Quantity" class="text-danger"></span>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Đơn giá</label>
-                        <input asp-for="Items[@i].UnitPrice" class="form-control" type="number" step="0.01" />
-                        <span asp-validation-for="Items[@i].UnitPrice" class="text-danger"></span>
-                    </div>
-                    @* <div class="col-md-2 d-flex align-items-end">
-                        <button type="button" class="btn btn-danger remove-item w-100">Xóa</button>
-                    </div> *@
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="AppUserId" class="form-label fw-bold">App User ID</label>
+                    <input asp-for="AppUserId" class="form-control" />
+                    <span asp-validation-for="AppUserId" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="Status" class="form-label fw-bold">Trạng thái đơn hàng</label>
+                    <select asp-for="Status" class="form-select">
+                        <option value="0">Created</option>
+                        <option value="1">Confirmed</option>
+                        <option value="2">Processing</option>
+                        <option value="3">Delivery</option>
+                    </select>
+                    <span asp-validation-for="Status" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="OrderDate" class="form-label fw-bold">Ngày đặt hàng</label>
+                    <input asp-for="OrderDate" class="form-control" type="datetime-local" />
+                    <span asp-validation-for="OrderDate" class="text-danger small"></span>
                 </div>
             </div>
-        }
-    </div>
 
-    <button type="button" id="add-item" class="btn btn-secondary mb-3">
-        <i class="bi bi-plus-circle"></i> Thêm sản phẩm
-    </button>
+            <hr class="my-4" />
 
-    <div class="d-grid">
-        <button type="submit" class="btn btn-primary">
-            <i class="bi bi-save"></i> Tạo đơn hàng
-        </button>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h4 class="m-0"><i class="bi bi-box-seam"></i> Danh sách sản phẩm</h4>
+                <button type="button" id="add-item" class="btn btn-outline">
+                    <i class="bi bi-plus-circle"></i> Thêm sản phẩm
+                </button>
+            </div>
+
+            <div id="items-container" class="table-wrap">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width:40%;">Product SKU Id</th>
+                            <th style="width:20%;">Số lượng</th>
+                            <th style="width:25%;">Đơn giá</th>
+                            <th style="width:15%; text-align:right;">&nbsp;</th>
+                        </tr>
+                    </thead>
+                    <tbody id="items-tbody">
+                        @for (int i = 0; i < Model.Items.Count; i++)
+                        {
+                            <tr class="item-row">
+                                <td>
+                                    <input asp-for="Items[@i].ProductSKUsId" class="form-control" />
+                                    <span asp-validation-for="Items[@i].ProductSKUsId" class="text-danger small"></span>
+                                </td>
+                                <td>
+                                    <input asp-for="Items[@i].Quantity" class="form-control" type="number" min="1" step="1" />
+                                    <span asp-validation-for="Items[@i].Quantity" class="text-danger small"></span>
+                                </td>
+                                <td>
+                                    <input asp-for="Items[@i].UnitPrice" class="form-control" type="number" min="0" step="1000" />
+                                    <span asp-validation-for="Items[@i].UnitPrice" class="text-danger small"></span>
+                                </td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-danger-soft remove-item">
+                                        <i class="bi bi-trash"></i> Xoá
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-orange">
+                    <i class="bi bi-save"></i> Tạo đơn hàng
+                </button>
+                <a asp-action="Index" class="btn btn-outline">
+                    <i class="bi bi-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </form>
     </div>
-</form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-
     <script>
-                document.getElementById('add-item').addEventListener('click', function () {
-                    const index = document.querySelectorAll('#items-container .item-row').length;
-                    const container = document.getElementById('items-container');
-                    const newItem = `
-        <div class="border p-3 mb-3 bg-light rounded item-row">
-            <div class="row">
-                <div class="col-md-4">
-                    <label class="form-label">Product SKU Id</label>
-                    <input name="Items[${index}].ProductSKUsId" class="form-control" />
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Số lượng</label>
-                    <input name="Items[${index}].Quantity" class="form-control" type="number" />
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Đơn giá</label>
-                    <input name="Items[${index}].UnitPrice" class="form-control" type="number" step="0.01" />
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="button" class="btn btn-danger remove-item w-100">Xóa</button>
-                </div>
-            </div>
-        </div>`;
-                    container.insertAdjacentHTML('beforeend', newItem);
-                });
+        (function () {
+            const tbody = document.getElementById('items-tbody');
+            const addBtn = document.getElementById('add-item');
 
-                document.addEventListener('click', function (e) {
-                    if (e.target.classList.contains('remove-item')) {
-                        e.target.closest('.item-row').remove();
-                    }
+            addBtn.addEventListener('click', () => {
+                const index = tbody.querySelectorAll('.item-row').length;
+                const tr = document.createElement('tr');
+                tr.className = 'item-row';
+                tr.innerHTML = `
+                    <td>
+                        <input name="Items[${index}].ProductSKUsId" class="form-control" />
+                        <span data-valmsg-for="Items[${index}].ProductSKUsId" class="text-danger small"></span>
+                    </td>
+                    <td>
+                        <input name="Items[${index}].Quantity" class="form-control" type="number" min="1" step="1" />
+                        <span data-valmsg-for="Items[${index}].Quantity" class="text-danger small"></span>
+                    </td>
+                    <td>
+                        <input name="Items[${index}].UnitPrice" class="form-control" type="number" min="0" step="1000" />
+                        <span data-valmsg-for="Items[${index}].UnitPrice" class="text-danger small"></span>
+                    </td>
+                    <td class="text-end">
+                        <button type="button" class="btn btn-danger-soft remove-item">
+                            <i class="bi bi-trash"></i> Xoá
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.remove-item')) {
+                    const row = e.target.closest('.item-row');
+                    row?.remove();
+                    reindexRows();
+                }
+            });
+
+            function reindexRows() {
+                const rows = tbody.querySelectorAll('.item-row');
+                rows.forEach((row, i) => {
+                    row.querySelectorAll('input').forEach(inp => {
+                        // name="Items[old].Field" -> name="Items[i].Field"
+                        const name = inp.getAttribute('name');
+                        if (!name) return;
+                        const newName = name.replace(/Items\[\d+\]/, `Items[${i}]`);
+                        inp.setAttribute('name', newName);
+                        // reset validation span mapping if present
+                        const parent = inp.parentElement;
+                        const span = parent.querySelector('[data-valmsg-for]');
+                        if (span) span.setAttribute('data-valmsg-for', newName);
+                    });
                 });
+            }
+        })();
     </script>
 }

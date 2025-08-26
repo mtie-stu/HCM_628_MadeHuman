@@ -18,7 +18,7 @@ namespace MadeHuman_Server.Model.Inbound
         [ForeignKey(nameof(InboundReceiptId))]
         [JsonIgnore] // 👈 Thêm dòng này
         public InboundReceipts InboundReceipts { get; set; }
-        public string ProductSKUName { get; set; }
+        public string? ProductSKUName { get; set; }
         public Guid ProductSKUId { get; set; } = default!;
         [ForeignKey(nameof(ProductSKUId))]
         public ProductSKU ProductSKUs { get; set; }
