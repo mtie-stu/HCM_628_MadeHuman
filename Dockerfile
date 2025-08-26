@@ -1,37 +1,31 @@
-# ----- STAGE 1: Build -----
+# ---------- STAGE 1: Restore & Publish ----------
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Chỉ copy các file .csproj cần thiết để restore
-COPY ["MadeHuman_Server/MadeHuman_Server.csproj", "MadeHuman_Server/"]
+# Copy csproj để tối ưu cache
+COPY ["MadeHuman_User/MadeHuman_User.csproj", "MadeHuman_User/"]
 COPY ["Madehuman_Share/Madehuman_Share.csproj", "Madehuman_Share/"]
 
-# Khôi phục các dependency
-RUN dotnet restore "MadeHuman_Server/MadeHuman_Server.csproj"
+# Restore
+RUN dotnet restore "MadeHuman_User/MadeHuman_User.csproj"
 
-# Copy toàn bộ source code còn lại
-COPY MadeHuman_Server/ MadeHuman_Server/
+# Copy source
+COPY MadeHuman_User/ MadeHuman_User/
 COPY Madehuman_Share/ Madehuman_Share/
 
-WORKDIR /src/MadeHuman_Server
+# Publish (Release)
+WORKDIR /src/MadeHuman_User
+RUN dotnet publish "MadeHuman_User.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# Build và publish ứng dụng
-RUN dotnet publish "MadeHuman_Server.csproj" -c Release -o /app/publish
-
-# ----- STAGE 2: Runtime -----
+# ---------- STAGE 2: Runtime ----------
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
-EXPOSE 80
 
-# Copy các file đã publish từ STAGE 1
+# Render sẽ set $PORT; Kestrel listen 0.0.0.0:$PORT
+ENV ASPNETCORE_URLS=http://0.0.0.0:${PORT}
+EXPOSE 10000
+
+# Copy publish output
 COPY --from=build /app/publish .
 
-# Copy cấu hình OAuth (dành cho Google Drive)
-COPY MadeHuman_Server/Data/credentials_oauth.json /app/Data/credentials_oauth.json
-COPY MadeHuman_Server/Data/token.json /app/Data/token.json
-
-# (Tuỳ chọn) Copy thêm credentials.json nếu vẫn hỗ trợ Service Account
-COPY MadeHuman_Server/Data/credentials.json /app/Data/credentials.json
-
-# Khởi động ứng dụng
-ENTRYPOINT ["dotnet", "MadeHuman_Server.dll"]
+ENTRYPOINT ["dotnet", "MadeHuman_User.dll"]

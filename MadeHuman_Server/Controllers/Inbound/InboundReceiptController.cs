@@ -71,7 +71,7 @@ namespace MadeHuman_Server.Controllers.Inbound
                 Items = r.InboundReceiptItems?.Select(i => new InboundReceiptItemDetail
                 {
                     ProductSKUId = i.ProductSKUId,
-                    ProductSKUName = i.ProductSKUs?.SKU ?? "(Không có tên)", // 👈 lấy tên SKU nếu có
+                    ProductSKUName = i.ProductSKUs?.SKU, // 👈 lấy tên SKU nếu có
                     Quantity = i.Quantity
                 }).ToList() ?? new()
             };

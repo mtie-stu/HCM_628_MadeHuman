@@ -1,0 +1,385 @@
+﻿@{
+    ViewData["Title"] = "Gán nhiệm vụ PackTask";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+<link rel="stylesheet" href="~/css/pages/Outbound/pack-assign.css" asp-append-version="true" />
+<!-- Hoặc chỉ cần dán phần "CSS bổ sung" bên dưới vào file CSS hiện tại của bạn -->
+
+<div class="pack-assign-page container py-4">
+    <!-- Header -->
+    <div class="page-head">
+        <div>
+            <h3 class="page-title"><i class="bi bi-box-seam me-2" style="color:var(--accent)"></i>Gán & Hoàn thành nhiệm vụ PackTask</h3>
+            <div class="page-subtext">Quét / nhập <b>OutboundTaskItemId</b> để xem trước và gán.</div>
+        </div>
+    </div>
+
+    @if (TempData["Logs"] != null)
+    {
+        <div class="alert alert-info shadow-sm mb-3">
+            @Html.Raw(TempData["Logs"])
+        </div>
+    }
+
+    <div class="row g-4 align-items-start">
+        <!-- Col: Form nhỏ -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm card-animate">
+                <div class="card-body">
+                    <form asp-action="Assign" method="post" onsubmit="return onSubmitAssign();" id="assignForm">
+                        <label for="outboundTaskItemId" class="form-label fw-semibold">🔍 Mã OutboundTaskItem</label>
+
+                        <div class="with-icon mb-3">
+                            <i class="bi bi-upc-scan"></i>
+                            <input type="text"
+                                   id="outboundTaskItemId"
+                                   name="outboundTaskItemId"
+                                   class="form-control"
+                                   placeholder="Nhập hoặc quét GUID..."
+                                   required />
+                        </div>
+
+                        @* <div class="filter-row mb-3">
+                            <button type="button" class="btn btn-outline flex-fill" id="btnPaste2"><i class="bi bi-clipboard2-check me-1"></i>Dán</button>
+                            <button type="button" class="btn btn-outline flex-fill" id="btnClear2"><i class="bi bi-eraser me-1"></i>Xoá</button>
+                        </div> *@
+
+                        <button type="submit" id="btnAssign" class="btn btn-orange w-100 btn-validate btn--ripple">
+                            <i class="bi bi-rocket-takeoff me-2"></i><span>Gán & Hoàn thành</span>
+                        </button>
+
+                        <div class="small text-muted mt-3">Mẹo: Nhấn <kbd>Enter</kbd> để xem trước (không gửi form).</div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mt-3 d-none d-lg-block card-animate delay-2">
+                <div class="card-body">
+                    <h6 class="fw-semibold" style="color:var(--accent)"><i class="bi bi-lightbulb me-1"></i>Mẹo thao tác</h6>
+                    <ul class="list-unstyled small mb-0">
+                        <li><i class="bi bi-dot"></i> Ưu tiên <b>quét mã</b> để giảm sai sót.</li>
+                        <li><i class="bi bi-dot"></i> Mã phải là <b>GUID</b> hợp lệ.</li>
+                        <li><i class="bi bi-dot"></i> Có âm báo khi thành công / lỗi.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Col: Preview lớn -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm card-animate delay-1">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0"><i class="bi bi-search-heart me-2" style="color:var(--accent)"></i>Kết quả tra cứu</h5>
+                        <div id="statusBadgeArea"></div>
+                    </div>
+
+                    <!-- Stat cards -->
+                    <div class="stat-grid" id="statGrid" style="display:none">
+                        <div class="stat-card">
+                            <div class="stat-ico"><i class="bi bi-list-check"></i></div>
+                            <div class="stat-meta">
+                                <div class="label">Tổng dòng chi tiết</div>
+                                <div class="value" id="statTotalLines">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-ico"><i class="bi bi-upc"></i></div>
+                            <div class="stat-meta">
+                                <div class="label">SKU khác nhau</div>
+                                <div class="value" id="statUniqueSkus">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-ico"><i class="bi bi-123"></i></div>
+                            <div class="stat-meta">
+                                <div class="label">Tổng số lượng</div>
+                                <div class="value" id="statTotalQty">0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Info IDs -->
+                    <div id="idsBlock" class="mb-3" style="display:none">
+                        <div class="d-flex flex-wrap gap-2">
+                            <div><span class="text-muted">OutboundTaskItemId:</span> <span class="id-chip" id="valOutboundTaskItemId">—</span></div>
+                            <div><span class="text-muted">OutboundTaskId:</span> <span class="id-chip" id="valOutboundTaskId">—</span></div>
+                            <div><span class="text-muted">ShopOrderId:</span> <span class="id-chip" id="valShopOrderId">—</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Bảng chi tiết -->
+                    <div class="table-wrap">
+                        <div id="skeleton" class="p-3 d-none">
+                            <div class="skeleton-line w-50"></div>
+                            <div class="skeleton-line"></div>
+                            <div class="skeleton-line w-75"></div>
+                            <div class="skeleton-line w-25"></div>
+                        </div>
+
+                        <table class="table table-hover mb-0" id="detailTable" style="display:none">
+                            <thead>
+                                <tr>
+                                    <th>SKU</th>
+                                    <th class="text-end">Số lượng</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detailTbody"></tbody>
+                        </table>
+
+                        <div id="previewEmpty" class="p-3 text-muted">Chưa có dữ liệu.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inline toast -->
+    <div id="inlineToast" class="inline-alert" role="alert"></div>
+</div>
+
+<script>
+     document.addEventListener("click", (e)=>{
+    const btn = e.target.closest(".btn--ripple");
+    if(!btn) return;
+    const r = btn.getBoundingClientRect();
+    btn.style.setProperty("--x", (e.clientX - r.left) + "px");
+    btn.style.setProperty("--y", (e.clientY - r.top)  + "px");
+  });
+    // ===== Audio & refs =====
+    const successSFX = new Audio("/sounds/success.mp3");
+    const errorSFX   = new Audio("/sounds/error.mp3");
+
+    const $input      = document.getElementById("outboundTaskItemId");
+    const $btnPaste   = document.getElementById("btnPaste");
+    const $btnPaste2  = document.getElementById("btnPaste2");
+    const $btnClear   = document.getElementById("btnClear");
+    const $btnClear2  = document.getElementById("btnClear2");
+    const $btnPreview = document.getElementById("btnPreview");
+    const $btnAssign  = document.getElementById("btnAssign");
+
+    const $status     = document.getElementById("statusBadgeArea");
+    const $statGrid   = document.getElementById("statGrid");
+    const $idsBlock   = document.getElementById("idsBlock");
+    const $detailTbl  = document.getElementById("detailTable");
+    const $tbody      = document.getElementById("detailTbody");
+    const $empty      = document.getElementById("previewEmpty");
+    const $skel       = document.getElementById("skeleton");
+    const $toast      = document.getElementById("inlineToast");
+
+    function isGuid(v){
+        return /^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$/.test(v);
+    }
+    function getCookie(name) {
+        const m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+        return m ? decodeURIComponent(m[2]) : null;
+    }
+    function showToast(type, msg){
+        $toast.className = "inline-alert " + (type === "success" ? "success" : "error");
+        $toast.textContent = msg;
+        $toast.classList.add("show");
+        setTimeout(()=> $toast.classList.remove("show"), 2200);
+    }
+    function toggleBtnLoading(btn, on){
+        if (!btn) return;
+        btn.classList.toggle("loading", !!on);
+        btn.setAttribute("aria-disabled", on ? "true" : "false");
+    }
+    function setInputValidity(valid){
+        $input.classList.toggle("is-valid", !!valid);
+        $input.classList.toggle("is-invalid", !valid);
+    }
+
+    // Badge theo status
+    function getStatusBadgeClass(status) {
+        switch ((status || "").toLowerCase()) {
+            case "created":     return "bg-secondary";
+            case "picked":      return "bg-primary";
+            case "checked":     return "bg-warning text-dark";
+            case "packed":      return "bg-dark";
+            case "dispatched":  return "bg-info text-dark status-pulse";
+            case "finished":    return "bg-success status-pulse";
+            default:            return "bg-secondary";
+        }
+    }
+
+    // Paste & Clear
+    async function pasteClipboard(){
+        try {
+            const txt = await navigator.clipboard.readText();
+            if (txt) {
+                $input.value = txt.trim();
+                $input.dispatchEvent(new Event("change"));
+            }
+        } catch {
+            errorSFX.play();
+            showToast("error","Không đọc được clipboard.");
+        }
+    }
+    function clearAll(){
+        $input.value = "";
+        $status.innerHTML = "";
+        $statGrid.style.display = "none";
+        $idsBlock.style.display = "none";
+        $detailTbl.style.display = "none";
+        $empty.style.display = "block";
+        $tbody.innerHTML = "";
+        setInputValidity(false);
+        $input.focus();
+    }
+
+    $btnPaste?.addEventListener("click", pasteClipboard);
+    $btnPaste2?.addEventListener("click", pasteClipboard);
+    $btnClear?.addEventListener("click", clearAll);
+    $btnClear2?.addEventListener("click", clearAll);
+    $btnPreview?.addEventListener("click", () => {
+        const v = $input.value.trim();
+        if (!isGuid(v)) {
+            errorSFX.play();
+            setInputValidity(false);
+            showToast("error","Mã không phải GUID hợp lệ.");
+            return;
+        }
+        fetchPreview(v);
+    });
+
+    window.addEventListener("load", ()=> $input?.focus());
+
+    // Enter -> preview
+    $input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            const v = $input.value.trim();
+            if (!isGuid(v)) {
+                errorSFX.play();
+                setInputValidity(false);
+                showToast("error","Mã không phải GUID hợp lệ.");
+                return;
+            }
+            fetchPreview(v);
+        }
+    });
+
+    // Change -> preview
+    $input.addEventListener("change", () => {
+        const v = $input.value.trim();
+        setInputValidity(isGuid(v));
+        if (isGuid(v)) fetchPreview(v);
+    });
+
+    function onSubmitAssign(){
+        const v = $input.value.trim();
+        if (!isGuid(v)) {
+            errorSFX.play();
+            setInputValidity(false);
+            showToast("error","Mã không phải GUID hợp lệ.");
+            return false;
+        }
+        toggleBtnLoading($btnAssign, true);
+        successSFX.play();
+        return true;
+    }
+
+    // ==== Preview ====
+    function renderRows(details){
+        return (details || []).map(d => `
+            <tr>
+                <td><span class="badge bg-secondary me-2">SKU</span>${d.sku ?? ""}</td>
+                <td class="text-end fw-semibold">${d.quantity ?? 0}</td>
+            </tr>
+        `).join("");
+    }
+
+    async function fetchPreview(id){
+        try {
+            // UI state
+            $skel.classList.remove("d-none");
+            $empty.style.display   = "none";
+            $detailTbl.style.display = "none";
+            $status.innerHTML = "";
+            $tbody.innerHTML = "";
+            toggleBtnLoading($btnPreview, true);
+
+            const token = getCookie("JWTToken");
+            const res = await fetch(`https://localhost:7204/api/OutboundTask/${id}/preview`, {
+                method: "GET",
+                headers: {
+                    "Accept": "application/json",
+                    ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                }
+            });
+
+            if (res.status === 401 || res.status === 403) {
+                errorSFX.play();
+                showToast("error", `Chưa đăng nhập / token hết hạn (HTTP ${res.status}).`);
+                $skel.classList.add("d-none");
+                $empty.style.display = "block";
+                toggleBtnLoading($btnPreview, false);
+                return;
+            }
+
+            const type = res.headers.get("content-type") || "";
+            if (!res.ok) {
+                let msg = `Lỗi ${res.status}`;
+                if (type.includes("application/json")) {
+                    const j = await res.json().catch(()=>null);
+                    if (j?.message) msg = j.message;
+                } else {
+                    const t = await res.text().catch(()=>null);
+                    if (t) msg = t;
+                }
+                errorSFX.play();
+                showToast("error", msg);
+                $skel.classList.add("d-none");
+                $empty.style.display = "block";
+                toggleBtnLoading($btnPreview, false);
+                return;
+            }
+
+            const data = type.includes("application/json") ? await res.json() : null;
+            if (!data) {
+                errorSFX.play();
+                showToast("error","Phản hồi rỗng hoặc không phải JSON.");
+                $skel.classList.add("d-none");
+                $empty.style.display = "block";
+                toggleBtnLoading($btnPreview, false);
+                return;
+            }
+
+            // Fill header badge + stats + IDs
+            const cls = getStatusBadgeClass(data.status);
+            $status.innerHTML = `<span class="badge ${cls} px-3 py-2 text-uppercase">${data.status ?? "N/A"}</span>`;
+
+            const details = data.details || [];
+            const totalQty = details.reduce((s, d) => s + (d.quantity || 0), 0);
+            const uniqueSkuCount = new Set(details.map(d => d.sku ?? "")).size;
+
+            document.getElementById("statTotalLines").textContent = details.length;
+            document.getElementById("statUniqueSkus").textContent = uniqueSkuCount;
+            document.getElementById("statTotalQty").textContent   = totalQty;
+            $statGrid.style.display = "grid";
+
+            document.getElementById("valOutboundTaskItemId").textContent = data.outboundTaskItemId ?? "—";
+            document.getElementById("valOutboundTaskId").textContent     = data.outboundTaskId ?? "—";
+            document.getElementById("valShopOrderId").textContent        = data.shopOrderId ?? "—";
+            $idsBlock.style.display = "block";
+
+            // Table rows
+            $tbody.innerHTML = renderRows(details);
+            $skel.classList.add("d-none");
+            $detailTbl.style.display = "";
+
+            successSFX.play();
+            showToast("success","Tải dữ liệu thành công.");
+        } catch (e){
+            console.error(e);
+            errorSFX.play();
+            showToast("error","Không thể tải dữ liệu.");
+            $skel.classList.add("d-none");
+            $empty.style.display = "block";
+        } finally {
+            toggleBtnLoading($btnPreview, false);
+        }
+    }
+</script>

@@ -57,5 +57,21 @@ namespace MadeHuman_Server.Controllers.Inbound
             // Nếu có nhiều lỗi → trả 400 BadRequest
             return BadRequest(new { success = false, errors = result });
         }
+        [HttpGet]
+        public async Task<ActionResult<List<InboundTaskViewModel>>> GetAll()
+        {
+            var result = await _inboundTaskSvc.GetAllAsync();
+            return Ok(result);
+        }
+        // GET /api/InboundTask/id-by-receipt/{receiptId}
+        [HttpGet("id-by-receipt/{receiptId:guid}")]
+        public async Task<IActionResult> GetTaskIdByReceipt(Guid receiptId)
+        {
+            var id = await _inboundTaskSvc.GetTaskIdByReceiptAsync(receiptId);
+            if (id is null) return NotFound("Task not found for this receipt.");
+
+            // 👉 Trả đúng 1 dòng Guid
+            return Content(id.Value.ToString(), "text/plain");
+        }
     }
 }

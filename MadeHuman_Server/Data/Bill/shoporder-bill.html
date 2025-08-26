@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Phiếu xuất kho – MadeHuman</title>
+    <style>
+        @page {
+            size: 80mm 80mm;
+            margin: 0;
+        }
+
+        html, body {
+            width: 80mm;
+            height: 80mm;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            box-sizing: border-box;
+            padding: 0.2mm; /* cách mép 0.2mm */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .qr {
+            width: 58mm;
+            height: 58mm;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .qr img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+            }
+
+        .brand {
+            position: absolute;
+            right: 1.2mm;
+            bottom: 1.2mm;
+            font-size: 9pt;
+        }
+    </style>
+</head>
+<body>
+    <!-- QR từ OUTBOUND_TASK_ITEM_ID -->
+    <div class="qr">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?data={{OUTBOUND_TASK_ITEM_ID}}&size=800x800&margin=0" alt="QR Code" />
+    </div>
+
+    <!-- Nhãn thương hiệu -->
+    <div class="brand">MadeHuman</div>
+</body>
+</html>

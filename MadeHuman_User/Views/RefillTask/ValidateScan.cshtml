@@ -1,0 +1,292 @@
+﻿@model Madehuman_Share.ViewModel.Inbound.RefillScanPageViewModel
+
+@{
+    ViewData["Title"] = "Refill";
+    var detail = Model.TaskDetailFlat;
+    var scan = Model.ScanRequest;
+}
+<link rel="stylesheet" href="~/css/pages/Refill/refill.css" asp-append-version="true" />
+
+<div class="refill-page">   <!-- 👈 Scope CSS -->
+    <div class="container mt-4">
+        <h3 class="page-title mb-3">🛠️ Xác nhận nhiệm vụ bổ sung kho</h3>
+
+        <div class="row g-3">
+            <!-- ⬅️ Trái: nhập mã + thông tin -->
+            <div class="col-lg-6 d-flex flex-column gap-3">
+                <!-- 🔍 Nhập mã -->
+                <div class="card shadow-sm p-4">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="RefillTaskId" value="@scan.RefillTaskId" />
+                    <input type="hidden" id="RefillTaskDetailId" value="@scan.RefillTaskDetailId" />
+                    <input type="hidden" id="FromLocationName" value="@scan.FromLocationName" />
+                    <input type="hidden" id="ToLocationName" value="@scan.ToLocationName" />
+                    <input type="hidden" id="SKU" value="@scan.SKU" />
+                    <input type="hidden" id="Quantity" value="@scan.Quantity" />
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label for="scanInput" class="form-label fw-semibold m-0">🔍 Nhập mã / số lượng</label>
+                        <div class="steps">
+                            <span class="step-chip step-chip-1 active">1. Vị trí lấy</span>
+                            <span class="step-chip step-chip-2">2. SKU</span>
+                            <span class="step-chip step-chip-3">3. Số lượng</span>
+                            <span class="step-chip step-chip-4">4. Vị trí đích</span>
+                        </div>
+                    </div>
+
+                    <input type="text" id="scanInput" class="form-control"
+                           placeholder="Bước 1: Vị trí lấy → Bước 2: SKU → Bước 3: Số lượng → Bước 4: Vị trí đích"
+                           autofocus />
+                    <div id="result" class="alert d-none mt-3"></div>
+                </div>
+
+                <!-- 📄 Thông tin nhiệm vụ -->
+                <div class="card shadow-sm p-3">
+                    <h5 class="card-title">📄 Thông tin nhiệm vụ</h5>
+                    <div class="info-row"><strong>Người tạo:</strong> <span>@detail.CreateBy</span></div>
+                    <div class="info-row"><strong>Thời gian:</strong> <span>@detail.CreateAt.ToString("dd/MM/yyyy HH:mm")</span></div>
+                    <div class="info-row"><strong>SKU:</strong> <span class="badge-sku">@detail.SKU</span></div>
+                    <div class="info-row"><strong>Số lượng:</strong> <span>@detail.Quantity</span></div>
+                    <div class="info-row"><strong>Vị trí lấy:</strong> <span>@scan.FromLocationName</span></div>
+                    <div class="info-row"><strong>Vị trí đích:</strong> <span>@scan.ToLocationName</span></div>
+                </div>
+            </div>
+
+            <!-- ➡️ Phải: thông tin sản phẩm -->
+            <div class="col-lg-6">
+                <div class="card shadow-sm h-100" id="productInfoCard" style="display:none;">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <h5 class="card-title m-0">📦 Thông tin sản phẩm</h5>
+                            @if (!string.IsNullOrWhiteSpace(Model?.ProductInfo?.SkuCode))
+                            {
+                                <span class="sku-chip">@Model.ProductInfo.SkuCode</span>
+                            }
+                        </div>
+
+                        <div class="info-grid">
+                            <div class="label">Tên sản phẩm</div>
+                            <div>@Model.ProductInfo?.ProductName</div>
+                        </div>
+
+                        @if (Model.ProductInfo?.ImageUrls != null && Model.ProductInfo.ImageUrls.Any())
+                        {
+                            var count = Model.ProductInfo.ImageUrls.Count;
+                            <div id="carouselImages" class="carousel slide carousel-minimal" data-bs-ride="carousel">
+                                <div class="carousel-inner">
+                                    @for (int i = 0; i < count; i++)
+                                    {
+                                        var img = Model.ProductInfo.ImageUrls[i];
+                                        <div class="carousel-item @(i == 0 ? "active" : "")">
+                                            <img src="/proxy-image?url=@Uri.EscapeDataString(img)"
+                                                 alt="Ảnh sản phẩm"
+                                                 loading="lazy" decoding="async" />
+                                        </div>
+                                    }
+                                </div>
+
+                                @if (count > 1)
+                                {
+                                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselImages" data-bs-slide="prev" aria-label="Ảnh trước">
+                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    </button>
+                                    <button class="carousel-control-next" type="button" data-bs-target="#carouselImages" data-bs-slide="next" aria-label="Ảnh sau">
+                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    </button>
+
+                                    <div class="carousel-indicators">
+                                        @for (int i = 0; i < count; i++)
+                                        {
+                                            <button type="button"
+                                                    data-bs-target="#carouselImages"
+                                                    data-bs-slide-to="@i"
+                                                    class="@(i == 0 ? "active" : "")"
+                                                    aria-label="Ảnh @(i+1)"></button>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="empty-img">Không có ảnh sản phẩm.</div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+<script>
+    let step = 1;
+    let qtyScanned = 0;
+
+    const fromLocation = "@scan.FromLocationName";
+    const toLocation   = "@scan.ToLocationName";
+    const sku          = "@scan.SKU";
+    const refillTaskId = "@scan.RefillTaskId";
+    const refillTaskDetailId = "@scan.RefillTaskDetailId";
+
+    const input     = document.getElementById("scanInput");
+    const resultBox = document.getElementById("result");
+    const productCard = document.getElementById("productInfoCard");
+
+    const successSFX = new Audio("/sounds/success.mp3");
+    const errorSFX   = new Audio("/sounds/error.mp3");
+
+    // Step chips
+    const chips = {
+        1: document.querySelector(".step-chip-1"),
+        2: document.querySelector(".step-chip-2"),
+        3: document.querySelector(".step-chip-3"),
+        4: document.querySelector(".step-chip-4")
+    };
+
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+    function updatePlaceholder() {
+        if (step === 1) input.placeholder = "🔍 Quét mã vị trí lấy hàng...";
+        else if (step === 2) input.placeholder = "🔍 Quét mã SKU...";
+        else if (step === 3) input.placeholder = "🔢 Nhập số lượng cần bổ sung...";
+        else if (step === 4) input.placeholder = "📍 Quét vị trí bổ sung...";
+    }
+
+    function setStep(n){
+        step = n;
+        updatePlaceholder();
+        // cập nhật chip
+        Object.keys(chips).forEach(k => chips[k]?.classList.remove("active"));
+        chips[n]?.classList.add("active");
+    }
+
+    function setMessage(type, title, detailHtml = "") {
+        resultBox.classList.remove("d-none");
+        resultBox.className = "alert " + (type === "success" ? "alert-success" : "alert-danger");
+        resultBox.innerHTML = `
+            <div class="fw-semibold mb-1">${title}</div>
+            ${detailHtml ? `<div class="small muted">${detailHtml}</div>` : ""}
+        `;
+        if (type === "success") successSFX.play(); else errorSFX.play();
+    }
+    function showSuccess(title, detailHtml = "") { setMessage("success", title, detailHtml); }
+    function showError(title, detailHtml = "")   { setMessage("error",   title, detailHtml); }
+
+    function setLoading(isLoading){
+        input.disabled = isLoading;
+        if (isLoading) {
+            setMessage("success", "⏳ Đang xác nhận...", "Vui lòng giữ nguyên mã quét trong giây lát.");
+        }
+    }
+
+    // Khởi tạo
+    updatePlaceholder();
+    setStep(1);
+    if (productCard) productCard.style.display = "none";
+
+    // Dùng keydown cho phím Enter (ổn định hơn keypress)
+    input.addEventListener("keydown", async function (e) {
+        if (e.key !== "Enter") return;
+
+        const value = input.value.trim();
+        input.value = "";
+        if (!value) return;
+
+        // STEP 1: Vị trí lấy
+        if (step === 1) {
+            if (value === fromLocation) {
+                showSuccess("✅ Vị trí lấy đúng", `<span class="step-chip">${fromLocation}</span>`);
+                setStep(2);
+            } else {
+                showError("❌ Sai vị trí lấy hàng", `Bạn quét: <strong>${value}</strong>. Cần: <strong>${fromLocation}</strong>.`);
+            }
+            return;
+        }
+
+        // STEP 2: SKU
+        if (step === 2) {
+            if (value === sku) {
+                showSuccess("✅ SKU chính xác", `<span class="badge-sku">${sku}</span>. Tiếp tục nhập số lượng.`);
+                if (productCard) productCard.style.display = "block"; // hiện thông tin sản phẩm
+                setStep(3);
+            } else {
+                showError("❌ Sai SKU", `Bạn quét: <strong>${value}</strong>. Cần: <span class="badge-sku">${sku}</span>.`);
+            }
+            return;
+        }
+
+        // STEP 3: Số lượng
+        if (step === 3) {
+            const parsedQty = parseInt(value, 10);
+            if (isNaN(parsedQty) || parsedQty <= 0) {
+                showError("❌ Số lượng không hợp lệ", "Vui lòng nhập số dương (ví dụ: 5).");
+            } else {
+                qtyScanned = parsedQty;
+                showSuccess("✅ Đã nhập số lượng", `Số lượng: <strong>${qtyScanned}</strong>. Quét vị trí đích để hoàn tất.`);
+                setStep(4);
+            }
+            return;
+        }
+
+        // STEP 4: Vị trí đích + Gọi API
+        if (step === 4) {
+            if (value !== toLocation) {
+                showError("❌ Sai vị trí bổ sung", `Bạn quét: <strong>${value}</strong>. Cần: <strong>${toLocation}</strong>.`);
+                return;
+            }
+
+            const jwt = getCookie("JWTToken");
+            const payload = {
+                RefillTaskId: refillTaskId,
+                RefillTaskDetailId: refillTaskDetailId,
+                FromLocationName: fromLocation,
+                ToLocationName: toLocation,
+                SKU: sku,
+                Quantity: qtyScanned
+            };
+
+            try {
+                setLoading(true);
+                const res = await fetch("https://localhost:7204/api/RefillTask/validate-scan", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${jwt}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const body = await res.json().catch(() => null);
+                setLoading(false);
+
+                if (res.ok) {
+                    const line = Array.isArray(body) ? (body.find(m => m.includes("✅")) || "✅ Xác nhận thành công.") : "✅ Xác nhận thành công.";
+                    showSuccess("🎉 Hoàn tất bổ sung", line);
+                    // reset nhẹ UI trước khi điều hướng
+                    setTimeout(() => {
+                        window.location.href = "https://localhost:7112/RefillTask/DetailFlat";
+                    }, 1200);
+                } else {
+                    const lines = Array.isArray(body) ? body.join("<br>") : "Đã có lỗi trong quá trình xác nhận.";
+                    showError("❌ Xác nhận thất bại", lines);
+                    // giữ nguyên step=4 để user quét lại vị trí đích
+                }
+            } catch (err) {
+                setLoading(false);
+                showError("❌ Lỗi kết nối tới server", "Vui lòng kiểm tra mạng hoặc thử lại sau.");
+            } finally {
+                // Không reset step về 1 nếu chưa thành công; chỉ reset khi cần
+                // Nếu muốn reset hoàn toàn sau mỗi lần gọi:
+                // setStep(1); qtyScanned = 0; if (productCard) productCard.style.display = "none";
+            }
+        }
+    });
+</script>
+}

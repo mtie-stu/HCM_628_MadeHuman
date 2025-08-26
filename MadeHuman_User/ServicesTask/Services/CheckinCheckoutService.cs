@@ -1,5 +1,4 @@
-﻿using Madehuman_User.ViewModel;
-using Madehuman_User.ViewModel.PartTime_Task;
+﻿using Madehuman_Share.ViewModel.PartTime_Task;
 using Newtonsoft.Json;
 using System.Text;
 

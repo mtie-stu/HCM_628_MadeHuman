@@ -3,9 +3,10 @@ using System.Net.Http.Headers;
 
 namespace MadeHuman_Admin.ServicesTask.Services.InboundService
 {
-    public interface IInboundTaskService 
+    public interface IInboundTaskService
     {
         Task<bool> CreateAsync(Guid receiptId, HttpContext httpContext);
+        Task<(bool Success, string? Message, List<string>? Errors)> ValidateScanAsync(ScanInboundTaskValidationRequest request, HttpContext httpContext);
     }
 
     public class InboundTaskService : IInboundTaskService
@@ -46,6 +47,31 @@ namespace MadeHuman_Admin.ServicesTask.Services.InboundService
             Console.WriteLine("Error creating inbound task: " + error);
 
             return false;
+        }
+        public async Task<(bool Success, string? Message, List<string>? Errors)> ValidateScanAsync(ScanInboundTaskValidationRequest request, HttpContext httpContext)
+        {
+            var token = httpContext.Request.Cookies["JWTToken"];
+            if (string.IsNullOrEmpty(token))
+                return (false, null, new List<string> { "❌ Không tìm thấy token người dùng." });
+
+            var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/api/InboundTask/validate-scan")
+            {
+                Content = JsonContent.Create(request)
+            };
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _client.SendAsync(httpRequest);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ValidateScanSuccessResponse>();
+                return (true, result?.Message, null);
+            }
+            else
+            {
+                var result = await response.Content.ReadFromJsonAsync<ValidateScanErrorResponse>();
+                return (false, null, result?.Errors ?? new List<string> { "❌ Lỗi không xác định từ server." });
+            }
         }
 
 

@@ -14,6 +14,8 @@ namespace MadeHuman_Server.Service.Inbound
         Task<GetInboundTaskById_Viewmodel> GetInboundTaskByIdAsync(Guid inboundTaskId);
         Task<List<string>> ValidateInboundProductScanAsync(ScanInboundTaskValidationRequest request);
         Task StoreProductBatchAsync(Guid inboundTaskId, Guid productBatchId, Guid userTaskId);
+        Task<List<InboundTaskViewModel>> GetAllAsync();
+        Task<Guid?> GetTaskIdByReceiptAsync(Guid receiptId);                  // chỉ cần Id
     }
 
     public class InboundTaskSvc : IInboundTaskSvc
@@ -150,7 +152,7 @@ namespace MadeHuman_Server.Service.Inbound
                 errors.Add("❌ Không tìm thấy InboundTask.");
                 return errors;
             }
-
+             
             // 2. Lấy userId hiện tại
             var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
@@ -188,6 +190,11 @@ namespace MadeHuman_Server.Service.Inbound
             if (batch == null)
             {
                 errors.Add($"❌ Không tìm thấy ProductBatchId: {request.ProductBatchId} trong InboundTask.");
+                return errors;
+            }
+            if (batch.StatusProductBatches == StatusProductBatches.Stored)
+            {
+                errors.Add($"❌ Lô hàng {request.ProductBatchId}  đã được nhập trong InboundTask.");
                 return errors;
             }
 
@@ -278,6 +285,7 @@ namespace MadeHuman_Server.Service.Inbound
                     ProductSKUId = batch.ProductSKUId,
                     WarehouseLocationId = batch.WarehouseLocationId,
                     StockQuantity = batch.Quantity,
+                    QuantityBooked = 0,
                     LastUpdated = DateTime.UtcNow
                 };
                 _context.Inventory.Add(inventory);
@@ -287,10 +295,13 @@ namespace MadeHuman_Server.Service.Inbound
                 if (inventory.StockQuantity == null)
                 {
                     inventory.StockQuantity = batch.Quantity;
+                    inventory.ProductSKUId = batch.ProductSKUId;    
                 }
                 else
                 {
                     inventory.StockQuantity += batch.Quantity;
+                    inventory.ProductSKUId = batch.ProductSKUId;
+
                 }
                 inventory.LastUpdated = DateTime.UtcNow;
             }
@@ -361,6 +372,31 @@ namespace MadeHuman_Server.Service.Inbound
             }
 
             await _context.SaveChangesAsync();
+        }
+        public async Task<List<InboundTaskViewModel>> GetAllAsync()
+        {
+            return await _context.InboundTasks
+                .AsNoTracking()
+                .Select(t => new InboundTaskViewModel
+                {
+                    Id = t.Id,
+                    CreateBy = t.CreateBy,
+                    CreateAt = t.CreateAt,
+                    Status = t.Status.ToString(),
+                    InboundReceiptId = t.InboundReceiptId,
+                    UserTaskId = t.UserTaskId
+                })
+                .ToListAsync();
+        }
+        // Service/Inbound/InboundTaskSvc.cs
+        public async Task<Guid?> GetTaskIdByReceiptAsync(Guid receiptId)
+        {
+            return await _context.InboundTasks
+                .AsNoTracking()
+                .Where(t => t.InboundReceiptId == receiptId)
+                .OrderByDescending(t => t.CreateAt)   // nếu có nhiều task cho 1 receipt → lấy mới nhất
+                .Select(t => (Guid?)t.Id)
+                .FirstOrDefaultAsync();
         }
 
     }

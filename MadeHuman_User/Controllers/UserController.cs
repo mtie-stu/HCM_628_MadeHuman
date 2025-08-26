@@ -13,21 +13,28 @@ namespace MadeHuman_User.Controllers
             _checkinService = checkinService;
         }
         [HttpGet]
-        public IActionResult CheckInOut()
+        public async Task<IActionResult> CheckInOut()
         {
-            return View();
+            var viewModel = new CheckinPageViewModel
+            {
+                Form = new Checkin_Checkout_Viewmodel(),
+                TodayLogs = await _checkinService.GetTodayLogsAsync() // Tùy UserId nếu cần lọc
+            };
+
+            return View(viewModel);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CheckInOut(Checkin_Checkout_Viewmodel model)
+        public async Task<IActionResult> CheckInOut(CheckinPageViewModel pageModel)
         {
             if (!ModelState.IsValid)
             {
                 TempData["Error"] = "Vui lòng điền đầy đủ thông tin.";
-                return View(model);
+                pageModel.TodayLogs = await _checkinService.GetTodayLogsAsync();
+                return View(pageModel);
             }
 
-            var isSuccess = await _checkinService.SubmitCheckinCheckoutAsync(model);
+            var isSuccess = await _checkinService.SubmitCheckinCheckoutAsync(pageModel.Form);
 
             if (isSuccess)
             {
@@ -36,8 +43,10 @@ namespace MadeHuman_User.Controllers
             }
 
             TempData["Error"] = "Gửi dữ liệu thất bại.";
-            return View(model);
+            pageModel.TodayLogs = await _checkinService.GetTodayLogsAsync();
+            return View(pageModel);
         }
+
         [HttpGet]
         public async Task<IActionResult> AllTodayLogs()
         {

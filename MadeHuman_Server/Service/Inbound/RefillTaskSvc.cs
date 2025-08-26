@@ -1,8 +1,11 @@
 ﻿using MadeHuman_Server.Data;
 using MadeHuman_Server.Model.Inbound;
+using MadeHuman_Server.Model.Shop;
 using MadeHuman_Server.Model.WareHouse;
+using MadeHuman_Server.Service.Shop;
 using MadeHuman_Server.Service.UserTask;
-using Madehuman_User.ViewModel.Inbound;
+using MadeHuman_Server.Service.WareHouse;
+using Madehuman_Share.ViewModel.Inbound;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -25,110 +28,119 @@ namespace MadeHuman_Server.Service.Inbound
         private readonly ApplicationDbContext _context;
         private readonly IUserTaskSvc _usertaskservice;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IWarehouseLocationService _locationService;
+        private readonly IProductLookupService _productService;
 
 
-        public RefillTaskService(ApplicationDbContext context,IUserTaskSvc userTaskSvc, IHttpContextAccessor httpContextAccessor)
+        public RefillTaskService(ApplicationDbContext context,IUserTaskSvc userTaskSvc, IHttpContextAccessor httpContextAccessor, IProductLookupService productService, IWarehouseLocationService locationService)
         {
             _context = context;
             _usertaskservice = userTaskSvc;
             _httpContextAccessor = httpContextAccessor;
+            _locationService = locationService;
+            _productService = productService;
         }
 
-        public async Task<RefillTaskFullViewModel> CreateAsync(RefillTaskFullViewModel vm, string UserId)
-        {
-            var errors = new List<string>();
-
-            var skuMap = new Dictionary<string, Guid>(); // Cache SKU → Id để tránh query nhiều lần
-
-            foreach (var d in vm.Details)
+            public async Task<RefillTaskFullViewModel> CreateAsync(RefillTaskFullViewModel vm, string UserId)
             {
-                Guid productSkuId;
+                var errors = new List<string>();
 
-                // ✅ 1. Nếu có ProductSKUId thì dùng, nếu không thì tra SKU
-                if (d.ProductSKUId.HasValue)
+                var skuMap = new Dictionary<string, Guid>(); // Cache SKU → Id để tránh query nhiều lần
+
+                foreach (var d in vm.Details)
                 {
-                    productSkuId = d.ProductSKUId.Value;
-                }
-                else if (!string.IsNullOrWhiteSpace(d.SKU))
-                {
-                    if (skuMap.TryGetValue(d.SKU, out var cachedId))
+                    Guid productSkuId;
+
+                    // ✅ 1. Nếu có ProductSKUId thì dùng, nếu không thì tra SKU
+                    if (d.ProductSKUId.HasValue)
                     {
-                        productSkuId = cachedId;
+                        productSkuId = d.ProductSKUId.Value;
+                    }
+                    else if (!string.IsNullOrWhiteSpace(d.SKU))
+                    {
+                        if (skuMap.TryGetValue(d.SKU, out var cachedId))
+                        {
+                            productSkuId = cachedId;
+                        }
+                        else
+                        {
+                            var skuEntity = await _context.ProductSKUs
+                                .FirstOrDefaultAsync(p => p.SKU == d.SKU);
+
+                            if (skuEntity == null)
+                            {
+                                errors.Add($"❌ Không tìm thấy SKU: {d.SKU}");
+                                continue;
+                            }
+
+                            productSkuId = skuEntity.Id;
+                            skuMap[d.SKU] = productSkuId; // cache lại
+                        }
+
+                        d.ProductSKUId = productSkuId; // gán lại để tạo nhiệm vụ
                     }
                     else
                     {
-                        var skuEntity = await _context.ProductSKUs
-                            .FirstOrDefaultAsync(p => p.SKU == d.SKU);
-
-                        if (skuEntity == null)
-                        {
-                            errors.Add($"❌ Không tìm thấy SKU: {d.SKU}");
-                            continue;
-                        }
-
-                        productSkuId = skuEntity.Id;
-                        skuMap[d.SKU] = productSkuId; // cache lại
+                        errors.Add("❌ Vui lòng nhập ProductSKUId hoặc SKU.");
+                        continue;
                     }
 
-                    d.ProductSKUId = productSkuId; // gán lại để tạo nhiệm vụ
-                }
-                else
-                {
-                    errors.Add("❌ Vui lòng nhập ProductSKUId hoặc SKU.");
-                    continue;
-                }
+                    // ✅ 2. Kiểm tra FromLocation có đúng SKU
+                    var fromInventory = await _context.Inventory.FirstOrDefaultAsync(i =>
+                        i.WarehouseLocationId == d.FromLocation && i.ProductSKUId == productSkuId);
 
-                // ✅ 2. Kiểm tra FromLocation có đúng SKU
-                var fromInventory = await _context.Inventory.FirstOrDefaultAsync(i =>
-                    i.WarehouseLocationId == d.FromLocation && i.ProductSKUId == productSkuId);
+                    if (fromInventory == null)
+                    {
+                        errors.Add($"❌ FromLocation không có SKU {productSkuId}.");
+                        continue;
+                    }
 
-                if (fromInventory == null)
-                {
-                    errors.Add($"❌ FromLocation không có SKU {productSkuId}.");
-                    continue;
-                }
-
-                if (fromInventory.StockQuantity < d.Quantity)
-                {
-                    errors.Add($"❌ FromLocation không đủ hàng SKU {productSkuId}. Yêu cầu: {d.Quantity}, hiện có: {fromInventory.StockQuantity}");
-                }
+                    if (fromInventory.StockQuantity < d.Quantity)
+                    {
+                        errors.Add($"❌ FromLocation không đủ hàng SKU {productSkuId}. Yêu cầu: {d.Quantity}, hiện có: {fromInventory.StockQuantity}");
+                    }
 
                 // ✅ 3. Kiểm tra ToLocation có đúng SKU
                 var toInventory = await _context.Inventory.FirstOrDefaultAsync(i =>
-                    i.WarehouseLocationId == d.ToLocation && i.ProductSKUId == productSkuId);
+                    i.WarehouseLocationId == d.ToLocation);
 
-                if (toInventory == null)
+                if (toInventory != null)
                 {
-                    errors.Add($"❌ ToLocation không có SKU {productSkuId}. Vui lòng tạo tồn kho đích.");
+                    if (toInventory.ProductSKUId != null)
+                    {
+                        errors.Add($"❌ ToLocation '{d.ToLocation}' đã chứa sản phẩm khác (SKUId: {toInventory.ProductSKUId}).");
+                    }
+
                 }
+
             }
 
             if (errors.Any())
-                throw new InvalidOperationException(string.Join("\n", errors));
+                    throw new InvalidOperationException(string.Join("\n", errors));
 
-            // ✅ Hợp lệ → tạo task
-            var task = new RefillTasks
-            {
-                Id = Guid.NewGuid(),
-                StatusRefillTasks = StatusRefillTasks.Incomplete,
-                CreateAt = DateTime.UtcNow,
-                CreateBy = UserId,
-                RefillTaskDetails = vm.Details.Select(d => new RefillTaskDetails
+                // ✅ Hợp lệ → tạo task
+                var task = new RefillTasks
                 {
                     Id = Guid.NewGuid(),
-                    ProductSKUId = d.ProductSKUId!.Value,
-                    FromLocation = d.FromLocation,
-                    ToLocation = d.ToLocation,
-                    Quantity = d.Quantity
-                }).ToList()
-            };
+                    StatusRefillTasks = StatusRefillTasks.Incomplete,
+                    CreateAt = DateTime.UtcNow,
+                    CreateBy = UserId,
+                    RefillTaskDetails = vm.Details.Select(d => new RefillTaskDetails
+                    {
+                        Id = Guid.NewGuid(),
+                        ProductSKUId = d.ProductSKUId!.Value,
+                        FromLocation = d.FromLocation,
+                        ToLocation = d.ToLocation,
+                        Quantity = d.Quantity,
+                        IsRefilled = false,
+                    }).ToList()
+                };
 
-            _context.RefillTasks.Add(task);
-            await _context.SaveChangesAsync();
-
-            vm.Id = task.Id;
-            return vm;
-        }
+                _context.RefillTasks.Add(task);
+                await _context.SaveChangesAsync();
+                vm.Id = task.Id;
+                return vm;
+            }
 
         public async Task<RefillTaskFullViewModel> UpdateAsync(Guid id, RefillTaskFullViewModel vm)
         {
@@ -150,6 +162,7 @@ namespace MadeHuman_Server.Service.Inbound
             {
                 Id = Guid.NewGuid(),
                 FromLocation = d.FromLocation,
+                ProductSKUId = d.ProductSKUId.Value,
                 ToLocation = d.ToLocation,
                 Quantity = d.Quantity
             }).ToList();
@@ -169,10 +182,12 @@ namespace MadeHuman_Server.Service.Inbound
                     UserTaskId = x.UserTaskId,
                     CreateAt = x.CreateAt,
                     CreateBy = x.CreateBy,
+                    StatusRefillTasks = x.StatusRefillTasks.ToString(), // 👈 Thêm dòng này
                     Details = x.RefillTaskDetails.Select(d => new RefillTaskFullViewModel.RefillTaskDetailItem
                     {
                         Id = d.Id,
                         FromLocation = d.FromLocation,
+                        ProductSKUId = d.ProductSKUId,
                         ToLocation = d.ToLocation,
                         Quantity = d.Quantity
                     }).ToList()
@@ -182,7 +197,7 @@ namespace MadeHuman_Server.Service.Inbound
 
         public async Task<RefillTaskFullViewModel?> GetByIdAsync(Guid id)
         {
-            return await _context.RefillTasks
+            var task = await _context.RefillTasks
                 .Include(x => x.RefillTaskDetails)
                 .Where(x => x.Id == id)
                 .Select(x => new RefillTaskFullViewModel
@@ -196,12 +211,42 @@ namespace MadeHuman_Server.Service.Inbound
                     {
                         Id = d.Id,
                         FromLocation = d.FromLocation,
+                        ProductSKUId = d.ProductSKUId,
                         ToLocation = d.ToLocation,
                         Quantity = d.Quantity
                     }).ToList()
                 })
                 .FirstOrDefaultAsync();
+
+            if (task == null)
+                return null;
+
+            // ⛳️ Bổ sung thông tin hiển thị từ service
+            foreach (var d in task.Details)
+            {
+                // 👉 SKU
+                if (d.ProductSKUId.HasValue)
+                {
+                    var sku = await _productService.GetSKUInfoAsync(d.ProductSKUId.Value);
+                    d.SKU = sku?.SkuCode ?? "";
+                }
+
+                // 👉 FromLocationName
+                var fromLoc = await _locationService.GetLocationInfoAsync(d.FromLocation);
+                d.FromLocationName = fromLoc?.NameLocation ?? "(Không rõ)";
+
+                // 👉 ToLocationName
+                var toLoc = await _locationService.GetLocationInfoAsync(d.ToLocation);
+                d.ToLocationName = toLoc?.NameLocation ?? "(Không rõ)";
+            }
+
+            // 👉 Nếu muốn hiển thị Email/người tạo, có thể xử lý tại đây nếu có user service
+            // task.CreateByName = await _usertaskservice.GetUserDisplayName(task.CreateBy);
+
+            return task;
         }
+
+
         public async Task<List<RefillTaskDetailWithHeaderViewModel>> GetAllDetailsAsync()
         {
             return await _context.RefillTaskDetails
@@ -213,15 +258,17 @@ namespace MadeHuman_Server.Service.Inbound
                     CreateAt = d.RefillTasks.CreateAt,
                     LowStockId = d.RefillTasks.LowStockId,
                     UserTaskId = d.RefillTasks.UserTaskId,
-
+                    SKU = d.ProductSKUs.SKU,
+                    ProductSKUId = d.ProductSKUId,
                     DetailId = d.Id,
                     FromLocation = d.FromLocation,
                     ToLocation = d.ToLocation,
-                    Quantity = d.Quantity
+                    Quantity = d.Quantity,
+                    IsRefilled = d.IsRefilled
                 })
                 .ToListAsync();
         }
-        public async Task<RefillTaskFullViewModel?> AssignRefillTaskToCurrentUserAsync()
+        public async Task<RefillTaskFullViewModel?> AssignRefillTaskToCurrentUserAsync()   //Picker nhận nhiệm vụ (  Picker(Partime) ấn nhận nhiệm vụ sau đó hiện ra giao diện làm nhiệm vụ( chứa các thông tin hướng dẫn nhiệm vụ theo viewmodel)
         {
             // 1. Lấy userId hiện tại
             var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -260,13 +307,21 @@ namespace MadeHuman_Server.Service.Inbound
                 {
                     Id = d.Id,
                     FromLocation = d.FromLocation,
+                    ProductSKUId = d.ProductSKUId,
                     ToLocation = d.ToLocation,
                     Quantity = d.Quantity
                 }).ToList()
             };
         }
-        public async Task<List<string>> ValidateRefillTaskScanAsync(ScanRefillTaskValidationRequest request)
+        public async Task<List<string>> ValidateRefillTaskScanAsync(ScanRefillTaskValidationRequest request)   //Picker quét từng luồn dữ liệu với "RefillTaskId và RefillTaskDetailId" người dùng k cần nhập, được gán lại từ nhiệm vụ do picker nhận (  AssignRefillTaskToCurrentUserAsync)
         {
+            Console.WriteLine($"refilltaskid gửi: {request.RefillTaskId}");
+            Console.WriteLine($"RefillTaskDetailId gửi: {request.RefillTaskDetailId}");
+            Console.WriteLine($"SKU gửi: {request.SKU}");
+            Console.WriteLine($"Từ: {request.FromLocationName}");
+            Console.WriteLine($"Đến: {request.ToLocationName}");
+            Console.WriteLine($"Số lượng: {request.Quantity}");
+
             var errors = new List<string>();
 
             var task = await _context.RefillTasks
@@ -279,6 +334,11 @@ namespace MadeHuman_Server.Service.Inbound
                 return errors;
             }
 
+            if (task.StatusRefillTasks == StatusRefillTasks.Canceled || task.StatusRefillTasks == StatusRefillTasks.Completed)
+            {
+                errors.Add("❌Nhiệm vụ đã được hoàn thành hoặc đã bị hủy.");
+                return errors;
+            }
             var userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
             {
@@ -313,6 +373,9 @@ namespace MadeHuman_Server.Service.Inbound
                 errors.Add("❌ Không tìm thấy chi tiết nhiệm vụ.");
                 return errors;
             }
+            if (detail.IsRefilled)
+                throw new Exception("Chi tiết này đã được xử lý rồi.");
+
 
             // Kiểm tra vị trí
             if (!string.IsNullOrWhiteSpace(request.FromLocationName))
@@ -362,17 +425,20 @@ namespace MadeHuman_Server.Service.Inbound
 
             if (!errors.Any() && enoughInfo)
             {
+                Console.WriteLine("✅ Điều kiện đủ, gọi xử lý...");
                 await StoreRefillTaskDetailAsync(task.Id, detail.Id, userTaskId.Value);
                 errors.Add("✅ Quét thành công và xử lý luân chuyển.");
             }
-            else if (!errors.Any())
+            else
             {
-                errors.Add("✅ Dữ liệu hợp lệ nhưng chưa đủ để xử lý.");
+                Console.WriteLine("❌ Không đủ điều kiện xử lý:");
+                foreach (var err in errors) Console.WriteLine(err);
             }
+
 
             return errors;
         }
-        public async Task StoreRefillTaskDetailAsync(Guid refillTaskId, Guid detailId, Guid userTaskId)
+        public async Task StoreRefillTaskDetailAsync(Guid refillTaskId, Guid detailId, Guid userTaskId)       // Khi người dùng quét theo hướng dẫn nhiệm vụ thành công mới gọi, method này sẽ thực hiện chỉnh sửa dữ liệu giảm Fromlocation và tăng Tolocation( chỉnh sửa Inventory) tăng KPI sp với PartTime
         {
             var task = await _context.RefillTasks
                 .Include(t => t.RefillTaskDetails)
@@ -383,7 +449,7 @@ namespace MadeHuman_Server.Service.Inbound
                 ?? throw new Exception("Không tìm thấy chi tiết.");
 
             var skuId = detail.ProductSKUId;
-
+            detail.IsRefilled = true;
             // Trừ hàng từ FromLocation
             var fromInventory = await _context.Inventory.FirstOrDefaultAsync(i =>
                 i.WarehouseLocationId == detail.FromLocation && i.ProductSKUId == skuId);
@@ -396,7 +462,7 @@ namespace MadeHuman_Server.Service.Inbound
 
             // Cộng hàng vào ToLocation
             var toInventory = await _context.Inventory.FirstOrDefaultAsync(i =>
-                i.WarehouseLocationId == detail.ToLocation && i.ProductSKUId == skuId);
+                i.WarehouseLocationId == detail.ToLocation);
 
             if (toInventory == null)
             {
@@ -443,10 +509,14 @@ namespace MadeHuman_Server.Service.Inbound
                     _ => StatusLowStockAlerts.Normal
                 };
             }
+            //Xử lý RefillTaskDetails là hoàn thành 
+            detail.IsRefilled = true;
 
             // Nếu tất cả đã thực hiện → task hoàn thành
-            var isDone = task.RefillTaskDetails.All(d =>
-                _context.Inventory.Any(i => i.WarehouseLocationId == d.ToLocation && i.ProductSKUId == d.ProductSKUId && i.StockQuantity >= d.Quantity));
+            //var isDone = task.RefillTaskDetails.All(d =>
+            //    _context.Inventory.Any(i => i.WarehouseLocationId == d.ToLocation && i.ProductSKUId == d.ProductSKUId && i.StockQuantity >= d.Quantity));
+
+            var isDone = task.RefillTaskDetails.All(d => d.IsRefilled);
 
             if (isDone)
             {

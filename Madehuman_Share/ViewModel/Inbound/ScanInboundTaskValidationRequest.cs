@@ -14,4 +14,15 @@ namespace Madehuman_User.ViewModel.Inbound
         public string? SKU { get; set; }
         public int? Quantity { get; set; }
     }
+    public class ValidateScanSuccessResponse
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = string.Empty;
+    }
+
+    public class ValidateScanErrorResponse
+    {
+        public bool Success { get; set; }
+        public List<string> Errors { get; set; } = new();
+    }
 }

@@ -13,6 +13,8 @@ namespace MadeHuman_Server.Service.WareHouse
         Task<WarehouseLocationViewModel> CreateAsync(WarehouseLocationViewModel warehouse);
         Task<WarehouseLocationViewModel> UpdateAsync(Guid id, WarehouseLocationViewModel warehouse);
         Task<WarehouseLocationViewModel> GetByIdAsync(Guid id);
+        Task<WarehouseLocationInfoViewModel?> GetLocationInfoAsync(Guid warehouseLocationId);
+
         Task<List<WarehouseLocationViewModel>> GetAllAsync();
         Task<List<WarehouseLocationViewModel>> GenerateLocationsAsync(
      Guid zoneId,
@@ -51,8 +53,8 @@ namespace MadeHuman_Server.Service.WareHouse
             {
                 Id = Guid.NewGuid(),
                 ProductSKUId = null,
-                StockQuantity = null,
-                QuantityBooked = null,
+                StockQuantity = 0,
+                QuantityBooked = 0,
                 LastUpdated = DateTime.Now,
                 WarehouseLocationId = newId // sửa tại đây
             };
@@ -175,8 +177,8 @@ namespace MadeHuman_Server.Service.WareHouse
                         {
                             Id = Guid.NewGuid(),
                             ProductSKUId = null,
-                            StockQuantity = null,
-                            QuantityBooked = null,
+                            StockQuantity = 0,
+                            QuantityBooked = 0,
                             LastUpdated = DateTime.UtcNow,
                             WarehouseLocationId = location.Id
                         };
@@ -213,7 +215,17 @@ namespace MadeHuman_Server.Service.WareHouse
 
 
 
-
+        public async Task<WarehouseLocationInfoViewModel?> GetLocationInfoAsync(Guid warehouseLocationId)
+        {
+            return await _context.WarehouseLocations
+                .Where(w => w.Id == warehouseLocationId)
+                .Select(w => new WarehouseLocationInfoViewModel
+                {
+                    WarehouseLocationId = w.Id,
+                    NameLocation = w.NameLocation
+                })
+                .FirstOrDefaultAsync();
+        }
 
     }
 }

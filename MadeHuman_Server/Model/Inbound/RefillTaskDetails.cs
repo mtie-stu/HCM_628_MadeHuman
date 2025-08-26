@@ -11,6 +11,7 @@ namespace MadeHuman_Server.Model.Inbound
         public Guid ToLocation { get; set; }  
         public int Quantity { get; set; }
         public Guid RefillTaskId { get; set; }
+        [ForeignKey("RefillTaskId")]
         public RefillTasks RefillTasks { get; set; } // FK
                                                      // Sửa lại chỗ này
         public Guid ProductSKUId { get; set; } = default!;
@@ -20,6 +21,7 @@ namespace MadeHuman_Server.Model.Inbound
         [JsonIgnore]
         public ProductSKU ProductSKUs { get; set; }
 
+        public bool IsRefilled {  get; set; }  = false;    
 
     }
 }

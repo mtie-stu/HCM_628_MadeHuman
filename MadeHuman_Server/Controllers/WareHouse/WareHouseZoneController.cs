@@ -15,7 +15,6 @@ namespace MadeHuman_Server.Controllers.WareHouse
         {
             _service = service;
         }
-
         [HttpPost]
         public async Task<IActionResult> Create(WareHouseZoneViewModel warehouse)
         {

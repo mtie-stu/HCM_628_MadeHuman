@@ -2,8 +2,10 @@
 using MadeHuman_User.JWT;
 using MadeHuman_User.ServicesTask.Services;
 using MadeHuman_User.ServicesTask.Services.InboundService;
+using MadeHuman_User.ServicesTask.Services.OutboundService;
 using MadeHuman_User.ServicesTask.Services.ShopService;
-using MadeHuman_User.ServicesTask.Services.WareHouseService;
+using MadeHuman_User.ServicesTask.Services.Warehouse;
+using System.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,24 +22,27 @@ builder.Services.AddScoped<IShopOrderService, ShopOrderService>();
 builder.Services.AddScoped<IInboundReceiptService, InboundReceiptService>();
 builder.Services.AddScoped<IInboundTaskService, InboundTaskService>();
 builder.Services.AddScoped<ICheckinCheckoutService, CheckinCheckoutService>();
-builder.Services.AddScoped<IWarehouseApiService, WarehouseApiService>();
-builder.Services.AddScoped<IWarehouseZoneApiService, WarehouseZoneApiService>();
-builder.Services.AddScoped<IWarehouseLocationApiService, WarehouseLocationApiService>();
+builder.Services.AddScoped<IRefillTaskService, RefillTaskService>();
+builder.Services.AddScoped<IPickTaskApiService, PickTaskApiService>();
+builder.Services.AddScoped<IWarehouseLookupApiService, WarehouseLocationServices>();
+builder.Services.AddScoped<IBillRenderService, BillRenderService>();
+builder.Services.AddScoped<ICheckTaskServices, CheckTaskServices>();
+builder.Services.AddScoped<IPackTaskService, PackTaskService>();
+builder.Services.AddScoped<IDispatchTaskService, DispatchTaskService>();
+builder.Services.AddHttpContextAccessor();
 
 
-
-
-///*https://hcm-628-madehuman-api.onrender.com*/
-//builder.Services.AddHttpClient("API", client =>
-//{
-//    client.BaseAddress = new Uri("https://localhost:7204/"); // Đảm bảo URL chính xác
-//});
+/*https://hcm-628-madehuman-api.onrender.com*/
 builder.Services.AddHttpClient("API", client =>
 {
-    client.BaseAddress = new Uri("https://hcm-628-madehuman-api.onrender.com/"); // Đảm bảo URL chính xác
-});
-var app = builder.Build();
+    client.BaseAddress = new Uri("https://localhost:7204/"); // Đảm bảo URL chính xác
 
+    /*    client.BaseAddress = new Uri("https://localhost:7204/"); // Đảm bảo URL chính xác
+    */
+    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+});
+
+var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

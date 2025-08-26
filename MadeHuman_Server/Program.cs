@@ -3,9 +3,11 @@ using MadeHuman_Server.JwtMiddleware;
 using MadeHuman_Server.Model.User_Task;
 using MadeHuman_Server.Service;
 using MadeHuman_Server.Service.Inbound;
+using MadeHuman_Server.Service.Outbound;
 using MadeHuman_Server.Service.Shop;
 using MadeHuman_Server.Service.UserTask;
 using MadeHuman_Server.Service.WareHouse;
+using MadeHuman_Server.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
@@ -80,6 +82,7 @@ builder.Services.AddScoped<IComboService, ComboService>();
 builder.Services.AddScoped<ISkuGeneratorService, SkuGeneratorService>();
 builder.Services.AddScoped<ISKUServices, SKUSvc>();
 builder.Services.AddScoped<IInboundReciptService, InboundReciptSvc>();
+builder.Services.AddScoped<IRefillTaskService, RefillTaskService>();
 builder.Services.AddHostedService<ReceiptStatusUpdaterService>();
 builder.Services.AddScoped<GoogleSheetService>();
 builder.Services.AddScoped<IPartTimeCompanyService, PartTimeCompanySvc>();
@@ -91,6 +94,17 @@ builder.Services.AddHostedService<ResetHourlyKPIsService>();
 builder.Services.AddSingleton<GoogleDriveService>();
 builder.Services.AddSingleton<GoogleDriveOAuthService>();
 builder.Services.AddHostedService<InventoryQuantityUpdateService>();
+builder.Services.AddHostedService<OutboundTaskBackgroundService>();
+builder.Services.AddScoped<OutboundTaskService>();
+builder.Services.AddScoped<IOutboundTaskServices, OutboundTaskService>();
+builder.Services.AddScoped<IProductImageService, ProductImageService>();
+builder.Services.AddScoped<IBasketService, BasketService>();
+builder.Services.AddScoped<ICheckTaskServices, CheckTaskServices>();
+builder.Services.AddScoped<IPackTaskService, PackTaskServices>();
+builder.Services.AddScoped<IPickTaskServices, PickTaskServices>();
+builder.Services.AddScoped<IDispatchTaskServices, DispatchTaskServices>();
+builder.Services.AddScoped<IProductLookupService, ProductLookupService>();
+builder.Services.AddScoped<IBillRenderService, BillRenderService>();
 
 // (Tùy chọn) Cấu hình upload file lớn nếu cần
 builder.Services.Configure<FormOptions>(options =>

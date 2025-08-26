@@ -1,0 +1,306 @@
+﻿/* ===== Scope toàn trang ===== */
+.refill-page {
+    --accent: #ee4d2d;
+    --accent-weak: #ffede8;
+    --gray-900: #1f2937;
+    --gray-700: #374151;
+    --gray-500: #6b7280;
+    --gray-300: #d1d5db;
+    --gray-200: #e5e7eb;
+    --gray-100: #f3f4f6;
+    --radius: 18px;
+    background: #fff;
+    font-family: "Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+}
+
+    /* Header */
+    .refill-page .page-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .refill-page .page-title {
+        font-weight: 700;
+        color: var(--gray-900);
+        letter-spacing: .2px;
+        margin: 0;
+    }
+
+    .refill-page .page-subtext {
+        color: var(--gray-500);
+        margin-top: .25rem;
+    }
+
+    /* Buttons */
+    .refill-page .btn-orange {
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        padding: .55rem .9rem;
+        font-weight: 700;
+    }
+
+        .refill-page .btn-orange:hover {
+            filter: brightness(.95);
+        }
+
+    .refill-page .btn-outline {
+        border: 1px solid var(--gray-300);
+        color: var(--gray-700);
+        background: #fff;
+        border-radius: 12px;
+        padding: .55rem .9rem;
+        font-weight: 600;
+    }
+
+        .refill-page .btn-outline:hover {
+            background: var(--gray-100);
+        }
+
+    /* Stat cards */
+    .refill-page .stat-grid {
+        display: grid;
+        gap: .75rem;
+        grid-template-columns: repeat(auto-fit,minmax(210px,1fr));
+        margin-bottom: 1rem;
+    }
+
+    .refill-page .stat-card {
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+        background: #fff;
+        padding: .9rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+    }
+
+    .refill-page .stat-ico {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: var(--accent-weak);
+        display: grid;
+        place-items: center;
+        font-size: 1.1rem;
+        color: var(--accent);
+    }
+
+    .refill-page .stat-meta .label {
+        color: var(--gray-500);
+        font-size: .9rem;
+    }
+
+    .refill-page .stat-meta .value {
+        font-weight: 700;
+        color: var(--gray-900);
+    }
+
+    /* Accordion */
+    .refill-page .accordion-item {
+        border: 1px solid var(--gray-200);
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    .refill-page .accordion-button {
+        gap: .5rem;
+        background: #fff !important;
+        color: var(--gray-900);
+    }
+
+        .refill-page .accordion-button:not(.collapsed) {
+            color: var(--accent);
+        }
+
+        .refill-page .accordion-button:focus {
+            box-shadow: 0 0 0 .2rem rgba(238,77,45,.12);
+        }
+
+    .refill-page .task-id {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        padding: .1rem .4rem;
+        border-radius: 8px;
+        background: var(--gray-100);
+        border: 1px solid var(--gray-200);
+        color: var(--gray-700);
+    }
+
+    /* Table & chips */
+    .refill-page .table {
+        --bs-table-border-color: var(--gray-200);
+    }
+
+    .refill-page .loc-chip {
+        background: #fff;
+        border: 1px solid var(--gray-200);
+        color: var(--gray-700);
+        border-radius: 999px;
+        padding: .15rem .6rem;
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+    }
+
+        .refill-page .loc-chip .bi {
+            color: var(--accent);
+        }
+
+    /* SKU chip (đang dùng) */
+    .refill-page .task-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        background: var(--accent-weak);
+        color: var(--accent);
+        padding: .2rem .55rem;
+        border-radius: 999px;
+        font-weight: 700;
+    }
+
+    /* Inline toast */
+    .refill-page .inline-alert {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 1080;
+        min-width: 240px;
+        border-radius: 12px;
+        padding: .75rem 1rem;
+        border: 1px solid transparent;
+        box-shadow: 0 6px 18px rgba(0,0,0,.08);
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: opacity .2s ease, transform .2s ease;
+    }
+
+        .refill-page .inline-alert.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .refill-page .inline-alert.success {
+            background: #ecfdf5;
+            border-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .refill-page .inline-alert.error {
+            background: #fef2f2;
+            border-color: #fee2e2;
+            color: #991b1b;
+        }
+
+    /* Pagination (scoped để không ảnh hưởng trang khác) */
+    .refill-page .pagination {
+        display: flex;
+        gap: 6px;
+        padding-left: 0;
+        list-style: none;
+    }
+
+        .refill-page .pagination .page-item .page-link {
+            border: 1.5px solid var(--gray-200);
+            border-radius: 10px;
+            padding: .4rem .75rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            background: #fff;
+            transition: all .2s ease;
+        }
+
+            .refill-page .pagination .page-item .page-link:hover {
+                border-color: var(--accent);
+                color: var(--accent);
+                background: var(--accent-weak);
+            }
+
+        .refill-page .pagination .page-item.active .page-link {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        .refill-page .pagination .page-item.disabled .page-link {
+            background: var(--gray-100);
+            color: var(--gray-300);
+            border-color: var(--gray-200);
+            pointer-events: none;
+        }
+    /* ==== Filter toolbar (Export Refill) ==== */
+    .refill-page #filterForm {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: end;
+        gap: 8px 12px; /* nhỏ gọn nhưng thoáng */
+    }
+
+        /* Cột chọn trạng thái */
+        .refill-page #filterForm .form-label {
+            margin: 0 0 4px;
+            font-weight: 700;
+            color: var(--gray-700);
+        }
+
+    .refill-page #statusFilter {
+        min-width: 240px; /* bỏ inline style, dùng CSS để đồng bộ */
+        height: 42px; /* = chiều cao nút */
+        border: 1.5px solid var(--gray-200);
+        border-radius: 12px;
+    }
+
+        .refill-page #statusFilter:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 .2rem rgba(238,77,45,.12);
+        }
+
+    /* Nhóm nút hành động bên phải */
+    .refill-page #filterForm .ms-md-auto {
+        margin-left: auto; /* đẩy nhóm nút sang phải (desktop) */
+    }
+
+    .refill-page #filterForm .d-flex.gap-2 {
+        gap: 8px; /* khoảng cách nút vừa đủ */
+    }
+
+    /* Đồng nhất nút */
+    .refill-page #filterForm .btn {
+        height: 42px; /* match với select */
+        border-radius: 12px;
+        padding: .45rem .85rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .refill-page #filterForm .btn-primary {
+        box-shadow: 0 8px 16px rgba(238,77,45,.12);
+    }
+
+    .refill-page #filterForm .btn-outline {
+        border: 1.5px solid var(--gray-300);
+    }
+
+/* Mobile: xếp dọc, full-width dễ bấm */
+@media (max-width: 768px) {
+    .refill-page #filterForm {
+        align-items: stretch;
+    }
+
+    .refill-page #statusFilter {
+        min-width: 100%;
+    }
+
+    .refill-page #filterForm .ms-md-auto {
+        margin-left: 0; /* không cần đẩy phải khi mobile */
+    }
+
+    .refill-page #filterForm .btn {
+        width: 100%;
+    }
+}

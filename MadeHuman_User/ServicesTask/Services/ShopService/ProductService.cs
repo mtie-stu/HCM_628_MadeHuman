@@ -1,5 +1,6 @@
 ﻿
-using Madehuman_User.ViewModel.Shop;
+using Madehuman_Share.ViewModel.Shop;
+using System.Net.Http;
 using System.Net.Http.Headers;
 
 namespace MadeHuman_User.ServicesTask.Services.ShopService
@@ -10,6 +11,7 @@ namespace MadeHuman_User.ServicesTask.Services.ShopService
         Task<ProductDetailViewModel?> GetProductDetailAsync(Guid id);
         Task<bool> CreateAsync(CreateProduct_ProdcutSKU_ViewModel model);
         Task<bool> UpdateAsync(Guid id, CreateProduct_ProdcutSKU_ViewModel model);
+        Task<ProductSKUInfoViewmodel?> GetSKUInfoAsync(Guid productSKUId);
     }
     public class ProductService : IProductService
     {
@@ -22,7 +24,7 @@ namespace MadeHuman_User.ServicesTask.Services.ShopService
 
         public async Task<List<ProductListItemViewModel>> GetAllAsync()
         {
-            var res = await _client.GetAsync("api/Product");
+            var res = await _client.GetAsync("/api/Product");
             if (!res.IsSuccessStatusCode) return new();
 
             var products = await res.Content.ReadFromJsonAsync<List<ProductListItemViewModel>>();
@@ -32,7 +34,7 @@ namespace MadeHuman_User.ServicesTask.Services.ShopService
 
         public async Task<ProductDetailViewModel?> GetProductDetailAsync(Guid id)
         {
-            var res = await _client.GetAsync($"api/product/{id}");
+            var res = await _client.GetAsync($"/api/product/{id}");
             if (!res.IsSuccessStatusCode) return null;
 
             return await res.Content.ReadFromJsonAsync<ProductDetailViewModel>();
@@ -63,11 +65,21 @@ namespace MadeHuman_User.ServicesTask.Services.ShopService
                 }
             }
 
-            var response = await _client.PostAsync("api/Product", form);
+            var response = await _client.PostAsync("/api/Product", form);
             return response.IsSuccessStatusCode;
         }
 
+        public async Task<ProductSKUInfoViewmodel?> GetSKUInfoAsync(Guid productSKUId)
+        {
+            var response = await _client.GetAsync($"/api/product/sku/{productSKUId}");
 
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<ProductSKUInfoViewmodel>();
+            }
+
+            return null;
+        }
 
         public async Task<bool> UpdateAsync(Guid id, CreateProduct_ProdcutSKU_ViewModel model)
         {

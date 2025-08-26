@@ -1,0 +1,319 @@
+﻿/* ===== Scope toàn trang ===== */
+.login-page {
+    --accent: #ee4d2d;
+    --accent-weak: #ffede8;
+    --gray-900: #1f2937;
+    --gray-700: #374151;
+    --gray-500: #6b7280;
+    --gray-300: #d1d5db;
+    --gray-200: #e5e7eb;
+    --radius: 18px;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background: #fff;
+    position: relative;
+    overflow: hidden;
+    font-family: "Poppins","Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+}
+body {
+    background: url('~/images/warehouse-bg.jpg') no-repeat center center fixed;
+    background-size: cover;
+    margin: 0;
+}
+
+    /* Box-sizing chỉ trong scope */
+    .login-page, .login-page * {
+        box-sizing: border-box
+    }
+
+        /* BG + overlay */
+        .login-page::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: url("/img/kho-hang.webp") center/cover no-repeat fixed;
+            filter: brightness(.86);
+        }
+
+        .login-page::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg,rgba(255,255,255,.15),rgba(0,0,0,.25));
+            pointer-events: none;
+        }
+
+/* Card */
+.login-card {
+    position: relative;
+    z-index: 1;
+    width: clamp(300px,92vw,440px);
+    padding: 18px 18px; /* compact */
+    border-radius: var(--radius);
+    background: rgba(255,255,255,.72);
+    border: 1px solid rgba(229,231,235,.7);
+    box-shadow: 0 10px 30px rgba(0,0,0,.12);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    overflow: hidden;
+}
+
+/* Heading */
+.brand {
+    margin: 0 0 4px;
+    font-weight: 800;
+    letter-spacing: .6px;
+    color: var(--gray-900);
+}
+
+.subhead {
+    margin: 0 0 12px;
+    color: var(--gray-500);
+    font-weight: 600;
+}
+
+/* Form (flex + gap) */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+/* compact gap */
+
+/* Field: chừa chỗ lỗi bằng margin-bottom */
+.field {
+    --err-h: 16px; /* chiều cao tối thiểu của dòng lỗi (compact) */
+    --err-gap: 4px; /* khoảng cách input → lỗi (compact) */
+    position: relative;
+    margin-bottom: calc(var(--err-h) + var(--err-gap));
+}
+
+    /* Dòng lỗi: absolute, không làm tăng chiều cao field */
+    .field .text-danger {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: calc(100% + var(--err-gap));
+        margin: 0;
+        min-height: var(--err-h);
+        line-height: 1.25;
+        font-size: 11.5px;
+        color: #c62828;
+        overflow-wrap: anywhere;
+    }
+
+    /* ICON TRÁI: chỉ icon trực tiếp (không ăn vào icon trong .toggle-pass) */
+    .field > .bi {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 18px;
+        line-height: 1;
+        color: var(--accent);
+        pointer-events: none;
+    }
+
+/* Input ổn định kích thước ở mọi trạng thái */
+.form-control {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-height: 44px; /* compact height */
+    padding: 10px 46px 10px 42px; /* chừa icon & nút mắt (compact) */
+    border: 1.5px solid var(--gray-200); /* cố định độ dày */
+    border-radius: 12px;
+    font-size: 15px;
+    line-height: 1.25;
+    outline: none;
+    background: #fff;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+    .form-control:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 .2rem rgba(238,77,45,.16);
+    }
+
+    .form-control::placeholder {
+        color: #9aa2ac;
+    }
+
+    /* Trạng thái lỗi MVC: chỉ đổi màu/đổ bóng, KHÔNG đổi độ dày */
+    input.input-validation-error,
+    textarea.input-validation-error,
+    select.input-validation-error,
+    .form-control.input-validation-error {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 .2rem rgba(239,68,68,.10);
+        padding-right: 46px; /* vẫn chừa nút mắt */
+    }
+/* Tắt outline mặc định của :invalid (tránh chồng hiệu ứng) */
+.form .form-control:invalid {
+    outline: none;
+    box-shadow: none;
+}
+
+/* Nút mắt: căn giữa tuyệt đối + xoá padding UA */
+.toggle-pass {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    padding: 0 !important;
+    display: grid;
+    place-items: center;
+    border: none;
+    background: transparent;
+    color: var(--gray-700);
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+    .toggle-pass i {
+        font-size: 18px;
+        line-height: 1;
+        position: static !important;
+        transform: none !important;
+    }
+
+    .toggle-pass:hover {
+        background: rgba(0,0,0,.06);
+    }
+
+/* Hint & links */
+.password-hint {
+    margin-top: 0;
+    font-size: 11.5px;
+    color: var(--gray-500);
+}
+
+.links {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
+
+/* Submit */
+.btn-submit {
+    margin-top: 4px;
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: .3px;
+    padding: 11px 14px;
+    cursor: pointer; /* compact padding */
+    transition: filter .15s ease, transform .04s ease;
+}
+
+    .btn-submit:hover {
+        filter: brightness(.96)
+    }
+
+    .btn-submit:active {
+        transform: translateY(1px)
+    }
+
+    .btn-submit[disabled] {
+        opacity: .75;
+        cursor: not-allowed
+    }
+
+    .btn-submit .spinner {
+        width: 16px;
+        height: 16px;
+        border-radius: 999px;
+        border: 2px solid rgba(255,255,255,.6);
+        border-top-color: #fff;
+        display: inline-block;
+        margin-right: 8px;
+        animation: spin .7s linear infinite;
+        vertical-align: -2px;
+    }
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg)
+    }
+}
+
+/* Footer */
+.footer {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--gray-500)
+}
+
+/* Mobile */
+@media (max-width:420px) {
+    .login-card {
+        width: 92vw;
+        padding: 16px 14px;
+        border-radius: 14px;
+    }
+
+    .form-control {
+        padding-left: 40px;
+        padding-right: 44px;
+    }
+    /* khớp icon/nút mắt */
+    .login-page::before {
+        background-attachment: scroll;
+    }
+    /* fix iOS */
+}
+
+/* Màn hình thấp: nén mạnh thêm */
+@media (max-height:700px) {
+    .form {
+        gap: 14px;
+    }
+
+    .form-control {
+        min-height: 42px;
+        padding: 9px 44px 9px 40px;
+    }
+
+    .field {
+        --err-h: 14px;
+        --err-gap: 4px;
+    }
+
+        .field .text-danger {
+            font-size: 11px;
+        }
+
+    .btn-submit {
+        padding: 10px 14px;
+    }
+}
+
+/* Cố định chiều cao card nếu thông điệp lỗi dài (desktop) */
+@media (min-width:360px) {
+    .login-card {
+        min-height: 460px;
+    }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .btn-submit .spinner {
+        animation: none;
+    }
+
+    .form-control, .btn-submit {
+        transition: none;
+    }
+}
+
+/* Tuỳ chọn: nếu một số môi trường render lệch 0.5px, bật dòng dưới */
+/* .field > .bi, .toggle-pass{ top:calc(50% + .5px); } */

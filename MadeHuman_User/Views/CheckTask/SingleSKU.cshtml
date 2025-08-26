@@ -1,0 +1,253 @@
+﻿@inject MadeHuman_User.ServicesTask.Services.OutboundService.ICheckTaskServices CheckTaskServices
+@inject MadeHuman_User.ServicesTask.Services.OutboundService.IBillRenderService BillService
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    ViewData["Title"] = "Kiểm hàng (Single SKU)";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Vị trí & Giỏ hàng (1/4) -->
+        <div class="col-md-3">
+            <div class="card shadow-sm mb-3">
+                <div class="card-header">📍 Vị trí & Giỏ hàng</div>
+                <div class="card-body">
+                    <input type="text" id="locationInput" class="form-control mb-2" placeholder="🔎 Vị trí kiểm" />
+                    <input type="text" id="basketInput" class="form-control" placeholder="🧺 Mã rổ (BasketId)" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Thông tin sản phẩm (1/2) -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header">📦 Thông tin sản phẩm</div>
+                <div class="card-body">
+                    <p><strong>Tên sản phẩm:</strong> <span id="productName">---</span></p>
+                    <p><strong>SKU:</strong> <span id="skuDisplay">---</span></p>
+                    <p><strong>Số lượng cần kiểm:</strong> <span id="requiredQty">---</span></p>
+                    <div id="carouselContainer" class="mt-3">
+                        <div id="imageCarousel" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner"></div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon"></span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quét SKU và số lượng (1/4) -->
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-header">🧾 Kiểm hàng</div>
+                <div class="card-body">
+                    <form id="checkForm" method="post">
+                        <input type="hidden" id="checkTaskId" value="" />
+                        <div class="mb-3">
+                            <label class="form-label">🔍 Mã SKU</label>
+                            <input type="text" id="skuInput" class="form-control" autocomplete="off" required autofocus />
+                        </div>
+                        <div class="mb-3 d-none" id="quantityGroup">
+                            <label class="form-label">🔢 Số lượng kiểm</label>
+                            <input type="number" id="quantityInput" class="form-control" min="1" />
+                        </div>
+                        <div id="messageArea" class="alert d-none mt-3" role="alert"></div>
+                        <button type="submit" class="btn btn-success w-100">✅ Xác nhận</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal xác nhận sau khi in -->
+<div class="modal fade" id="printConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+            <div class="modal-body">
+                <h5 class="mb-3">✅ Đã in <span id="billCount"></span> hóa đơn</h5>
+                <button class="btn btn-primary" onclick="location.href='/CheckTask/SingleSKU'">Tiếp tục nhiệm vụ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const successSFX = new Audio("/sounds/success.mp3");
+        const errorSFX = new Audio("/sounds/error.mp3");
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const loc = localStorage.getItem("check_location");
+            const basket = localStorage.getItem("check_basket");
+            if (loc) document.getElementById("locationInput").value = loc;
+            if (basket) document.getElementById("basketInput").value = basket;
+
+            document.getElementById("locationInput").addEventListener("change", e =>
+                localStorage.setItem("check_location", e.target.value));
+
+            document.getElementById("basketInput").addEventListener("change", async function (e) {
+                const basketId = e.target.value.trim();
+                const jwt = document.cookie.split("; ").find(x => x.startsWith("JWTToken="))?.split("=")[1];
+
+                if (!basketId || !jwt) return showMessage("❌ Thiếu BasketId hoặc JWT", "danger");
+
+                try {
+                    const res = await fetch(`https://hcm-628-madehuman-api.onrender.com/api/CheckTask/assign-user/${basketId}`, {
+                        method: "POST",
+                        headers: { "Authorization": `Bearer ${jwt}` }
+                    });
+
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data?.message || "Không thể gán nhiệm vụ");
+
+                    document.getElementById("checkTaskId").value = data.id; // ✅ FIX: lưu checkTaskId
+                    showMessage("✅ Đã gán nhiệm vụ", "success");
+                    successSFX.play();
+                    console.log("Assigned Task:", data);
+                } catch (err) {
+                    errorSFX.play();
+                    showMessage("❌ " + err.message, "danger");
+                }
+            });
+        });
+
+        const skuInput = document.getElementById("skuInput");
+        const quantityInput = document.getElementById("quantityInput");
+        const quantityGroup = document.getElementById("quantityGroup");
+
+        skuInput.addEventListener("change", async function () {
+            const basketId = document.getElementById("basketInput").value.trim();
+            const sku = skuInput.value.trim();
+            const jwt = document.cookie.split("; ").find(x => x.startsWith("JWTToken="))?.split("=")[1];
+
+            if (!sku || !basketId || !jwt)
+                return showMessage("❌ Thiếu thông tin SKU hoặc Basket hoặc Token", "danger");
+
+            try {
+                const response = await fetch(`https://hcm-628-madehuman-api.onrender.com/api/CheckTask/preview-single-sku/${basketId}/${sku}`, {
+                    headers: { "Authorization": `Bearer ${jwt}` }
+                });
+
+                if (!response.ok) throw new Error("SKU không hợp lệ");
+                const data = await response.json();
+
+                document.getElementById("skuDisplay").innerText = data.sku;
+                document.getElementById("productName").innerText = data.productName;
+                document.getElementById("requiredQty").innerText = data.requiredQuantity;
+
+                quantityGroup.classList.remove("d-none");
+                quantityInput.focus();
+                updateCarousel(data.imageUrls);
+            } catch (err) {
+                errorSFX.play();
+                showMessage("❌ " + err.message, "danger");
+            }
+        });
+
+        quantityInput.addEventListener("keypress", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                document.getElementById("checkForm").requestSubmit();
+            }
+        });
+
+        document.getElementById("checkForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const checkTaskId = document.getElementById("checkTaskId").value.trim();
+            const basketId = document.getElementById("basketInput").value.trim();
+            const sku = skuInput.value.trim();
+            const qty = parseInt(quantityInput.value);
+            const jwt = document.cookie.split("; ").find(x => x.startsWith("JWTToken="))?.split("=")[1];
+
+            if (!checkTaskId || !sku || !qty || !jwt)
+                return showMessage("❌ Thiếu dữ liệu", "danger");
+
+            try {
+                const response = await fetch("https://hcm-628-madehuman-api.onrender.com/api/CheckTask/single-sku", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${jwt}`
+                    },
+                    body: JSON.stringify({ CheckTaskId: checkTaskId, SKU: sku, Quantity: qty })
+                });
+
+                const result = await response.json();
+                if (!result || result.length === 0 || result[0].startsWith("❌")) {
+                    errorSFX.play();
+                    return showMessage(result[0] || "❌ Xác nhận thất bại", "danger");
+                }
+
+                successSFX.play();
+
+                const billRes = await fetch(`https://hcm-628-madehuman-api.onrender.com/api/Bill/print-bills/${checkTaskId}`, {
+                    headers: { "Authorization": `Bearer ${jwt}` }
+                });
+
+                const bills = await billRes.json();
+                let printed = 0;
+
+                for (const bill of bills) {
+                    const popup = window.open('', '', 'width=600,height=800');
+                    popup.document.write(bill.htmlContent);
+                    popup.document.close();
+                    popup.focus();
+
+                    await new Promise(resolve => {
+                        popup.onload = () => {
+                            popup.print();
+                            setTimeout(() => {
+                                popup.close();
+                                resolve();
+                            }, 800);
+                        };
+                    });
+
+                    printed++;
+                }
+
+                document.getElementById("billCount").innerText = printed;
+                new bootstrap.Modal(document.getElementById("printConfirmModal")).show();
+
+            } catch (err) {
+                errorSFX.play();
+                showMessage("❌ " + err.message, "danger");
+            }
+        });
+
+        function showMessage(msg, type = "info") {
+            const area = document.getElementById("messageArea");
+            area.className = `alert alert-${type}`;
+            area.textContent = msg;
+            area.classList.remove("d-none");
+        }
+
+        function updateCarousel(imageUrls) {
+            const carouselInner = document.querySelector(".carousel-inner");
+            if (!carouselInner) return;
+
+            if (!imageUrls || imageUrls.length === 0) {
+                carouselInner.innerHTML = `<div class="d-flex align-items-center justify-content-center bg-light h-100 text-muted">
+                        <p class="text-center m-3">Không có ảnh.</p></div>`;
+                return;
+            }
+
+            carouselInner.innerHTML = imageUrls.map((url, i) => `
+                    <div class="carousel-item ${i === 0 ? 'active' : ''}">
+                        <img src="/proxy-image?url=${encodeURIComponent(url)}"
+                            class="img-thumbnail d-block mx-auto"
+                            style="max-height: 250px; object-fit: contain;"
+                            alt="Ảnh sản phẩm">
+                    </div>`).join("");
+        }
+    </script>
+}
+
