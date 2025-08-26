@@ -188,32 +188,33 @@
 
                 successSFX.play();
 
-                const billRes = await fetch(`https://hcm-628-madehuman-api.onrender.com/api/Bill/print-bills/${checkTaskId}`, {
-                    headers: { "Authorization": `Bearer ${jwt}` }
-                });
-
-                const bills = await billRes.json();
-                let printed = 0;
-
-                for (const bill of bills) {
-                    const popup = window.open('', '', 'width=600,height=800');
-                    popup.document.write(bill.htmlContent);
-                    popup.document.close();
-                    popup.focus();
-
-                    await new Promise(resolve => {
-                        popup.onload = () => {
-                            popup.print();
-                            setTimeout(() => {
-                                popup.close();
-                                resolve();
-                            }, 800);
-                        };
-                    });
-
-                    printed++;
+                // MỞ 1 TAB trước khi await để giữ "user gesture"
+                const printWin = window.open("", "_blank", "width=900,height=900");
+                if (printWin) {
+                    printWin.document.write("<!doctype html><title>Đang chuẩn bị in…</title><p style='padding:16px;font-family:sans-serif'>Đang tải tem…</p>");
+                    printWin.document.close();
                 }
 
+                // (tuỳ chọn) Lấy số lượng tem để hiển thị UI xác nhận
+                let printed = 0;
+                try {
+                    const billRes = await fetch(`https://hcm-628-madehuman-api.onrender.com/api/Bill/print-bills/${checkTaskId}`, {
+                        headers: { "Authorization": `Bearer ${jwt}` }
+                    });
+                    const bills = await billRes.json();
+                    printed = Array.isArray(bills) ? bills.length : 0;
+                } catch { /* không sao, chỉ để đếm */ }
+
+                // Điều hướng tab vừa mở tới trang in MVC
+                const printUrl = `/CheckTask/PrintBills/${encodeURIComponent(checkTaskId)}`;
+                if (printWin) {
+                    printWin.location.href = printUrl;
+                } else {
+                    // Popup bị chặn → fallback mở tab mới
+                    window.open(printUrl, "_blank");
+                }
+
+                // UI xác nhận
                 document.getElementById("billCount").innerText = printed;
                 new bootstrap.Modal(document.getElementById("printConfirmModal")).show();
 

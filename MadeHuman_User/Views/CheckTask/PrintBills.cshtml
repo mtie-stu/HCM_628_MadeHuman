@@ -1,0 +1,30 @@
+﻿@model IEnumerable<Madehuman_Share.ViewModel.Outbound.PrintBillViewModel>
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Print 80×80</title>
+    <link rel="stylesheet" href="~/css/print-80.css" asp-append-version="true" />
+    <script>
+        // Tự động in & đóng tab in
+        window.addEventListener('load', () => {
+            window.print();
+            setTimeout(() => window.close(), 800);
+        });
+    </script>
+</head>
+<body>
+    <div id="print-root-80">
+        @foreach (var b in Model)
+        {
+            <section class="page" data-id="@b.OutboundTaskItemId">
+                @Html.Raw(b.HtmlContent)  <!-- phần thân từ BE -->
+            </section>
+        }
+    </div>
+</body>
+</html>

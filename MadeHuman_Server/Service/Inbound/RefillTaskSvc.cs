@@ -534,5 +534,111 @@ namespace MadeHuman_Server.Service.Inbound
             await _context.SaveChangesAsync();
         }
 
+        public async Task<RefillTaskFullViewModel> CreateExportAsync(RefillTaskFullViewModel vm, string UserId)
+        {
+            var errors = new List<string>();
+
+            var skuMap = new Dictionary<string, Guid>(); // Cache SKU → Id để tránh query nhiều lần
+
+            foreach (var d in vm.Details)
+            {
+                Guid productSkuId;
+
+                // ✅ 1. Nếu có ProductSKUId thì dùng, nếu không thì tra SKU
+                if (d.ProductSKUId.HasValue)
+                {
+                    productSkuId = d.ProductSKUId.Value;
+                }
+                else if (!string.IsNullOrWhiteSpace(d.SKU))
+                {
+                    if (skuMap.TryGetValue(d.SKU, out var cachedId))
+                    {
+                        productSkuId = cachedId;
+                    }
+                    else
+                    {
+                        var skuEntity = await _context.ProductSKUs
+                            .FirstOrDefaultAsync(p => p.SKU == d.SKU);
+
+                        if (skuEntity == null)
+                        {
+                            errors.Add($"❌ Không tìm thấy SKU: {d.SKU}");
+                            continue;
+                        }
+
+                        productSkuId = skuEntity.Id;
+                        skuMap[d.SKU] = productSkuId; // cache lại
+                    }
+
+                    d.ProductSKUId = productSkuId; // gán lại để tạo nhiệm vụ
+                }
+                else
+                {
+                    errors.Add("❌ Vui lòng nhập ProductSKUId hoặc SKU.");
+                    continue;
+                }
+
+                // ✅ 2. Kiểm tra FromLocation có đúng SKU
+                var fromInventory = await _context.Inventory.FirstOrDefaultAsync(i =>
+                    i.WarehouseLocationId == d.FromLocation && i.ProductSKUId == productSkuId);
+
+                if (fromInventory == null)
+                {
+                    errors.Add($"❌ FromLocation không có SKU {productSkuId}.");
+                    continue;
+                }
+
+                if (fromInventory.StockQuantity < d.Quantity)
+                {
+                    errors.Add($"❌ FromLocation không đủ hàng SKU {productSkuId}. Yêu cầu: {d.Quantity}, hiện có: {fromInventory.StockQuantity}");
+                }
+
+                // ✅ 3. Kiểm tra ToLocation có đúng SKU
+                var toInventory = await _context.Inventory.FirstOrDefaultAsync(i =>
+                    i.WarehouseLocationId == d.ToLocation);
+
+                if (toInventory != null)
+                {
+                    if (toInventory.ProductSKUId != null&& toInventory.ProductSKUId!=d.ProductSKUId)
+                    {
+                        errors.Add($"❌ ToLocation '{d.ToLocation}' đã chứa sản phẩm khác (SKUId: {toInventory.ProductSKUId}).");
+                    }
+                    else
+                    {
+                        toInventory.ProductSKUId=d.ProductSKUId;
+                        toInventory.StockQuantity += d.Quantity;
+                    }
+
+                }
+
+            }
+
+            if (errors.Any())
+                throw new InvalidOperationException(string.Join("\n", errors));
+
+            // ✅ Hợp lệ → tạo task
+            var task = new RefillTasks
+            {
+                Id = Guid.NewGuid(),
+                StatusRefillTasks = StatusRefillTasks.Incomplete,
+                CreateAt = DateTime.UtcNow,
+                CreateBy = UserId,
+                RefillTaskDetails = vm.Details.Select(d => new RefillTaskDetails
+                {
+                    Id = Guid.NewGuid(),
+                    ProductSKUId = d.ProductSKUId!.Value,
+                    FromLocation = d.FromLocation,
+                    ToLocation = d.ToLocation,
+                    Quantity = d.Quantity,
+                    IsRefilled = false,
+                }).ToList()
+            };
+
+            _context.RefillTasks.Add(task);
+            await _context.SaveChangesAsync();
+            vm.Id = task.Id;
+            return vm;
+        }
+
     }
 }
