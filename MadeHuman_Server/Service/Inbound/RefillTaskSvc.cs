@@ -106,11 +106,13 @@ namespace MadeHuman_Server.Service.Inbound
 
                 if (toInventory != null)
                 {
-                    if (toInventory.ProductSKUId != null)
+                    if (toInventory.ProductSKUId != null&& toInventory.ProductSKUId!=d.ProductSKUId)
                     {
                         errors.Add($"❌ ToLocation '{d.ToLocation}' đã chứa sản phẩm khác (SKUId: {toInventory.ProductSKUId}).");
                     }
-
+                    else{
+                          toInventory.ProductSKUId=d.ProductSKUId;  
+                    }
                 }
 
             }

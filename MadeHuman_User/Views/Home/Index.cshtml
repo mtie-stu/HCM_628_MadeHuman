@@ -6,10 +6,13 @@
 
     <div class="card p-3">
         <div class="d-flex align-items-center justify-content-between mb-2">
-            <small class="text-muted">Nguồn: GET /api/dashboard/outbound-status-mix</small>
+            <small class="text-muted">Nguồn: MadeHuman System</small>
             <div id="lastUpdated" class="text-muted" style="font-size:.9rem"></div>
         </div>
-        <canvas id="outboundStatusDonut" height="140"></canvas>
+        <!-- Giới hạn kích thước chart -->
+        <div style="max-width:500px; margin:auto;">
+            <canvas id="outboundStatusDonut" width="400" height="400"></canvas>
+        </div>
     </div>
 </div>
 
