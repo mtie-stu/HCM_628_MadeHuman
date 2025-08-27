@@ -41,6 +41,10 @@
                         <i class="bi bi-qr-code-scan"></i>
                         <input asp-for="ScanRequest.InboundTaskId" class="form-control" readonly />
                     </div>
+                    <!-- Chip rút gọn + copy -->
+                    <div class="small text-muted mt-1">
+                        Mã: <span class="id-chip" title="Bấm để copy">@Model?.ScanRequest?.InboundTaskId</span>
+                    </div>
                     <span class="text-danger small" asp-validation-for="ScanRequest.InboundTaskId"></span>
                 </div>
 
@@ -149,7 +153,7 @@
                     @if (Model?.TaskInfo != null)
                     {
                         <div class="info-grid mt-3 mb-3">
-                            <div><strong>ID:</strong> <span class="sku-chip">@Model.TaskInfo.InboundTaskId</span></div>
+                            <div><strong>ID:</strong> <span class="id-chip" title="Bấm để copy">@Model.TaskInfo.InboundTaskId</span></div>
                             <div><strong>Trạng thái:</strong> @Model.TaskInfo.Status</div>
                             <div><strong>Người tạo:</strong> @Model.TaskInfo.CreateBy</div>
                             <div><strong>Thời gian:</strong> @Model.TaskInfo.CreateAt.ToString("dd/MM/yyyy HH:mm")</div>
@@ -172,13 +176,15 @@
                                         {
                                             @foreach (var b in Model.TaskInfo.ProductBatches)
                                             {
-                                                        <tr>
-                                                            <td class="text-truncate" style="max-width:260px">@b.ProductBatchId</td>
-                                                            <td><span class="sku-chip">@b.SKU</span></td>
-                                                            <td>@b.Quantity</td>
-                                                            <td>@b.NameLocation</td>
-                                                            <td>@b.StatusProductBatch</td>
-                                                        </tr>
+                                                <tr>
+                                                    <td class="text-truncate" style="max-width:260px">
+                                                        <span class="id-chip" title="Bấm để copy">@b.ProductBatchId</span>
+                                                    </td>
+                                                    <td><span class="sku-chip">@b.SKU</span></td>
+                                                    <td>@b.Quantity</td>
+                                                    <td>@b.NameLocation</td>
+                                                    <td>@b.StatusProductBatch</td>
+                                                </tr>
                                             }
                                         }
                                         else
@@ -242,6 +248,9 @@
 
 </div>
 
+<!-- Inline toast cho copy -->
+<div id="inlineAlert" class="inline-alert d-none"></div>
+
 @section Scripts {
     <script>
         // Autofocus vào ProductBatchId nếu có
@@ -275,5 +284,66 @@
                 setTimeout(()=>ripple.classList.remove("show"), 500);
             });
         });
+
+        // ====== Rút gọn + Click-to-copy cho ID ======
+        const toast = document.getElementById('inlineAlert');
+
+        function showToast(type, text){
+            if (!toast) return;
+            toast.className = 'inline-alert ' + (type==='success'?'success':'error');
+            toast.textContent = text;
+            toast.classList.remove('d-none');
+            requestAnimationFrame(()=> toast.classList.add('show'));
+            setTimeout(()=>{
+                toast.classList.remove('show');
+                setTimeout(()=> toast.classList.add('d-none'), 160);
+            }, 1800);
+        }
+
+        function shortenId(str){
+            if (!str) return str;
+            const s = String(str).trim();
+            if (s.length >= 32) return s.slice(0,8) + '...' + s.slice(-8); // GUID: 8...8
+            if (s.length > 8)  return s.slice(0,4) + '...' + s.slice(-4);  // khác: 4...4
+            return s;
+        }
+
+        function enhanceIdChips(root=document){
+            root.querySelectorAll('.id-chip').forEach(chip=>{
+                const full = (chip.getAttribute('data-guid') || chip.textContent || '').trim();
+                if (!full || full === '—') return;
+                chip.setAttribute('data-guid', full);   // lưu full để copy
+                chip.textContent = shortenId(full);     // hiển thị rút gọn
+                chip.title = chip.title || 'Bấm để copy ID đầy đủ';
+                chip.classList.add('copy-guid');
+                chip.style.cursor = 'pointer';
+            });
+        }
+
+        document.addEventListener('click', (e)=>{
+            const el = e.target.closest('.copy-guid');
+            if (!el) return;
+            e.preventDefault();
+            e.stopPropagation();
+
+            const full = el.getAttribute('data-guid');
+            if (!full) return;
+
+            if (navigator.clipboard?.writeText) {
+                navigator.clipboard.writeText(full)
+                    .then(()=> showToast('success','✅ Đã copy đầy đủ mã'))
+                    .catch(()=> showToast('error','❌ Không thể copy.'));
+            } else {
+                const ta = document.createElement('textarea');
+                ta.value = full; ta.style.position='fixed'; ta.style.opacity='0';
+                document.body.appendChild(ta); ta.select();
+                try { document.execCommand('copy'); showToast('success','✅ Đã copy đầy đủ mã'); }
+                catch { showToast('error','❌ Không thể copy.'); }
+                finally { document.body.removeChild(ta); }
+            }
+        });
+
+        // Khởi tạo rút gọn+copy cho tất cả chip đã render
+        enhanceIdChips();
     </script>
 }
