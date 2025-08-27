@@ -51,6 +51,13 @@ namespace MadeHuman_User.Controllers
 
             return View(data); // View: Views/Warehouse/All.cshtml
         }
+        [HttpGet("/warehouse/create")]
+        public IActionResult Create()
+        {
+            // Nếu cần truyền thêm dữ liệu cho dropdown, bạn load ở đây rồi gắn vào ViewBag / ViewData / Model.
+            var vm = new WarehouseLocationViewModel();
+            return View(vm);
+        }
 
 
         [HttpPost("/warehouse/create")]
