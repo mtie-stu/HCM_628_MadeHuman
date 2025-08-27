@@ -8,7 +8,8 @@ namespace MadeHuman_User.ServicesTask.Services.InboundService
 {
     public interface IRefillTaskService
     {
-        Task<bool> CreateRefillTaskAsync(RefillTaskFullViewModel model, HttpContext httpContext);
+        Task<(bool Ok, List<string> Errors)> CreateRefillTaskAsync(
+    RefillTaskFullViewModel model, HttpContext httpContext);
         Task<List<RefillTaskFullViewModel>> GetAllRefillTasksAsync(HttpContext httpContext);
         Task<RefillTaskFullViewModel?> GetByIdAsync(Guid id, HttpContext httpContext);
         Task<List<RefillTaskDetailWithHeaderViewModel>> GetAllDetailsAsync(HttpContext httpContext);
@@ -24,9 +25,9 @@ namespace MadeHuman_User.ServicesTask.Services.InboundService
     {
         private readonly HttpClient _client;
         private readonly ILogger<RefillTaskService> _logger;
-        private readonly IWarehouseLookupApiService _locationService;
+        private readonly IWarehouseLocationServices _locationService;
         private readonly IProductService _productService;
-        public RefillTaskService(IHttpClientFactory httpClientFactory, ILogger<RefillTaskService> logger, IWarehouseLookupApiService locationService, IProductService productService)
+        public RefillTaskService(IHttpClientFactory httpClientFactory, ILogger<RefillTaskService> logger, IWarehouseLocationServices locationService, IProductService productService)
         {
             _client = httpClientFactory.CreateClient("API"); // 🔧 dùng đúng client "API" như bạn
             _logger = logger;
@@ -60,56 +61,57 @@ namespace MadeHuman_User.ServicesTask.Services.InboundService
 
 
 
-        public async Task<bool> CreateRefillTaskAsync(RefillTaskFullViewModel model, HttpContext httpContext)
+        public async Task<(bool Ok, List<string> Errors)> CreateRefillTaskAsync(
+    RefillTaskFullViewModel model, HttpContext httpContext)
         {
             try
             {
                 var jwt = httpContext.Request.Cookies["JWTToken"];
                 if (string.IsNullOrEmpty(jwt))
                 {
-                    _logger.LogWarning("❌ Không tìm thấy JWTToken trong cookie.");
-                    return false;
+                    return (false, new List<string> { "Không tìm thấy JWTToken trong cookie." });
                 }
 
-                var requestUri = "/api/RefillTask";
+                // Chuẩn hóa SKU uppercase để khớp BE
+                foreach (var d in model.Details ?? new List<RefillTaskFullViewModel.RefillTaskDetailItem>())
+                {
+                    if (!string.IsNullOrWhiteSpace(d.SKU))
+                        d.SKU = d.SKU.Trim().ToUpperInvariant();
+                }
 
-                var request = new HttpRequestMessage(HttpMethod.Post, requestUri)
+                var req = new HttpRequestMessage(HttpMethod.Post, "/api/RefillTask")
                 {
                     Content = JsonContent.Create(model)
                 };
-                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwt);
+                req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwt);
 
-                _logger.LogInformation("📤 Sending RefillTask request to {Uri} with payload: {Payload}", requestUri, JsonSerializer.Serialize(model));
+                var res = await _client.SendAsync(req);
 
-                var response = await _client.SendAsync(request);
+                if (res.IsSuccessStatusCode)
+                    return (true, new List<string>());
 
-                _logger.LogInformation("📥 Response status: {StatusCode}", response.StatusCode);
+                // Đọc lỗi từ BE (InvalidOperationException -> message nhiều dòng)
+                var content = await res.Content.ReadAsStringAsync();
 
-                if (response.IsSuccessStatusCode)
-                {
-                    _logger.LogInformation("✅ Tạo nhiệm vụ Refill thành công.");
-                    return true;
-                }
+                // Tách theo xuống dòng nếu có
+                var errs = content
+                    .Replace("\r", "")
+                    .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(x => x.Trim())
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .ToList();
 
-                var errorContent = await response.Content.ReadAsStringAsync();
+                if (errs.Count == 0)
+                    errs.Add($"API trả về lỗi {(int)res.StatusCode} {res.ReasonPhrase}");
 
-                _logger.LogWarning("❌ Tạo nhiệm vụ Refill thất bại.");
-                _logger.LogWarning("❌ StatusCode: {StatusCode}", response.StatusCode);
-                _logger.LogWarning("❌ Response content: {Error}", errorContent);
-
-                return false;
-            }
-            catch (HttpRequestException httpEx)
-            {
-                _logger.LogError(httpEx, "❌ Lỗi HTTP khi gọi API RefillTask.");
-                return false;
+                return (false, errs);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "❌ Exception không xác định khi gọi API RefillTask.");
-                return false;
+                return (false, new List<string> { "Lỗi gọi API RefillTask: " + ex.Message });
             }
         }
+
         public async Task<RefillTaskFullViewModel?> GetByIdAsync(Guid id, HttpContext httpContext)
         {
             var jwt = httpContext.Request.Cookies["JWTToken"];

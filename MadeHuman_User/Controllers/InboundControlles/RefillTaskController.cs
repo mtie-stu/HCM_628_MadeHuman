@@ -7,22 +7,26 @@ using MadeHuman_User.ServicesTask.Services.ShopService;
 using MadeHuman_User.ServicesTask.Services.Warehouse;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using MadeHuman_User.Views;
+
 
 namespace MadeHuman_User.Controllers.InboundControlles
 {
     public class RefillTaskController : Controller
     {
         private readonly IRefillTaskService _refillTaskService;
-        private readonly IWarehouseLookupApiService _warehouseLocationService;
+        private readonly IWarehouseLocationServices _warehouseLocationService;
         private readonly IProductService _productService;
 
-        public RefillTaskController(IRefillTaskService refillTaskService, IWarehouseLookupApiService warehouseLocationService, IProductService productService)
+        public RefillTaskController(IRefillTaskService refillTaskService, IWarehouseLocationServices warehouseLocationService, IProductService productService)
         {
             _refillTaskService = refillTaskService;
             _productService = productService;
             _warehouseLocationService = warehouseLocationService;
         }
-
+        private static readonly Guid FROM_ZONE = Guid.Parse("26ef6919-ed31-4d4f-82b9-3f3935c53bf2"); // Stored
+        private static readonly Guid TO_ZONE = Guid.Parse("98b7987b-da28-48df-995d-3b22b4778c1b"); // Empty
         [HttpGet]
         public async Task<IActionResult> Index(int page = 1, int pageSize = 10)
         {
@@ -84,29 +88,55 @@ namespace MadeHuman_User.Controllers.InboundControlles
             return View(vm);
         }
 
-        [HttpGet]
-        public IActionResult Create()
+         [HttpGet]
+    public async Task<IActionResult> Create(CancellationToken ct)
+    {
+        var email = Request.Cookies["EmailOrId"] ?? "";
+
+        // gọi API lấy options
+        var fromList = await _warehouseLocationService.GetLocationOptionsAsync(FROM_ZONE, "Stored", ct);
+        var toList   = await _warehouseLocationService.GetLocationOptionsAsync(TO_ZONE, "Empty", ct);
+
+        var vm = new RefillCreatePageViewModel
         {
-            var email = Request.Cookies["EmailOrId"]; // 👈 Nếu không có thì gán "" hoặc null
-            return View(new RefillTaskFullViewModel
+            Task = new RefillTaskFullViewModel
             {
-                CreateBy = email ?? ""
-            });
-        }
+                CreateBy = email
+            },
+            FromOptions = fromList.Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.NameLocation }).ToList(),
+            ToOptions   = toList.Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.NameLocation }).ToList()
+        };
+
+        return View(vm);
+    }
 
         [HttpPost]
-        public async Task<IActionResult> Create(RefillTaskFullViewModel model)
+        public async Task<IActionResult> Create(RefillTaskFullViewModel model, CancellationToken ct)
         {
-            var success = await _refillTaskService.CreateRefillTaskAsync(model, HttpContext); // ✅ Truyền HttpContext
+            // Gọi service tạo task
+            var (ok, errors) = await _refillTaskService.CreateRefillTaskAsync(model, HttpContext);
 
-            if (success)
+            if (ok)
             {
                 TempData["Success"] = "✅ Tạo nhiệm vụ bổ sung thành công!";
-                return RedirectToAction("Create");
+                return RedirectToAction(nameof(Create));
             }
 
-            TempData["Error"] = "❌ Lỗi khi tạo nhiệm vụ bổ sung!";
-            return View(model);
+            // Nếu fail: hiển thị lỗi từ BE
+            TempData["Error"] = string.Join("<br/>", errors);
+
+            // Nạp lại dropdown để render view
+            var fromList = await _warehouseLocationService.GetLocationOptionsAsync(FROM_ZONE, "Stored", ct);
+            var toList = await _warehouseLocationService.GetLocationOptionsAsync(TO_ZONE, "Empty", ct);
+
+            var vm = new RefillCreatePageViewModel
+            {
+                Task = model,
+                FromOptions = fromList.Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.NameLocation }).ToList(),
+                ToOptions = toList.Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.NameLocation }).ToList()
+            };
+
+            return View(vm);
         }
 
         [HttpGet]

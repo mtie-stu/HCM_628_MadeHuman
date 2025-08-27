@@ -24,7 +24,7 @@ builder.Services.AddScoped<IInboundTaskService, InboundTaskService>();
 builder.Services.AddScoped<ICheckinCheckoutService, CheckinCheckoutService>();
 builder.Services.AddScoped<IRefillTaskService, RefillTaskService>();
 builder.Services.AddScoped<IPickTaskApiService, PickTaskApiService>();
-builder.Services.AddScoped<IWarehouseLookupApiService, WarehouseLocationServices>();
+builder.Services.AddScoped<IWarehouseLocationServices, WarehouseLocationServices>();
 builder.Services.AddScoped<IBillRenderService, BillRenderService>();
 builder.Services.AddScoped<ICheckTaskServices, CheckTaskServices>();
 builder.Services.AddScoped<IPackTaskService, PackTaskService>();

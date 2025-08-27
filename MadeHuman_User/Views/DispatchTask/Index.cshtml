@@ -15,12 +15,6 @@
             </h3>
             <div class="page-subtext">Quét / nhập <b>OutboundTaskItemId</b> để xem trước và gán.</div>
         </div>
-
-@*         <div class="toolbar">
-            <button type="button" class="btn btn-outline btn--ripple" id="btnPaste"><i class="bi bi-clipboard2-check me-1"></i>Dán</button>
-            <button type="button" class="btn btn-outline btn--ripple" id="btnClear"><i class="bi bi-eraser me-1"></i>Xoá</button>
-            <button type="button" class="btn btn-orange btn--ripple" id="btnPreview"><i class="bi bi-search me-1"></i>Xem trước</button>
-        </div> *@
     </div>
 
     @* Log từ TempData *@
@@ -48,11 +42,6 @@
                                    placeholder="Nhập hoặc quét GUID..."
                                    required />
                         </div>
-@* 
-                        <div class="filter-row mb-3">
-                            <button type="button" class="btn btn-outline flex-fill btn--ripple" id="btnPaste2"><i class="bi bi-clipboard2-check me-1"></i>Dán</button>
-                            <button type="button" class="btn btn-outline flex-fill btn--ripple" id="btnClear2"><i class="bi bi-eraser me-1"></i>Xoá</button>
-                        </div> *@
 
                         <button type="submit" id="btnAssign" class="btn btn-orange w-100 btn-validate btn--ripple">
                             <i class="bi bi-rocket-takeoff me-2"></i><span>Gán & Hoàn thành DispatchTask</span>
@@ -199,6 +188,50 @@
         $input.classList.toggle("is-invalid", !valid);
     }
 
+    // ===== Rút gọn + copy cho ID =====
+    function shortenId(str){
+        if (!str) return str;
+        const s = String(str).trim();
+        if (s === "—") return s;
+        if (s.length >= 32) return s.slice(0,8) + "..." + s.slice(-8); // GUID
+        if (s.length > 8)   return s.slice(0,4) + "..." + s.slice(-4);  // chuỗi dài khác
+        return s;
+    }
+    function enhanceIdChips(root=document){
+        root.querySelectorAll(".id-chip").forEach(chip=>{
+            const full = (chip.getAttribute("data-guid") || chip.textContent || "").trim();
+            if (!full || full === "—") return;
+            chip.setAttribute("data-guid", full);
+            chip.textContent = shortenId(full);
+            chip.title = chip.title || "Bấm để copy ID đầy đủ";
+            chip.classList.add("copy-guid");
+            chip.style.cursor = "pointer";
+        });
+    }
+    document.addEventListener("click", (e)=>{
+        const el = e.target.closest(".copy-guid");
+        if (!el) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const full = el.getAttribute("data-guid");
+        if (!full) return;
+        if (navigator.clipboard?.writeText) {
+            navigator.clipboard.writeText(full)
+              .then(()=> showToast("success","✅ Đã copy đầy đủ mã"))
+              .catch(()=> showToast("error","❌ Không thể copy."));
+        } else {
+            const ta = document.createElement("textarea");
+            ta.value = full;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand("copy"); showToast("success","✅ Đã copy đầy đủ mã"); }
+            catch { showToast("error","❌ Không thể copy."); }
+            finally { document.body.removeChild(ta); }
+        }
+    });
+
     // Status helpers
     const STATUS_STEPS = ["created","picked","checked","packed","dispatched","finished"];
     function getStatusBadgeClass(status) {
@@ -265,7 +298,11 @@
         fetchPreview(v);
     });
 
-    window.addEventListener("load", ()=> $input?.focus());
+    window.addEventListener("load", ()=>{
+        $input?.focus();
+        // Nếu có dữ liệu render sẵn, rút gọn + bật copy
+        enhanceIdChips(document);
+    });
 
     // Enter -> preview
     $input.addEventListener("keydown", (e) => {
@@ -394,10 +431,12 @@
             document.getElementById("statTotalQty").textContent   = totalQty;
             $statGrid.style.display = "grid";
 
+            // Set full IDs, rồi rút gọn + bật copy
             document.getElementById("valOutboundTaskItemId").textContent = data.outboundTaskItemId ?? "—";
             document.getElementById("valOutboundTaskId").textContent     = data.outboundTaskId ?? "—";
             document.getElementById("valShopOrderId").textContent        = data.shopOrderId ?? "—";
             $idsBlock.style.display = "block";
+            enhanceIdChips($idsBlock); // << bật rút gọn + copy cho khối IDs
 
             // Table rows
             $tbody.innerHTML = renderRows(details);

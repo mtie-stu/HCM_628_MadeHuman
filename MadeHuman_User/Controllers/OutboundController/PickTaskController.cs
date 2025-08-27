@@ -13,9 +13,9 @@ namespace MadeHuman_User.Controllers.Outbound
         private readonly IPickTaskApiService _pickTaskService;
         private readonly ILogger<PickTasksController> _logger;
         private readonly IProductService _productLookup;
-        private readonly IWarehouseLookupApiService _warehouseLookup;
+        private readonly IWarehouseLocationServices _warehouseLookup;
         public PickTasksController(IPickTaskApiService pickTaskService, ILogger<PickTasksController> logger, IProductService productLookup,
-    IWarehouseLookupApiService warehouseLookup)
+    IWarehouseLocationServices warehouseLookup)
         {
             _pickTaskService = pickTaskService;
             _logger = logger;

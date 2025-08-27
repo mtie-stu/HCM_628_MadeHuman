@@ -1,0 +1,228 @@
+﻿/* ===== Scope & palette (Warehouse) ===== */
+.warehouse-page {
+    --accent: #ee4d2d; /* xanh ngọc (Tailwind emerald-500). Muốn giữ màu cam cũ => #ee4d2d */
+    --accent-weak: #e8fff7;
+    --g900: #1f2937;
+    --g700: #374151;
+    --g500: #6b7280;
+    --g300: #d1d5db;
+    --g200: #e5e7eb;
+    --g100: #f6f8fa;
+    --radius: 18px;
+    background: #fff;
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+}
+
+    /* Header & toolbar */
+    .warehouse-page .page-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .warehouse-page .page-title {
+        margin: 0 0 4px;
+        font-weight: 800;
+        color: var(--g900);
+        letter-spacing: .2px;
+    }
+
+    .warehouse-page .page-subtext {
+        color: var(--g500);
+    }
+
+    .warehouse-page .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Filter row */
+    .warehouse-page .filter-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .warehouse-page .with-icon {
+        position: relative;
+    }
+
+        .warehouse-page .with-icon .bi {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent);
+        }
+
+        .warehouse-page .with-icon .form-control {
+            padding-left: 38px;
+            min-width: 260px;
+        }
+
+    /* Inputs & buttons */
+    .warehouse-page .form-control,
+    .warehouse-page .form-select {
+        border: 1.5px solid var(--g200);
+        border-radius: 12px;
+    }
+
+        .warehouse-page .form-control:focus,
+        .warehouse-page .form-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 .2rem color-mix(in srgb, var(--accent) 12%, transparent);
+        }
+
+    .warehouse-page .btn-orange {
+        background: var(--accent);
+        color: #fff !important;
+        border: none;
+        border-radius: 12px;
+        padding: .5rem .9rem;
+        font-weight: 700;
+    }
+
+        .warehouse-page .btn-orange:hover {
+            filter: brightness(.96);
+        }
+
+    .warehouse-page .btn-outline {
+        background: #fff;
+        color: var(--g700) !important;
+        border: 1.5px solid var(--g200);
+        border-radius: 12px;
+        padding: .5rem .8rem;
+        font-weight: 600;
+    }
+
+        .warehouse-page .btn-outline:hover {
+            border-color: var(--accent);
+            color: var(--accent) !important;
+        }
+
+    /* Table */
+    .warehouse-page .table-wrap {
+        border: 1px solid var(--g200);
+        border-radius: 14px;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .warehouse-page .table {
+        font-size: 15px;
+        --bs-table-border-color: var(--g200);
+        margin-bottom: 0;
+    }
+
+        .warehouse-page .table thead th {
+            background: #f3f4f6;
+            color: var(--g700);
+            font-weight: 700;
+            border-bottom: 1px solid var(--g200);
+        }
+
+        .warehouse-page .table tbody td {
+            vertical-align: middle;
+        }
+
+    /* Chips */
+    .warehouse-page .id-chip {
+        display: inline-block;
+        padding: .25rem .55rem;
+        border: 1px dashed var(--g300);
+        border-radius: 999px;
+        font-weight: 600;
+        color: var(--g700);
+        background: #fff;
+    }
+
+    .warehouse-page .status-chip {
+        display: inline-block;
+        padding: .25rem .6rem;
+        border-radius: 999px;
+        font-weight: 700;
+        border: 1px dashed var(--g300);
+        background: var(--g100);
+        color: var(--g700);
+    }
+
+        .warehouse-page .status-chip.weak {
+            background: #ecfeff; /* tông xanh nhạt */
+            border-color: #bae6fd;
+            color: #0ea5e9;
+        }
+
+    /* Empty state */
+    .warehouse-page .empty-state {
+        padding: 32px 16px;
+        text-align: center;
+        color: var(--g700);
+    }
+
+        .warehouse-page .empty-state .bi {
+            font-size: 36px;
+            color: var(--accent);
+        }
+
+        .warehouse-page .empty-state .title {
+            font-weight: 800;
+            font-size: 18px;
+            margin-top: 8px;
+            color: var(--g900);
+        }
+
+        .warehouse-page .empty-state .desc {
+            color: var(--g500);
+            margin: 6px 0 14px;
+        }
+
+    /* Pagination (đồng bộ) */
+    .warehouse-page .pagination {
+        display: flex;
+        gap: 6px;
+        padding-left: 0;
+        list-style: none;
+    }
+
+        .warehouse-page .pagination .page-item .page-link {
+            border: 1.5px solid var(--g200);
+            border-radius: 10px;
+            padding: .4rem .75rem;
+            font-weight: 600;
+            color: var(--g700);
+            background: #fff;
+            transition: all .2s ease;
+            min-width: 40px;
+            text-align: center;
+        }
+
+            .warehouse-page .pagination .page-item .page-link:hover {
+                border-color: var(--accent);
+                color: var(--accent);
+                background: var(--accent-weak);
+            }
+
+        .warehouse-page .pagination .page-item.active .page-link {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        .warehouse-page .pagination .page-item.disabled .page-link {
+            background: var(--g100);
+            color: var(--g300);
+            border-color: var(--g200);
+            pointer-events: none;
+        }
+
+/* Responsive */
+@media (max-width: 576px) {
+    .warehouse-page .page-head {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
