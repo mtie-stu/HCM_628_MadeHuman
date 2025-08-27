@@ -35,7 +35,7 @@ namespace MadeHuman_User.ServicesTask.Services.OutboundService
                 return null;
             }
 
-            var request = new HttpRequestMessage(HttpMethod.Post, "api/PickTasks/assign");
+            var request = new HttpRequestMessage(HttpMethod.Post, "/api/PickTasks/assign");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
 
             var response = await _client.SendAsync(request);
