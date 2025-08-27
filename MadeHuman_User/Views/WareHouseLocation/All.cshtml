@@ -13,13 +13,21 @@
 <div class="warehouse-page">
   <div class="container mt-4">
 
-    <!-- Header -->
-    <div class="page-head">
-      <div>
-        <h2 class="page-title"><i class="bi bi-geo-alt-fill"></i> Warehouse Locations (All)</h2>
-        <div class="page-subtext">Danh sách toàn bộ location có lọc & phân trang.</div>
-      </div>
-    </div>
+        <!-- Header -->
+        <div class="page-head">
+            <div>
+                <h2 class="page-title"><i class="bi bi-geo-alt-fill"></i> Warehouse Locations (All)</h2>
+                <div class="page-subtext">Danh sách toàn bộ location có lọc & phân trang.</div>
+            </div>
+
+            <!-- ACTIONS bên phải: Thêm nút Create -->
+            <div class="d-flex align-items-center gap-2">
+                <a asp-action="Create" class="btn btn-orange">
+                    <i class="bi bi-plus-circle me-1"></i> Tạo vị trí
+                </a>
+            </div>
+        </div>
+
 
     <!-- Filter/Search -->
     <form asp-action="All" method="get" class="filter-row mb-3">

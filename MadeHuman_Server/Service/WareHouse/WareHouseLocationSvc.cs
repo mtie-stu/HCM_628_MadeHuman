@@ -56,7 +56,7 @@
                     ProductSKUId = null,
                     StockQuantity = 0,
                     QuantityBooked = 0,
-                    LastUpdated = DateTime.Now,
+                    LastUpdated = DateTime.UtcNow,
                     WarehouseLocationId = newId // sửa tại đây
                 };
 
