@@ -35,7 +35,7 @@ namespace MadeHuman_User.ServicesTask.Services.OutboundService
                 return null;
             }
 
-            var request = new HttpRequestMessage(HttpMethod.Post, "api/PickTasks/assign");
+            var request = new HttpRequestMessage(HttpMethod.Post, "/api/PickTasks/assign");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
 
             var response = await _client.SendAsync(request);
@@ -75,7 +75,7 @@ namespace MadeHuman_User.ServicesTask.Services.OutboundService
             if (string.IsNullOrEmpty(jwt))
                 throw new Exception("Không có JWT");
 
-            var request = new HttpRequestMessage(HttpMethod.Get, $"api/PickTasks/mine");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/api/PickTasks/mine");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
 
             var response = await _client.SendAsync(request);
@@ -94,7 +94,7 @@ namespace MadeHuman_User.ServicesTask.Services.OutboundService
                 return new();
             }
 
-            var request = new HttpRequestMessage(HttpMethod.Post, "api/PickTasks/scan")
+            var request = new HttpRequestMessage(HttpMethod.Post, "/api/PickTasks/scan")
             {
                 Content = JsonContent.Create(data)
             };
@@ -121,7 +121,7 @@ namespace MadeHuman_User.ServicesTask.Services.OutboundService
                 return new();
             }
 
-            var url = $"api/PickTasks/confirm?pickTaskId={pickTaskId}&pickTaskDetailId={pickTaskDetailId}&basketId={basketId}";
+            var url = $"/api/PickTasks/confirm?pickTaskId={pickTaskId}&pickTaskDetailId={pickTaskDetailId}&basketId={basketId}";
 
             var request = new HttpRequestMessage(HttpMethod.Post, url);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
@@ -143,7 +143,7 @@ namespace MadeHuman_User.ServicesTask.Services.OutboundService
             if (string.IsNullOrEmpty(jwt))
                 return null;
 
-            var request = new HttpRequestMessage(HttpMethod.Get, $"api/PickTasks/{id}");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"/api/PickTasks/{id}");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
 
             var response = await _client.SendAsync(request);
@@ -159,7 +159,7 @@ namespace MadeHuman_User.ServicesTask.Services.OutboundService
             if (string.IsNullOrEmpty(jwt))
                 return new List<string> { "Không tìm thấy JWT." };
 
-            var request = new HttpRequestMessage(HttpMethod.Post, "api/PickTasks/assign-basket")
+            var request = new HttpRequestMessage(HttpMethod.Post, "/api/PickTasks/assign-basket")
             {
                 Content = JsonContent.Create(data)
             };
