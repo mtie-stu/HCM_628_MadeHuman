@@ -39,8 +39,9 @@ namespace MadeHuman_Server.Service.Shop
             public async Task<Combo?> GetByIdAsync(Guid id)
             {
                 return await _context.Combos
-                    .Include(c => c.ComboItems)
+                    .Include(c => c.ComboItems).ThenInclude(ci => ci.Product)   // lấy Product
                     .Include(c => c.ProductSKU)
+                    
                     .FirstOrDefaultAsync(c => c.ComboId == id);
             }
 

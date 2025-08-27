@@ -19,8 +19,8 @@
             <a asp-action="Index" class="btn btn-outline">
                 <i class="bi bi-arrow-left"></i> Quay lại danh sách
             </a>
-@*             <a asp-action="Edit" asp-route-id="@Model.ComboId" class="btn btn-orange">
-                <i class="bi bi-pencil-square"></i> Sửa combo
+            @* <a asp-action="Edit" asp-route-id="@Model.ComboId" class="btn btn-orange">
+            <i class="bi bi-pencil-square"></i> Sửa combo
             </a> *@
         </div>
     </div>
@@ -45,7 +45,16 @@
 
             <div class="info-row">
                 <div class="label">SKU</div>
-                <div class="value"><span class="id-chip">@Model.SKU</span></div>
+                <div class="value">
+                    @if (!string.IsNullOrWhiteSpace(Model.SKU))
+                    {
+                        <span class="id-chip">@Model.SKU</span>
+                    }
+                    else
+                    {
+                        <span class="text-muted">—</span>
+                    }
+                </div>
             </div>
         </div>
     </div>
@@ -65,8 +74,8 @@
             <div class="title">Combo chưa có sản phẩm</div>
             <div class="desc">Hãy thêm sản phẩm để hoàn thiện combo.</div>
             @* <a asp-action="AddItems" asp-route-comboId="@Model.ComboId" class="btn btn-orange">
-                <i class="bi bi-plus-circle"></i> Thêm sản phẩm
-            </a> *@
+        <i class="bi bi-plus-circle"></i> Thêm sản phẩm
+        </a> *@
         </div>
     }
     else
