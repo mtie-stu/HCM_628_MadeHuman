@@ -304,3 +304,29 @@
         width: 100%;
     }
 }
+.inline-alert {
+    position: relative;
+    margin-top: .75rem;
+    padding: .5rem .75rem;
+    border-radius: .5rem;
+    opacity: 0;
+    transition: opacity .2s ease, transform .2s ease;
+    transform: translateY(-4px)
+}
+
+    .inline-alert.show {
+        opacity: 1;
+        transform: translateY(0)
+    }
+
+    .inline-alert.success {
+        background: #e8f7ee;
+        color: #0a6b3a;
+        border: 1px solid #bfe6cb
+    }
+
+    .inline-alert.error {
+        background: #fdecec;
+        color: #8a1c1c;
+        border: 1px solid #f3b1b1
+    }

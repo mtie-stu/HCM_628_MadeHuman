@@ -22,11 +22,19 @@
         <!-- Header compact -->
         <div class="page-head">
             <div>
-                <h2 class="page-title mb-1"><i class="bi bi-box-arrow-down"></i> Export nhiệm vụ bổ sung kho</h2>
+                <h2 class="page-title mb-1">
+                    <i class="bi bi-box-arrow-down"></i> Export nhiệm vụ bổ sung kho
+                </h2>
                 <div class="page-subtext">Xuất dữ liệu theo bộ lọc bạn chọn.</div>
             </div>
 
             <div class="d-flex align-items-center gap-2">
+                <!-- Nút nhận nhiệm vụ -->
+                <button type="button" class="btn btn-orange" id="assignTaskBtn">
+                    <i class="bi bi-person-check me-1"></i> Nhận nhiệm vụ
+                </button>
+
+                <!-- Nút Export -->
                 <a class="btn btn-orange" id="btnExportAll"
                    asp-controller="RefillTask" asp-action="DetailFlat"
                    aria-label="Xuất dữ liệu theo bộ lọc hiện tại">
@@ -34,6 +42,16 @@
                 </a>
             </div>
         </div>
+
+
+        <!-- Alert nhỏ hiển thị inline -->
+        <div id="inlineAlert" class="inline-alert d-none" role="status" aria-live="polite"></div>
+
+        <!-- Form ẩn để lấy Anti-Forgery token cho fetch -->
+        <form id="assignAfForm" method="post" asp-controller="RefillTask" asp-action="Assign">
+            @Html.AntiForgeryToken()
+        </form>
+
 
         <!-- Filter toolbar card -->
         <div class="card shadow-sm border-0 mb-3">
@@ -350,5 +368,73 @@
 
           // Nếu sau này bạn render thêm nội dung bằng AJAX, gọi lại enhanceIdChips(container) sau khi gắn vào DOM.
         })();
+        (function () {
+  const btn   = document.getElementById('assignTaskBtn');
+  const alert = document.getElementById('inlineAlert');
+
+  // Mini alert
+  function toast(type, text){
+    if (!alert) return;
+    alert.className = 'inline-alert ' + (type === 'success' ? 'success' : 'error');
+    alert.textContent = text;
+    alert.classList.remove('d-none');
+    requestAnimationFrame(()=> alert.classList.add('show'));
+    setTimeout(()=>{
+      alert.classList.remove('show');
+      setTimeout(()=> alert.classList.add('d-none'), 180);
+    }, 2000);
+  }
+
+  // Lấy anti-forgery token từ form ẩn
+  function getAfToken(){
+    const el = document.querySelector('#assignAfForm input[name="__RequestVerificationToken"]');
+    return el ? el.value : '';
+  }
+
+      // Gọi API nhận nhiệm vụ
+      async function assignTask(){
+        if (!btn) return;
+        btn.disabled = true;
+        const old = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang nhận...';
+
+        try{
+          const resp = await fetch('/RefillTask/Assign', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'RequestVerificationToken': getAfToken()
+            },
+            credentials: 'same-origin'
+          });
+
+          const raw = await resp.text();
+          let data = {};
+          try { data = JSON.parse(raw || '{}'); } catch {}
+
+          if (resp.status === 401){
+            toast('error', '❌ Bạn chưa đăng nhập hoặc token đã hết hạn.');
+          } else if (resp.status === 404){
+            toast('error', '🎉 Không còn nhiệm vụ nào để nhận.');
+          } else if (!resp.ok){
+            toast('error', '🚨 Lỗi: ' + (data?.message || raw || 'Yêu cầu không hợp lệ'));
+          } else {
+            toast('success', '✅ Đã nhận nhiệm vụ thành công!');
+            const id = data?.taskId || data?.id;
+            setTimeout(()=> {
+              if (id) window.location.href = `/RefillTask/Details/${id}`;
+              else location.reload();
+            }, 900);
+          }
+        } catch {
+          toast('error', '🚨 Lỗi kết nối tới server.');
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = old;
+        }
+      }
+
+      btn?.addEventListener('click', assignTask);
+    })();
     </script>
 }
