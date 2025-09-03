@@ -23,7 +23,7 @@ namespace Madehuman_Share.ViewModel.Shop
         public decimal Price { get; set; }
 
         public string? SKU { get; set; }
-        public int QuantityInStock { get; set; }
+        //public int QuantityInStock { get; set; }
         [NotMapped]
         [Display(Name = "Chọn Hình")]
         public List<IFormFile>? ImageFiles { get; set; } // Cho phép upload nhiều ảnh

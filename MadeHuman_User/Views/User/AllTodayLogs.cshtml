@@ -1,0 +1,70 @@
+﻿@using Madehuman_Share.ViewModel.PartTime_Task
+@model List<CheckInCheckOutTodayViewModel>
+
+@{
+    // ViewData["Title"] = "Lịch sử chấm công hôm nay (Tất cả)";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+<div class="container mt-5">
+    <h3 class="mb-4 text-primary">
+        <i class="bi bi-clock-history"></i> Lịch sử chấm công hôm nay
+    </h3>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info shadow-sm">Không có dữ liệu hôm nay.</div>
+    }
+    else
+    {
+        <div class="table-responsive shadow-sm">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th scope="col">👤 User ID</th>
+                        <th scope="col">🆔 PartTime ID</th>
+                        <th scope="col">🕒 Thời gian</th>
+                        <th scope="col">📌 Loại</th>
+                        @* <th scope="col">📝 Ghi chú</th> *@
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var log in Model)
+                    {
+                        <tr>
+                            <td>@log.UserId</td>
+                            <td>@log.PartTimeId</td>
+                            <td>@log.Timestamp.ToString("HH:mm:ss")</td>
+                            <td>
+                                @if (log.IsCheckIn)
+                                {
+                                    <span class="badge bg-success">✅ Check In</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">⏱️ Check Out</span>
+                                }
+
+                                @if (log.IsOvertime)
+                                {
+                                    <span class="badge bg-info text-dark ms-2">Tăng ca</span>
+                                }
+                            </td>
+                            @* <td>@(string.IsNullOrWhiteSpace(log.Note) ? "-" : log.Note)</td> *@
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <div class="mt-4">
+        <a href="@Url.Action("CheckInOut", "User")" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left-circle"></i> Quay lại chấm công
+        </a>
+    </div>
+</div>
+
+<!-- Bootstrap Icons (nếu chưa có) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />

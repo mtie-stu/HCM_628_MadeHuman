@@ -1,0 +1,46 @@
+﻿@model Madehuman_Share.ViewModel.WareHouse.WarehouseLocationViewModel
+
+@{
+    ViewData["Title"] = "Tạo vị trí kho";
+}
+
+<link rel="stylesheet" href="~/css/pages/Warehouse/warehouse-index.css" asp-append-version="true" />
+
+<div class="warehouse-page">
+    <div class="container mt-4">
+        <div class="page-head">
+            <div>
+                <h2 class="page-title"><i class="bi bi-plus-circle"></i> Tạo vị trí kho</h2>
+                <div class="page-subtext">Nhập thông tin cơ bản cho location mới.</div>
+            </div>
+        </div>
+
+        <form asp-action="Create" method="post" class="row g-3">
+            @Html.AntiForgeryToken()
+
+            <div class="col-12">
+                <label asp-for="NameLocation" class="form-label">Tên vị trí</label>
+                <input asp-for="NameLocation" class="form-control" required />
+                <span asp-validation-for="NameLocation" class="text-danger"></span>
+            </div>
+
+            <!-- ZoneId: dropdown 2 lựa chọn -->
+            <div class="col-12">
+                <label asp-for="ZoneId" class="form-label">Zone</label>
+                <select asp-for="ZoneId" class="form-select" required>
+                    <option value="">-- Chọn Zone --</option>
+                    <option value="26ef6919-ed31-4d4f-82b9-3f3935c53bf2">Inbound</option>
+                    <option value="98b7987b-da28-48df-995d-3b22b4778c1b">Outbound</option>
+                </select>
+                <span class="form-text">Chọn Inbound hoặc Outbound (lưu bằng GUID tương ứng).</span>
+                <span asp-validation-for="ZoneId" class="text-danger"></span>
+            </div>
+
+            <div class="col-12 d-flex gap-2">
+                <a  asp-action="all" class="btn btn-outline"><i class="bi bi-arrow-left me-1"></i> Quay lại</a>
+                <button class="btn btn-orange" type="submit"><i class="bi bi-check2-circle me-1"></i> Lưu</button>
+            </div>
+        </form>
+
+    </div>
+</div>

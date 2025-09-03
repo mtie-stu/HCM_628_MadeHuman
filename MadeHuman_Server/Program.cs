@@ -1,11 +1,16 @@
-﻿using MadeHuman_Server.Data;
+﻿using Google.Apis.Util.Store;
+using MadeHuman_Server.Data;
+using MadeHuman_Server.JwtMiddleware;
 using MadeHuman_Server.Model.User_Task;
 using MadeHuman_Server.Service;
 using MadeHuman_Server.Service.Inbound;
+using MadeHuman_Server.Service.Outbound;
 using MadeHuman_Server.Service.Shop;
 using MadeHuman_Server.Service.UserTask;
 using MadeHuman_Server.Service.WareHouse;
+using MadeHuman_Server.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -24,8 +29,24 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
         npgsqlOptions => npgsqlOptions.CommandTimeout(180) // ⏰ tăng timeout lên 3 phút
     ));
+
+
 /*builder.Services.AddDbContext<ApplicationDbContext>(options =>
    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection1")));*/
+
+// Thêm cấu hình CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("https://localhost:7112",
+            "https://hcm-628-madehuman-fe.onrender.com",
+            "https://madehumanwarehouse.io.vn") // Giao diện FE
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials(); // Nếu dùng Cookie
+    });
+});
 
 // 👤 Identity
 builder.Services.AddIdentity<AppUser, IdentityRole>()
@@ -52,8 +73,10 @@ builder.Services.AddAuthentication(auth =>
         ValidateIssuerSigningKey = true
     };
 });
+builder.Services.AddHttpClient();
 
 // 🧩 Services
+builder.Services.AddScoped< DashboardService>();
 builder.Services.AddTransient<ITokenService, TokenService>();
 builder.Services.AddScoped<IWarehouseService, WareHouseSvc>();
 builder.Services.AddScoped<IWarehouseZoneService, WareHouseZoneSvc>();
@@ -66,6 +89,7 @@ builder.Services.AddScoped<IComboService, ComboService>();
 builder.Services.AddScoped<ISkuGeneratorService, SkuGeneratorService>();
 builder.Services.AddScoped<ISKUServices, SKUSvc>();
 builder.Services.AddScoped<IInboundReciptService, InboundReciptSvc>();
+builder.Services.AddScoped<IRefillTaskService, RefillTaskService>();
 builder.Services.AddHostedService<ReceiptStatusUpdaterService>();
 builder.Services.AddScoped<GoogleSheetService>();
 builder.Services.AddScoped<IPartTimeCompanyService, PartTimeCompanySvc>();
@@ -74,8 +98,29 @@ builder.Services.AddScoped<IPartTimeAssignmentService, PartTimeAssignmentService
 builder.Services.AddScoped<IUserTaskSvc, UserTaskSvc>();
 builder.Services.AddScoped<IInboundTaskSvc, InboundTaskSvc>();
 builder.Services.AddHostedService<ResetHourlyKPIsService>();
+builder.Services.AddSingleton<GoogleDriveService>();
+builder.Services.AddHostedService<InventoryQuantityUpdateService>();
+builder.Services.AddHostedService<OutboundTaskBackgroundService>();
+builder.Services.AddScoped<OutboundTaskService>();
+builder.Services.AddScoped<IOutboundTaskServices, OutboundTaskService>();
+builder.Services.AddScoped<IProductImageService, ProductImageService>();
+builder.Services.AddScoped<IBasketService, BasketService>();
+builder.Services.AddScoped<ICheckTaskServices, CheckTaskServices>();
+builder.Services.AddScoped<IPackTaskService, PackTaskServices>();
+builder.Services.AddScoped<IPickTaskServices, PickTaskServices>();
+builder.Services.AddScoped<IDispatchTaskServices, DispatchTaskServices>();
+builder.Services.AddScoped<IProductLookupService, ProductLookupService>();
+builder.Services.AddScoped<IBillRenderService, BillRenderService>();
+// Đăng ký IDataStore dùng EF Core (Singleton an toàn vì dùng DbContextFactory)
+builder.Services.AddSingleton<IDataStore, EfCoreDataStore>();
 
-
+// GoogleDrive service dùng IDataStore
+builder.Services.AddSingleton<GoogleDriveOAuthService>();
+// (Tùy chọn) Cấu hình upload file lớn nếu cần
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 104857600; // 100MB
+});
 // 📦 Controller & Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -139,9 +184,11 @@ app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "MadeHuman API v1");
 });
-
+// Bật CORS trước UseAuthorization()
+app.UseCors("AllowFrontend");
 app.UseStaticFiles();
 app.UseHttpsRedirection();
+app.UseMiddleware<JwtMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -1,17 +1,19 @@
-﻿using MadeHuman_Server.Data;
-using MadeHuman_Server.Model.Inbound;
-using MadeHuman_Server.Model.WareHouse;
-using Madehuman_Share.ViewModel.WareHouse;
-using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
+﻿    using MadeHuman_Server.Data;
+    using MadeHuman_Server.Model.Inbound;
+    using MadeHuman_Server.Model.WareHouse;
+    using Madehuman_Share.ViewModel.WareHouse;
+    using Microsoft.EntityFrameworkCore;
+    using System.Text.Json;
 
-namespace MadeHuman_Server.Service.WareHouse
+    namespace MadeHuman_Server.Service.WareHouse
 {
     public interface IWarehouseLocationService
     {
         Task<WarehouseLocationViewModel> CreateAsync(WarehouseLocationViewModel warehouse);
         Task<WarehouseLocationViewModel> UpdateAsync(Guid id, WarehouseLocationViewModel warehouse);
         Task<WarehouseLocationViewModel> GetByIdAsync(Guid id);
+        Task<WarehouseLocationInfoViewModel?> GetLocationInfoAsync(Guid warehouseLocationId);
+
         Task<List<WarehouseLocationViewModel>> GetAllAsync();
         Task<List<WarehouseLocationViewModel>> GenerateLocationsAsync(
      Guid zoneId,
@@ -22,197 +24,223 @@ namespace MadeHuman_Server.Service.WareHouse
      int startSub,
      int endSub,
      int quantity);
-        
+
+        Task<List<WarehouseLocationOptionViewModel>> GetOptionsAsync(Guid zoneId, StatusWareHouse status);
+
     }
     public class WareHouseLocationSvc : IWarehouseLocationService
-    {
-        protected ApplicationDbContext _context;
-        public WareHouseLocationSvc(ApplicationDbContext context)
         {
-            _context = context;
-        }
-        public async Task<WarehouseLocationViewModel> CreateAsync(WarehouseLocationViewModel warehouse)
-        {
-            var newId = Guid.NewGuid();
-
-            var createwarehouselocation = new WarehouseLocations
+            protected ApplicationDbContext _context;
+            public WareHouseLocationSvc(ApplicationDbContext context)
             {
-                Id = newId,
-                NameLocation = warehouse.NameLocation,
-                ZoneId = warehouse.ZoneId,
-                StatusWareHouse= StatusWareHouse.Empty
-            };
-
-            _context.WarehouseLocations.Add(createwarehouselocation);
-
-            // Tạo inventory tương ứng
-            var inventory = new Inventory
+                _context = context;
+            }
+            public async Task<WarehouseLocationViewModel> CreateAsync(WarehouseLocationViewModel warehouse)
             {
-                Id = Guid.NewGuid(),
-                ProductSKUId = null,
-                StockQuantity = null,
-                QuantityBooked = null,
-                LastUpdated = DateTime.Now,
-                WarehouseLocationId = newId // sửa tại đây
-            };
+                var newId = Guid.NewGuid();
 
-            _context.Inventory.Add(inventory);
-            await _context.SaveChangesAsync();
-
-            return new WarehouseLocationViewModel
-            {
-                Id = newId, // sửa tại đây để phản ánh ID thật sự đã lưu
-                NameLocation = warehouse.NameLocation,
-                ZoneId = warehouse.ZoneId,
-            };
-        }
-
-
-        public async Task<List<WarehouseLocationViewModel>> GetAllAsync()
-        {
-            return await _context.WarehouseLocations
-                 .Select(wh => new WarehouseLocationViewModel
-                 {
-                     Id = wh.Id,
-                     NameLocation = wh.NameLocation,
-                     ZoneId = wh.ZoneId,
-                 })
-                 .ToListAsync(); // cần using Microsoft.EntityFrameworkCore
-        }
-
-        public async Task<WarehouseLocationViewModel> GetByIdAsync(Guid id)
-        {
-            var warehouse = await _context.WarehouseLocations.FindAsync(id);
-            if (warehouse == null) return null;
-
-            return new WarehouseLocationViewModel
-            {
-                Id = warehouse.Id,
-                NameLocation = warehouse.NameLocation,
-                ZoneId = warehouse.ZoneId,
-
-            };
-        }
-
-        public async Task<WarehouseLocationViewModel> UpdateAsync(Guid id, WarehouseLocationViewModel warehouse)
-        {
-            var updatewarehouse = await _context.WarehouseLocations.FindAsync(id);
-            if (warehouse == null)
-                throw new KeyNotFoundException("Warehouse not found");
-
-            warehouse.NameLocation = warehouse.NameLocation;
-            warehouse.ZoneId = warehouse.ZoneId;
-
-            await _context.SaveChangesAsync();
-            return warehouse;
-        }
-
-        public async Task<List<WarehouseLocationViewModel>> GenerateLocationsAsync(
-            Guid zoneId,
-            char startLetter,
-            char endLetter,
-            int startNumber,
-            int endNumber,
-            int startSub,
-            int endSub,
-            int quantity)
-        {
-            if (quantity <= 0)
-                throw new ArgumentException("Số lượng phải lớn hơn 0.");
-
-            if (startLetter > endLetter)
-                throw new ArgumentException("StartLetter phải nhỏ hơn hoặc bằng EndLetter.");
-
-            if (startNumber > endNumber || startSub > endSub)
-                throw new ArgumentException("Khoảng Number hoặc Sub không hợp lệ.");
-
-            var zone = await _context.WarehouseZones
-                .FirstOrDefaultAsync(z => z.Id == zoneId)
-                ?? throw new ArgumentException("ZoneId không tồn tại.");
-
-            string prefix = zone.Name switch
-            {
-                "Inbound" => "VNIS",
-                "Outbound" => "VNOS",
-                _ => "VNVS"
-            };
-
-            var createdLocations = new List<WarehouseLocationViewModel>();
-            int count = 0;
-
-            var existingNames = new HashSet<string>(
-                await _context.WarehouseLocations
-                    .Where(x => x.ZoneId == zoneId)
-                    .Select(x => x.NameLocation)
-                    .ToListAsync());
-
-            for (char letter = startLetter; letter <= endLetter && count < quantity; letter++)
-            {
-                for (int number = startNumber; number <= endNumber && count < quantity; number++)
+                var createwarehouselocation = new WarehouseLocations
                 {
-                    for (int sub = startSub; sub <= endSub && count < quantity; sub++)
-                    {
-                        string formattedNumber = number.ToString("D3");
-                        string name = $"{prefix}-{letter}-{formattedNumber}-{sub}";
+                    Id = newId,
+                    NameLocation = warehouse.NameLocation,
+                    ZoneId = warehouse.ZoneId,
+                    StatusWareHouse= StatusWareHouse.Empty
+                };
 
-                        if (existingNames.Contains(name))
-                            continue;
+                _context.WarehouseLocations.Add(createwarehouselocation);
 
-                        // Tạo entity location
-                        var location = new WarehouseLocations
-                        {
-                            Id = Guid.NewGuid(),
-                            NameLocation = name,
-                            ZoneId = zoneId,
-                            StatusWareHouse = StatusWareHouse.Empty
-                        };
+                // Tạo inventory tương ứng
+                var inventory = new Inventory
+                {
+                    Id = Guid.NewGuid(),
+                    ProductSKUId = null,
+                    StockQuantity = 0,
+                    QuantityBooked = 0,
+                    LastUpdated = DateTime.UtcNow,
+                    WarehouseLocationId = newId // sửa tại đây
+                };
 
-                        _context.WarehouseLocations.Add(location);
+                _context.Inventory.Add(inventory);
+                await _context.SaveChangesAsync();
 
-                        // Tạo inventory tương ứng
-                        var inventory = new Inventory
-                        {
-                            Id = Guid.NewGuid(),
-                            ProductSKUId = null,
-                            StockQuantity = null,
-                            QuantityBooked = null,
-                            LastUpdated = DateTime.UtcNow,
-                            WarehouseLocationId = location.Id
-                        };
-
-                        _context.Inventory.Add(inventory);
-
-                        // ✅ Tạo LowStockAlert mặc định
-                        var lowStockAlert = new LowStockAlerts
-                        {
-                            Id = Guid.NewGuid(),
-                            WarehouseLocationId = location.Id,
-                            CurrentQuantity = 0,
-                            StatusLowStockAlerts = StatusLowStockAlerts.Empty
-                        };
-
-                        _context.LowStockAlerts.Add(lowStockAlert);
-
-                        // Add vào kết quả trả về
-                        createdLocations.Add(new WarehouseLocationViewModel
-                        {
-                            Id = location.Id,
-                            NameLocation = location.NameLocation,
-                            ZoneId = location.ZoneId
-                        });
-
-                        count++;
-                    }
-                }
+                return new WarehouseLocationViewModel
+                {
+                    Id = newId, // sửa tại đây để phản ánh ID thật sự đã lưu
+                    NameLocation = warehouse.NameLocation,
+                    ZoneId = warehouse.ZoneId,
+                };
             }
 
-            await _context.SaveChangesAsync();
-            return createdLocations;
+
+            public async Task<List<WarehouseLocationViewModel>> GetAllAsync()
+            {
+                return await _context.WarehouseLocations
+                     .Select(wh => new WarehouseLocationViewModel
+                     {
+                         Id = wh.Id,
+                         NameLocation = wh.NameLocation,
+                         ZoneId = wh.ZoneId,
+                     })
+                     .ToListAsync(); // cần using Microsoft.EntityFrameworkCore
+            }
+
+            public async Task<WarehouseLocationViewModel> GetByIdAsync(Guid id)
+            {
+                var warehouse = await _context.WarehouseLocations.FindAsync(id);
+                if (warehouse == null) return null;
+
+                return new WarehouseLocationViewModel
+                {
+                    Id = warehouse.Id,
+                    NameLocation = warehouse.NameLocation,
+                    ZoneId = warehouse.ZoneId,
+
+                };
+            }
+
+            public async Task<WarehouseLocationViewModel> UpdateAsync(Guid id, WarehouseLocationViewModel warehouse)
+            {
+                var updatewarehouse = await _context.WarehouseLocations.FindAsync(id);
+                if (warehouse == null)
+                    throw new KeyNotFoundException("Warehouse not found");
+
+                warehouse.NameLocation = warehouse.NameLocation;
+                warehouse.ZoneId = warehouse.ZoneId;
+
+                await _context.SaveChangesAsync();
+                return warehouse;
+            }
+
+            public async Task<List<WarehouseLocationViewModel>> GenerateLocationsAsync(
+                Guid zoneId,
+                char startLetter,
+                char endLetter,
+                int startNumber,
+                int endNumber,
+                int startSub,
+                int endSub,
+                int quantity)
+            {
+                if (quantity <= 0)
+                    throw new ArgumentException("Số lượng phải lớn hơn 0.");
+
+                if (startLetter > endLetter)
+                    throw new ArgumentException("StartLetter phải nhỏ hơn hoặc bằng EndLetter.");
+
+                if (startNumber > endNumber || startSub > endSub)
+                    throw new ArgumentException("Khoảng Number hoặc Sub không hợp lệ.");
+
+                var zone = await _context.WarehouseZones
+                    .FirstOrDefaultAsync(z => z.Id == zoneId)
+                    ?? throw new ArgumentException("ZoneId không tồn tại.");
+
+                string prefix = zone.Name switch
+                {
+                    "Inbound" => "VNIS",
+                    "Outbound" => "VNOS",
+                    _ => "VNVS"
+                };
+
+                var createdLocations = new List<WarehouseLocationViewModel>();
+                int count = 0;
+
+                var existingNames = new HashSet<string>(
+                    await _context.WarehouseLocations
+                        .Where(x => x.ZoneId == zoneId)
+                        .Select(x => x.NameLocation)
+                        .ToListAsync());
+
+                for (char letter = startLetter; letter <= endLetter && count < quantity; letter++)
+                {
+                    for (int number = startNumber; number <= endNumber && count < quantity; number++)
+                    {
+                        for (int sub = startSub; sub <= endSub && count < quantity; sub++)
+                        {
+                            string formattedNumber = number.ToString("D3");
+                            string name = $"{prefix}-{letter}-{formattedNumber}-{sub}";
+
+                            if (existingNames.Contains(name))
+                                continue;
+
+                            // Tạo entity location
+                            var location = new WarehouseLocations
+                            {
+                                Id = Guid.NewGuid(),
+                                NameLocation = name,
+                                ZoneId = zoneId,
+                                StatusWareHouse = StatusWareHouse.Empty
+                            };
+
+                            _context.WarehouseLocations.Add(location);
+
+                            // Tạo inventory tương ứng
+                            var inventory = new Inventory
+                            {
+                                Id = Guid.NewGuid(),
+                                ProductSKUId = null,
+                                StockQuantity = 0,
+                                QuantityBooked = 0,
+                                LastUpdated = DateTime.UtcNow,
+                                WarehouseLocationId = location.Id
+                            };
+
+                            _context.Inventory.Add(inventory);
+
+                            // ✅ Tạo LowStockAlert mặc định
+                            var lowStockAlert = new LowStockAlerts
+                            {
+                                Id = Guid.NewGuid(),
+                                WarehouseLocationId = location.Id,
+                                CurrentQuantity = 0,
+                                StatusLowStockAlerts = StatusLowStockAlerts.Empty
+                            };
+
+                            _context.LowStockAlerts.Add(lowStockAlert);
+
+                            // Add vào kết quả trả về
+                            createdLocations.Add(new WarehouseLocationViewModel
+                            {
+                                Id = location.Id,
+                                NameLocation = location.NameLocation,
+                                ZoneId = location.ZoneId
+                            });
+
+                            count++;
+                        }
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                return createdLocations;
+            }
+
+
+
+            public async Task<WarehouseLocationInfoViewModel?> GetLocationInfoAsync(Guid warehouseLocationId)
+            {
+                return await _context.WarehouseLocations
+                    .Where(w => w.Id == warehouseLocationId)
+                    .Select(w => new WarehouseLocationInfoViewModel
+                    {
+                        WarehouseLocationId = w.Id,
+                        NameLocation = w.NameLocation
+                    })
+                    .FirstOrDefaultAsync();
+            }
+        public async Task<List<WarehouseLocationOptionViewModel>> GetOptionsAsync(Guid zoneId, StatusWareHouse status)
+        {
+            return await _context.WarehouseLocations
+                .Where(w => w.ZoneId == zoneId && w.StatusWareHouse == status)
+                .OrderBy(w => w.NameLocation)
+                .Select(w => new WarehouseLocationOptionViewModel
+                {
+                    Id = w.Id,
+                    NameLocation = w.NameLocation,
+                    ZoneId = w.ZoneId,
+                    StatusWareHouse = w.StatusWareHouse.ToString(),
+                })
+                .ToListAsync();
         }
-
-
-
-
 
     }
 }

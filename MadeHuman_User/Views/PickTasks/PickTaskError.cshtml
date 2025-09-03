@@ -1,0 +1,17 @@
+﻿@{
+    ViewData["Title"] = "Lỗi nhiệm vụ Pick";
+}
+
+<div class="container mt-5">
+    <div class="alert alert-danger">
+        <h4 class="alert-heading">🚫 Ồ! Có lỗi xảy ra</h4>
+        <p>📌 Có vẻ bạn không được phân công công việc trong ngày hôm nay.</p>
+        <p>📞 Vui lòng liên hệ <strong>Staff</strong> hoặc <strong>bộ phận Công nghệ Thông tin</strong> để được hỗ trợ.</p>
+
+        @if (TempData["Error"] != null)
+        {
+            <hr />
+            <p class="mb-0"><strong>Chi tiết kỹ thuật:</strong> @TempData["Error"]</p>
+        }
+    </div>
+</div>

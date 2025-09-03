@@ -46,7 +46,17 @@ namespace MadeHuman_Server.JwtMiddleware
                 }, out SecurityToken validatedToken);
 
                 var jwtToken = (JwtSecurityToken)validatedToken;
-                var userId = jwtToken.Claims.First(x => x.Type == "id").Value;
+                var userId = jwtToken.Claims.FirstOrDefault(x => x.Type == "sub")?.Value;
+
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    context.Items["User"] = userId;
+                }
+                else
+                {
+                    Console.WriteLine("⚠️ Không tìm thấy claim 'id' trong token.");
+                }
+
 
                 // Attach user to context on successful JWT validation
                 context.Items["User"] = userId;

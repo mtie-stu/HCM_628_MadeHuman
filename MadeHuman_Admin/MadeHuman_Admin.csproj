@@ -7,12 +7,24 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
+    <Compile Remove="ServicesTask\IServices\**" />
+    <Compile Remove="ServicesTask\Services\**" />
+    <Content Remove="ServicesTask\IServices\**" />
+    <Content Remove="ServicesTask\Services\**" />
+    <EmbeddedResource Remove="ServicesTask\IServices\**" />
+    <EmbeddedResource Remove="ServicesTask\Services\**" />
+    <None Remove="ServicesTask\IServices\**" />
+    <None Remove="ServicesTask\Services\**" />
+	  
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ServicesTask\IServices\" />
-    <Folder Include="ServicesTask\Services\" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
+	  <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Madehuman_Share\Madehuman_Share.csproj" />
   </ItemGroup>
 
 </Project>

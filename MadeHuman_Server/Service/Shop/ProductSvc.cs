@@ -17,11 +17,12 @@ namespace MadeHuman_Server.Service.Shop
     public class ProductService : IProductService
     {
         private readonly ApplicationDbContext _context;
+         private readonly GoogleDriveOAuthService _googleDriveService;
 
-        public ProductService(ApplicationDbContext context)
+        public ProductService(ApplicationDbContext context, GoogleDriveOAuthService googleDriveService)
         {
             _context = context;
-
+            _googleDriveService = googleDriveService;
 
         }
 
@@ -57,7 +58,6 @@ namespace MadeHuman_Server.Service.Shop
                 Price = createproduct.Price,
                 CategoryId = createproduct.CategoryId,
 
-                // ✅ Chỉ gán 1 object SKU (1-1)
                 ProductSKU = new ProductSKU
                 {
                     Id = Guid.NewGuid(),
@@ -79,22 +79,18 @@ namespace MadeHuman_Server.Service.Shop
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
 
+            // ✅ Xử lý ảnh: upload lên Google Drive
             if (createproduct.ImageFiles != null && createproduct.ImageFiles.Count > 0)
             {
                 foreach (var imageFile in createproduct.ImageFiles)
                 {
-                    string uniqueFileName = Guid.NewGuid().ToString() + "PAID" + imageFile.FileName;
-                    string filePath = Path.Combine("Uploads", uniqueFileName);
-
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    {
-                        imageFile.CopyTo(fileStream);
-                    }
+                    // 👉 Upload ảnh lên Google Drive
+                    string imageUrl = await _googleDriveService.UploadFileAsync(imageFile);
 
                     var imageRecord = new Product_Combo_Img
                     {
                         ProductId = productId,
-                        ImageUrl = filePath
+                        ImageUrl = imageUrl // ✅ Lưu URL ảnh Drive
                     };
 
                     _context.product_Combo_Imgs.Add(imageRecord);

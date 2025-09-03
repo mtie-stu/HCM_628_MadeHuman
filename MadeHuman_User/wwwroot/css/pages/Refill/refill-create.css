@@ -1,0 +1,155 @@
+﻿/* ===== Scope ===== */
+.refill-page {
+    --accent: #ee4d2d;
+    --accent-weak: #ffede8;
+    --gray-900: #1f2937;
+    --gray-700: #374151;
+    --gray-500: #6b7280;
+    --gray-300: #d1d5db;
+    --gray-200: #e5e7eb;
+    --gray-100: #f3f4f6;
+    --radius: 18px;
+    background: #fff;
+}
+
+    /* Header */
+    .refill-page .page-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .refill-page .page-title {
+        font-weight: 700;
+        color: var(--gray-900);
+        letter-spacing: .2px;
+    }
+
+    /* Card */
+    .refill-page .card {
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius);
+    }
+
+    .refill-page .form-label {
+        color: var(--gray-700);
+        font-weight: 600;
+    }
+
+    /* Inputs */
+    .refill-page .form-control {
+        border: 1.5px solid var(--gray-200);
+        border-radius: 12px;
+    }
+
+        .refill-page .form-control:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 .2rem rgba(238,77,45,.12);
+        }
+
+    .refill-page .is-invalid {
+        border-color: #dc3545 !important;
+    }
+
+    /* Buttons */
+    .refill-page .btn-orange {
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        padding: .55rem 1rem;
+    }
+
+        .refill-page .btn-orange:hover {
+            filter: brightness(.95);
+        }
+
+    .refill-page .btn-outline {
+        border: 1px solid var(--gray-300);
+        color: var(--gray-700);
+        background: #fff;
+        border-radius: 12px;
+        padding: .55rem 1rem;
+    }
+
+        .refill-page .btn-outline:hover {
+            background: var(--gray-100);
+        }
+
+    /* Table */
+    .refill-page .table {
+        --bs-table-border-color: var(--gray-200);
+    }
+
+    .refill-page .th-muted {
+        color: var(--gray-700);
+        font-weight: 600;
+    }
+
+    /* Chips */
+    .refill-page .hint-chip {
+        background: var(--accent-weak);
+        color: var(--accent);
+        border: 1px solid var(--accent);
+        border-radius: 999px;
+        padding: .15rem .55rem;
+        font-weight: 600;
+        font-size: .85rem;
+    }
+
+/* Row animations */
+@keyframes rowAdd {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.refill-page tr.row-new {
+    animation: rowAdd .18s ease-out;
+}
+
+.refill-page tr.row-removing {
+    opacity: .2;
+    transform: scale(.98);
+    transition: all .15s ease;
+}
+
+/* Inline alert (toast-style) */
+.refill-page .inline-alert {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1080;
+    min-width: 260px;
+    border-radius: 12px;
+    padding: .75rem 1rem;
+    border: 1px solid transparent;
+    box-shadow: 0 6px 18px rgba(0,0,0,.08);
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity .2s ease, transform .2s ease;
+}
+
+    .refill-page .inline-alert.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .refill-page .inline-alert.success {
+        background: #ecfdf5;
+        border-color: #d1fae5;
+        color: #065f46;
+    }
+
+    .refill-page .inline-alert.error {
+        background: #fef2f2;
+        border-color: #fee2e2;
+        color: #991b1b;
+    }

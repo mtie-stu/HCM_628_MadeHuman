@@ -1,6 +1,7 @@
 ﻿using MadeHuman_Server.Data;
 using MadeHuman_Server.Model.Inbound;
 using Madehuman_Share.ViewModel.Inbound;
+using Madehuman_Share.ViewModel.Inbound.InboundReceipt;
 using Microsoft.EntityFrameworkCore;
 
 namespace MadeHuman_Server.Service.Inbound
@@ -11,6 +12,7 @@ namespace MadeHuman_Server.Service.Inbound
         Task<InboundReceipts?> GetByIdAsync(Guid receiptId);
         Task<List<InboundReceipts>> GetAllAsync();
         Task<bool> CancelInboundReceiptAsync(Guid id);
+        //Task CreateAsync(CreateInboundReceiptViewModel model);
     }
     public class InboundReciptSvc : IInboundReciptService
     {
@@ -23,8 +25,11 @@ namespace MadeHuman_Server.Service.Inbound
 
         public async Task<InboundReceipts> CreateAsync(CreateInboundReceiptViewModel vm)
         {
-            var idreceipt = Guid.NewGuid();
+            // ⚠ Ép kiểu về UTC
+            vm.CreateAt = DateTime.SpecifyKind(vm.CreateAt, DateTimeKind.Utc);
+            vm.ReceivedAt = DateTime.SpecifyKind(vm.ReceivedAt, DateTimeKind.Utc);
 
+            var idreceipt = Guid.NewGuid();
             var receipt = new InboundReceipts
             {
                 Id = idreceipt,
@@ -33,25 +38,14 @@ namespace MadeHuman_Server.Service.Inbound
                 InboundReceiptItems = new List<InboundReceiptItems>()
             };
 
-            // 1. Lấy danh sách SKU trước
-            var skuIds = vm.Items.Select(i => i.ProductSKUId).ToList();
-            var skuMap = await _context.ProductSKUs
-                .Where(sku => skuIds.Contains(sku.Id))
-                .ToDictionaryAsync(sku => sku.Id);
-
-            // 2. Tạo từng receipt item
             foreach (var item in vm.Items)
             {
-                if (!skuMap.TryGetValue(item.ProductSKUId, out var sku))
-                    throw new Exception($"Không tìm thấy ProductSKUId: {item.ProductSKUId}");
-
                 var receiptItem = new InboundReceiptItems
                 {
                     Id = Guid.NewGuid(),
                     InboundReceiptId = idreceipt,
                     Quantity = item.Quantity,
                     ProductSKUId = item.ProductSKUId,
-                    ProductSKUs = sku
                 };
 
                 receipt.InboundReceiptItems.Add(receiptItem);
@@ -64,13 +58,23 @@ namespace MadeHuman_Server.Service.Inbound
 
 
 
+        //public async Task<InboundReceipts?> GetByIdAsync(Guid receiptId)
+        //{
+        //    return await _context.InboundReceipt
+        //        .Include(r => r.InboundTasks)
+        //        .Include(r => r.InboundReceiptItems) // cần sửa model để có navigation property ngược
+        //        .FirstOrDefaultAsync(r => r.Id == receiptId);
+        //}
         public async Task<InboundReceipts?> GetByIdAsync(Guid receiptId)
         {
             return await _context.InboundReceipt
+                .AsNoTracking()
                 .Include(r => r.InboundTasks)
-                .Include(r => r.InboundReceiptItems) // cần sửa model để có navigation property ngược
+                .Include(r => r.InboundReceiptItems)
+                    .ThenInclude(i => i.ProductSKUs) // phải load SKU
                 .FirstOrDefaultAsync(r => r.Id == receiptId);
         }
+
 
         public async Task<List<InboundReceipts>> GetAllAsync()
         {

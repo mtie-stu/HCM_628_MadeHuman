@@ -1,8 +1,14 @@
-﻿@{
+﻿@using System.Security.Claims
+@{
     Layout = null;
 
     string currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
     string currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+    bool isDemoMenuActive = currentController == "Category"
+                         || currentController == "Product"
+                         || currentController == "Combo"
+                         || currentController == "ShopOrder"
+                         || currentController == "InboundReceipt";
 
     string IsActive(string controller, string action) =>
         (currentController == controller && currentAction == action) ? "active" : "";
@@ -10,136 +16,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>@ViewData["Title"] - MadeHuman_User</title>
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" />
-	<link rel="stylesheet" asp-href="~/css/site.css" asp-append-version="true" />
-	<link rel="stylesheet" asp-href="~/MadeHuman_User.styles.css" asp-append-version="true" />
-	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
-	<style>
-       .sidebar {
-          width: 14rem;
-          background: #fff;
-          border-radius: 1rem;
-          padding: 1rem;
-          box-shadow: 0 0 10px rgb(0 0 0 / 0.1);
-          font-family: system-ui, sans-serif;
-        }
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MadeHuman_User</title>
+    <!-- hoặc nếu dùng .ico -->
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico" />
+    <!-- Font & vendor CSS -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
 
-        .sidebar a,
-        .sidebar button {
-          font-size: 1rem;
-          font-weight: 600;
-          color: #4b5563; /* gray-700 */
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          border-radius: 0.375rem;
-          padding: 0.5rem 1rem;
-          width: 100%;
-          text-align: left;
-          background: transparent;
-          border: none;
-          text-decoration: none; /* bỏ gạch chân */
-          transition: background 0.2s, color 0.2s;
-        }
-
-        .sidebar a span,
-        .sidebar button span {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem; /* khoảng cách icon-chữ */
-        }
-
-        .sidebar a i,
-        .sidebar button i {
-          font-size: 1.2rem; /* icon to hơn chút */
-        }
-
-        .sidebar a:hover,
-        .sidebar button:hover {
-          background-color: #fde68a; /* amber-200 */
-          color: #b45309; /* amber-600 */
-          text-decoration: none;
-        }
-
-        .sidebar a.active {
-          background-color: #fde68a; /* amber-200 */
-          color: #b45309; /* amber-600 */
-          font-weight: 700;
-          text-decoration: none;
-        }
-
-        .sidebar button .chevron {
-          font-size: 0.75rem;
-          transition: transform 0.3s ease;
-        }
-
-        .sidebar button[aria-expanded="true"] .chevron {
-          transform: rotate(180deg);
-        }
-
-        .sidebar .collapse a {
-          font-weight: 500;
-          font-size: 0.95rem;
-          padding-left: 2.5rem; /* thụt lề link con */
-          color: #4b5563; /* xám mặc định */
-        }
-
-        .sidebar .collapse a:hover {
-          background-color: #fde68a;
-          color: #b45309;
-          text-decoration: none;
-        }
-
-    </style>
+    <!-- App CSS -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/MadeHuman_User.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/app-shell.css" asp-append-version="true" />
 </head>
-<body class="bg-light min-vh-100 d-flex flex-column font-sans text-dark">
+<body class="min-vh-100 d-flex flex-column text-dark">
 
-	<!-- Top bar -->
-
-    <header class="d-flex align-items-center justify-content-between bg-white px-4 py-3 shadow-sm">
+    <!-- Top bar -->
+    <header class="d-flex align-items-center justify-content-between px-4 py-3 shadow-sm">
         <div class="d-flex align-items-center gap-3">
             <img src="https://storage.googleapis.com/a1aa/image/77806709-391a-489f-73cd-6465f3e28dfb.jpg"
                  alt="Profile picture"
                  class="rounded-circle shadow"
-                 style="width: 56px; height: 56px; object-fit: cover;" />
+                 style="width:56px;height:56px;object-fit:cover;" />
 
-            <!-- Dropdown -->
-            <div class="dropdown">
-                <a class="dropdown-toggle text-dark text-decoration-none fs-5 fw-bold d-inline-flex align-items-center"
-                   href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    Nguyễn Văn A
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2">
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2"
-                           asp-controller="Category" asp-action="Index">
-                            <i class="fas fa-list"></i> Category
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2"
-                           asp-controller="Product" asp-action="Index">
-                            <i class="fas fa-box-open"></i> Product
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2"
-                           asp-controller="Combo" asp-action="Index">
-                            <i class="fas fa-cubes"></i> Combo
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center gap-2"
-                           asp-controller="ShopOrder" asp-action="Index">
-                            <i class="fas fa-shopping-cart"></i> ShopOrder
-                        </a>
-                    </li>
-                </ul>
-
-            </div>
+            <span class="text-dark text-decoration-none fs-5 fw-bold d-inline-flex align-items-center">
+                <i class="fas fa-user text-accent me-2"></i>
+                @Context.Request.Cookies["EmailOrId"] (@Context.Request.Cookies["UserRole"])
+            </span>
         </div>
 
         <div>
@@ -149,15 +56,12 @@
         </div>
     </header>
 
-
-
-	<!-- Layout -->
-	<main class="d-flex flex-grow-1 px-4 py-3 gap-4">
-		<!-- Sidebar -->
-		<aside class="sidebar">
+    <!-- Layout -->
+    <main class="d-flex flex-grow-1 px-4 py-3 gap-4">
+        <!-- Sidebar -->
+        <aside class="sidebar">
             <!-- Dashboard -->
-            <a asp-controller="Home" asp-action="Index"
-               class="@IsActive("Home","Index")">
+            <a asp-controller="Home" asp-action="Index" class="@IsActive("Home","Index")">
                 <span><i class="fas fa-th-large"></i> Dashboard</span>
             </a>
 
@@ -168,13 +72,17 @@
                 <i class="fas fa-chevron-down chevron"></i>
             </button>
             <div id="collapseInbound" class="collapse">
-                <a asp-controller="Inbound" asp-action="Import"
-                   class="@IsActive("Inbound","Import")">
+                <a asp-controller="Inbound" asp-action="Import" class="@IsActive("Inbound","Import")">
                     <span><i class="fas fa-file-import"></i> Import</span>
                 </a>
-                <a asp-controller="Inbound" asp-action="Export"
-                   class="@IsActive("Inbound","Export")">
+                <a asp-controller="Inbound" asp-action="Index" class="@IsActive("Inbound","Index")">
+                    <span><i class="fas fa-file-import"></i> Import List</span>
+                </a>
+                <a asp-controller="Inbound" asp-action="Export" class="@IsActive("Inbound","Export")">
                     <span><i class="fas fa-file-export"></i> Export</span>
+                </a>
+                <a asp-controller="RefillTask" asp-action="Index" class="@IsActive("RefillTask","Index")">
+                    <span><i class="fas fa-file-export"></i> Refill</span>
                 </a>
             </div>
 
@@ -185,68 +93,85 @@
                 <i class="fas fa-chevron-down chevron"></i>
             </button>
             <div id="collapseOutbound" class="collapse">
-                <a asp-controller="Outbound" asp-action="Picker"
-                   class="@IsActive("Outbound","Picker")">
+                <a asp-controller="PickTasks" asp-action="Index" class="@IsActive("PickTasks","Index")">
                     <span><i class="fas fa-truck-loading"></i> Picker</span>
                 </a>
-                <a asp-controller="Outbound" asp-action="CheckerTaskMix"
-                   class="@IsActive("Outbound","CheckerTaskMix")">
+                <a asp-controller="CheckTask" asp-action="MixSKU" class="@IsActive("CheckTask","MixSKU")">
                     <span><i class="fas fa-tasks"></i> Checker Task Mix</span>
                 </a>
-                <a asp-controller="Outbound" asp-action="CheckerTaskSingle"
-                   class="@IsActive("Outbound","CheckerTaskSingle")">
+                <a asp-controller="CheckTask" asp-action="SingleSKU" class="@IsActive("CheckTask","SingleSKU")">
                     <span><i class="fas fa-tasks"></i> Checker Task Single</span>
                 </a>
-                <a asp-controller="Outbound" asp-action="Packer"
-                   class="@IsActive("Outbound","Packer")">
+                <a asp-controller="PackTask" asp-action="Index" class="@IsActive("PackTask","Index")">
                     <span><i class="fas fa-box"></i> Packer</span>
                 </a>
-                <a asp-controller="Outbound" asp-action="Dispatch"
-                   class="@IsActive("Outbound","Dispatch")">
+                <a asp-controller="DispatchTask" asp-action="Index" class="@IsActive("DispatchTask","Index")">
                     <span><i class="fas fa-shipping-fast"></i> Dispatch</span>
                 </a>
             </div>
 
-            
-            <a asp-controller="Staff" asp-action="CheckInOut"
-               class="@IsActive("Staff","CheckInOut")">
+            <!-- Check In/Out -->
+            <a asp-controller="User" asp-action="CheckInOut" class="@IsActive("User","CheckInOut")">
                 <span><i class="fas fa-hourglass-half"></i> Check In/Out</span>
             </a>
 
-            <a asp-controller="Report" asp-action="Index"
-               class="@IsActive("Report","Index")">
-                <span><i class="fas fa-briefcase"></i> Reports</span>
-            </a>
+            <!-- Demo collapsible menu -->
+            <button type="button" class="mb-1 @(isDemoMenuActive ? "active" : "")"
+                    data-bs-toggle="collapse" data-bs-target="#demoSubmenu"
+                    aria-expanded="@isDemoMenuActive.ToString().ToLower()" aria-controls="demoSubmenu">
+                <span><i class="fas fa-briefcase"></i> Giả lập dữ liệu</span>
+                <i class="fas fa-chevron-down chevron"></i>
+            </button>
 
-            <a asp-controller="Support" asp-action="Help"
-               class="@IsActive("Support","Help")">
-                <span><i class="fas fa-question-circle"></i> Help</span>
-            </a>
+            <div class="collapse @(isDemoMenuActive ? "show" : "")" id="demoSubmenu">
+                <a asp-controller="Category" asp-action="Index" class="@IsActive("Category","Index")">
+                    <span><i class="fas fa-list me-2"></i> Category</span>
+                </a>
+                <a asp-controller="Product" asp-action="Index" class="@IsActive("Product","Index")">
+                    <span><i class="fas fa-box-open me-2"></i> Product</span>
+                </a>
+                <a asp-controller="Combo" asp-action="Index" class="@IsActive("Combo","Index")">
+                    <span><i class="fas fa-cubes me-2"></i> Combo</span>
+                </a>
+                <a asp-controller="ShopOrder" asp-action="Index" class="@IsActive("ShopOrder","Index")">
+                    <span><i class="fas fa-shopping-cart me-2"></i> ShopOrder</span>
+                </a>
+                <a asp-controller="InboundReceipt" asp-action="Index" class="@IsActive("InboundReceipt","Index")">
+                    <span><i class="fas fa-receipt me-2"></i> Inbound Receipt</span>
+                </a>
 
-			<div class="bg-white rounded text-center py-3 mt-4 border-top">
-				<p class="small fw-bold text-dark mb-0">MADEHUMAN</p>
-				<p class="text-muted small mt-1">Version: 1.0.0</p>
-			</div>
-		</aside>
+                <!-- NEW: Warehouse Locations (All) -->
+                <a asp-controller="Warehouse" asp-action="All" class="@IsActive("Warehouse","All")">
+                    <span><i class="fas fa-warehouse me-2"></i> Warehouse Locations (All)</span>
+                </a>
+            </div>
 
-		<!-- Main content -->
+
+            <div class="bg-white rounded text-center py-3 mt-4 border-top">
+                <p class="small fw-bold text-dark mb-0">MADEHUMAN</p>
+                <p class="text-muted small mt-1">Version: 1.0.0</p>
+            </div>
+        </aside>
+
+        <!-- Main content -->
         <section class="flex-grow-1 bg-white rounded p-5 shadow overflow-auto">
             <h1 class="fs-2 fw-bold mb-4">@ViewData["Title"]</h1>
             @RenderBody()
         </section>
-	</main>
+    </main>
 
-	<footer class="border-top text-center text-muted py-3">
-		<div class="container">
-			&copy; 2025 - MadeHuman_User - <a asp-controller="Home" asp-action="Privacy">Privacy</a>
-		</div>
-	</footer>
+    <footer class="border-top text-center text-muted py-3">
+        <div class="container">
+            &copy; 2025 - MadeHuman_User - <a asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
 
-	<script asp-src="~/lib/jquery/dist/jquery.min.js" asp-append-version="true"></script>
-	<script asp-src="~/js/site.js" asp-append-version="true"></script>
-	 @await RenderSectionAsync("Scripts", required: false)
-
+    <!-- Vendor JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
+    <!-- App JS (sau Bootstrap) -->
+    <script src="~/js/app-shell.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

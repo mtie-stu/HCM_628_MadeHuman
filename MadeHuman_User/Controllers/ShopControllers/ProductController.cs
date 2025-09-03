@@ -18,11 +18,48 @@ namespace MadeHuman_User.Controllers.ShopControllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 8, string? q = "")
         {
-            var products = await _productService.GetAllAsync();
-            return View(products);
+            if (page < 1) page = 1;
+            pageSize = (pageSize is < 1 or > 100) ? 8 : pageSize;
+
+            // Lấy toàn bộ (fallback về list rỗng)
+            var all = await _productService.GetAllAsync() ?? new List<ProductListItemViewModel>();
+
+            // ----- Filter theo từ khoá -----
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                var ql = q.Trim().ToLowerInvariant();
+                all = all.Where(p =>
+                    (!string.IsNullOrEmpty(p.Name) && p.Name.ToLower().Contains(ql)) ||
+                    (!string.IsNullOrEmpty(p.SKU) && p.SKU.ToLower().Contains(ql)) ||
+                    (!string.IsNullOrEmpty(p.CategoryName) && p.CategoryName.ToLower().Contains(ql))
+                ).ToList();
+            }
+
+            // ----- Phân trang -----
+            var totalItems = all.Count;
+            var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
+            if (page > totalPages) page = totalPages;
+
+            var data = all
+                .OrderBy(p => p.Name)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // Thông tin phục vụ View
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.PageSize = pageSize;
+            ViewBag.Q = q ?? "";
+            ViewBag.TotalItems = totalItems;
+            ViewBag.FromItem = totalItems == 0 ? 0 : (page - 1) * pageSize + 1;
+            ViewBag.ToItem = Math.Min(page * pageSize, totalItems);
+
+            return View(data);
         }
+
 
 
         public async Task<IActionResult> Details(Guid id)
@@ -35,21 +72,51 @@ namespace MadeHuman_User.Controllers.ShopControllers
         }
 
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            return View();
+            var categories = await _categoryService.GetAllAsync(); // trả về List<CreateCategoryViewModel>
+            ViewBag.Categories = categories
+                .Select(c => new SelectListItem
+                {
+                    Value = c.CategoryId.ToString(),
+                    Text = c.Name
+                })
+                .ToList();
+
+            return View(new CreateProduct_ProdcutSKU_ViewModel());
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateProduct_ProdcutSKU_ViewModel model)
         {
             if (!ModelState.IsValid)
+            {
+                var categories = await _categoryService.GetAllAsync();
+                ViewBag.Categories = categories
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.CategoryId.ToString(),
+                        Text = c.Name
+                    })
+                    .ToList();
+
                 return View(model);
+            }
 
             var success = await _productService.CreateAsync(model);
             if (!success)
             {
                 ModelState.AddModelError(string.Empty, "Tạo sản phẩm thất bại.");
+
+                var categories = await _categoryService.GetAllAsync();
+                ViewBag.Categories = categories
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.CategoryId.ToString(),
+                        Text = c.Name
+                    })
+                    .ToList();
+
                 return View(model);
             }
 
@@ -70,7 +137,7 @@ namespace MadeHuman_User.Controllers.ShopControllers
                 Description = detail.Description,
                 Price = detail.Price,
                 SKU = detail.SKU,
-                QuantityInStock = detail.QuantityInStock,
+                //QuantityInStock = detail.QuantityInStock,
                 CategoryId = detail.CategoryId ?? Guid.Empty,
                 CategoryName = detail.CategoryName
             };

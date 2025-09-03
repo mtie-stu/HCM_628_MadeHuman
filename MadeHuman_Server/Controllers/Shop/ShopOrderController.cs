@@ -1,6 +1,7 @@
 ﻿using MadeHuman_Server.Model.Shop;
 using MadeHuman_Server.Service.Shop;
 using Madehuman_Share.ViewModel.Shop;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -98,15 +99,30 @@ namespace MadeHuman_Server.Controllers.Shop
             });
         }
 
-      /*  [HttpPost("generate-single-combo")]
-        public async Task<IActionResult> GenerateRandomSingleCombo([FromBody] GenerateRandomOrdersSingleRequest model)
+        /// <summary>
+        /// Tạo nhiều đơn hàng với nhiều SKU ngẫu nhiên mỗi đơn
+        /// </summary>
+        [HttpPost("generate-multi-sku")]
+        [AllowAnonymous] // Hoặc [Authorize] nếu cần đăng nhập
+        public async Task<IActionResult> GenerateOrdersWithMultiSKU([FromBody] GenerateRandomMultiSKUOrdersRequest request)
         {
-            var result = await _orderService.CreateRandomOrdersWithSingleComboAsync(model);
-            return Ok(new
+            try
             {
-                message = $"Tạo {result.Count} đơn hàng thành công.",
-                orders = result
-            });
-        }*/
+                var result = await _orderService.CreateRandomOrdersWithMultiSKUAsync(request);
+                return Ok(result);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"❌ Đã xảy ra lỗi: {ex.Message}");
+            }
+        }
     }
 }

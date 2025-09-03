@@ -1,0 +1,65 @@
+﻿@page {
+    size: 80mm 80mm;
+    margin: 0;
+}
+
+/* Mỗi tem 80×80 */
+.page {
+    width: 80mm;
+    height: 80mm;
+    box-sizing: border-box;
+    page-break-after: always;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 0.2mm;
+    font-family: Arial, sans-serif;
+}
+
+.qr {
+    width: 58mm;
+    height: 58mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .qr img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+.brand {
+    position: absolute;
+    right: 1.2mm;
+    bottom: 1.2mm;
+    font-size: 9pt;
+}
+
+/* Chỉ in vùng tem, ẩn toàn bộ UI khác */
+@media print {
+    html, body {
+        margin: 0;
+        padding: 0;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+        body > * {
+            display: none !important;
+        }
+
+    #print-root-80, #print-root-80 * {
+        display: revert !important;
+        visibility: visible !important;
+    }
+
+    #print-root-80 {
+        position: static !important;
+        width: auto !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+}

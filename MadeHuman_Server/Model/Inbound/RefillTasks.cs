@@ -2,6 +2,7 @@
 using MadeHuman_Server.Model.User_Task;
 using MadeHuman_Server.Model.WareHouse;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace MadeHuman_Server.Model.Inbound
 {
@@ -20,8 +21,10 @@ namespace MadeHuman_Server.Model.Inbound
         public StatusRefillTasks StatusRefillTasks { get; set; }    
         public string CreateBy { get; set; }    //UserId
 
-        [ForeignKey("UserId")]
+        [ForeignKey("UserTaskId")]
         public UsersTasks UsersTasks { get; set; }
+     
+        [JsonIgnore]
         public ICollection<RefillTaskDetails> RefillTaskDetails { get; set; } // 1-n
         [ForeignKey("LowStockId")]
         public LowStockAlerts LowStockAlerts { get; set; }

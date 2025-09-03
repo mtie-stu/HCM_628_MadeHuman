@@ -1,34 +1,67 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
 
+	<!-- Packages -->
+	<ItemGroup>
+		<PackageReference Include="Google.Apis.Drive.v3" Version="1.70.0.3834" />
+		<PackageReference Include="Google.Apis.Sheets.v4" Version="1.70.0.3819" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.16" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.16" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.16" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.16" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.16">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+	</ItemGroup>
+
+	<!-- Project refs (Admin có thể không tồn tại trong build env) -->
+	<ItemGroup>
+		<ProjectReference Include="..\Madehuman_Share\Madehuman_Share.csproj" />
+		<ProjectReference Include="..\MadeHuman_Admin\MadeHuman_Admin.csproj" Condition="Exists('..\MadeHuman_Admin\MadeHuman_Admin.csproj')" />
+	</ItemGroup>
+
+	<!-- Thư mục tĩnh -->
+	<ItemGroup>
+		<Folder Include="Uploads\" />
+	</ItemGroup>
+
+	<!-- Đảm bảo Bill templates được copy ra cả output & publish -->
+	<ItemGroup>
+		<Content Update="Data/Bill/**">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+	</ItemGroup>
+
+	<!-- Tuỳ chọn: chỉ copy credentials ở Debug để tránh đóng gói secrets vào image Prod -->
+	<ItemGroup>
+		<Content Update="Data/credentials_oauth.json" Condition="'$(Configuration)' == 'Debug'">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+	</ItemGroup>
+
+	<!-- Tuỳ chọn (đừng bật cùng lúc với Content ở trên cho cùng 1 file):
+       Nếu muốn fallback EmbeddedResource trong Service, bỏ comment block dưới
+       và đọc từ resource khi thiếu file ngoài. -->
+	<!--
   <ItemGroup>
-    <PackageReference Include="Google.Apis.Sheets.v4" Version="1.70.0.3819" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.16" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.16" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.16" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.16" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.16">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <EmbeddedResource Include="Data/Bill/shoporder-bill.html" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\MadeHuman_Admin\MadeHuman_Admin.csproj" />
-    <ProjectReference Include="..\Madehuman_Share\Madehuman_Share.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Model\Outbound\" />
-    <Folder Include="Uploads\" />
-  </ItemGroup>
-
+  -->
+	
+	
+	
+	
+	
+	
 </Project>

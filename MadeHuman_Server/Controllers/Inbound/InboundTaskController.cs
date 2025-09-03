@@ -18,13 +18,13 @@ namespace MadeHuman_Server.Controllers.Inbound
         {
             _inboundTaskSvc = inboundTaskService;
         }
-        [HttpPost("create")]            
+        [HttpPost("create")]
         public async Task<IActionResult> CreateAsync([FromBody] CreateInboundTaskViewModel vm)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = HttpContext.Items["User"]?.ToString(); // 👈 lấy từ middleware
 
             if (string.IsNullOrEmpty(userId))
-                return Unauthorized("UserId không tồn tại trong token.");
+                return Unauthorized("Không tìm thấy UserId từ JWT.");
 
             var result = await _inboundTaskSvc.CreateInboundTaskAsync(vm, userId);
             return Ok(new
@@ -34,6 +34,7 @@ namespace MadeHuman_Server.Controllers.Inbound
                 data = result
             });
         }
+
 
         [HttpGet("{inboundTaskId}")]
         public async Task<IActionResult> GetById(Guid inboundTaskId)
@@ -55,6 +56,22 @@ namespace MadeHuman_Server.Controllers.Inbound
 
             // Nếu có nhiều lỗi → trả 400 BadRequest
             return BadRequest(new { success = false, errors = result });
+        }
+        [HttpGet]
+        public async Task<ActionResult<List<InboundTaskViewModel>>> GetAll()
+        {
+            var result = await _inboundTaskSvc.GetAllAsync();
+            return Ok(result);
+        }
+        // GET /api/InboundTask/id-by-receipt/{receiptId}
+        [HttpGet("id-by-receipt/{receiptId:guid}")]
+        public async Task<IActionResult> GetTaskIdByReceipt(Guid receiptId)
+        {
+            var id = await _inboundTaskSvc.GetTaskIdByReceiptAsync(receiptId);
+            if (id is null) return NotFound("Task not found for this receipt.");
+
+            // 👉 Trả đúng 1 dòng Guid
+            return Content(id.Value.ToString(), "text/plain");
         }
     }
 }

@@ -1,0 +1,156 @@
+﻿using MadeHuman_Admin.ServicesTask.Services.InboundService;
+using MadeHuman_Admin.Models;
+using Microsoft.AspNetCore.Mvc;
+using Madehuman_Share.ViewModel.Inbound;
+using MadeHuman_Admin.Models.Inbound;
+
+
+namespace MadeHuman_User.Controllers.InboundControlles
+{
+    public class InboundController : Controller
+    {
+        private readonly IInboundTaskService _inboundTaskService;
+
+        public InboundController(IInboundTaskService inboundTaskService)
+        {
+            _inboundTaskService = inboundTaskService;
+        }
+        [HttpGet]
+        public IActionResult Import()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Import(Guid receiptId)
+        {
+            var success = await _inboundTaskService.CreateAsync(receiptId, HttpContext);
+
+            if (!success)
+            {
+                ViewBag.Error = "❌ Tạo nhiệm vụ thất bại.";
+                return View(); // Không redirect
+            }
+
+            ViewBag.Success = "✅ Tạo nhiệm vụ nhập kho thành công.";
+            ViewBag.ReceiptId = receiptId; // Gửi ID nếu muốn sử dụng sau này
+            return View(); // Giữ nguyên tại trang
+        }
+
+        [HttpGet]
+        public IActionResult ValidateScan()
+        {
+            return View(new ScanInboundTaskValidationRequest());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ValidateScan(ScanInboundTaskValidationRequest request)
+        {
+            var (success, message, errors) = await _inboundTaskService.ValidateScanAsync(request, HttpContext);
+
+            if (success)
+                ViewBag.Success = message;
+            else
+                ViewBag.Errors = errors;
+
+            return View(request);
+        }
+
+
+
+
+        private static readonly List<(string ExportCode, ProductExportViewModel Product)> exportData = new()
+        {
+            ("EXP001", new ProductExportViewModel
+            {
+                ProductItemId = "PI-001",
+                ProductName = "Sản phẩm A",
+                ImageUrl = "https://storage.googleapis.com/a1aa/image/5d961ab1-365e-4f05-5bc4-3d928fc083a3.jpg",
+                LocationStorage = "Kho A1",
+                Quantity = 5
+            }),
+            ("EXP002", new ProductExportViewModel
+            {
+                ProductItemId = "PI-002",
+                ProductName = "Sản phẩm B",
+                ImageUrl = "https://storage.googleapis.com/a1aa/image/5d961ab1-365e-4f05-5bc4-3d928fc083a3.jpg",
+                LocationStorage = "Kho B2",
+                Quantity = 8
+            })
+        };
+        private static readonly List<ProductImportViewModel> taskProducts = new()
+        {
+            new ProductImportViewModel
+            {
+                TaskCode = "TASK001",
+                ProductItemId = "SP001",
+                ProductName = "Sản phẩm A",
+                Quantity = 100,
+                LocationStorage = "Kệ A1",
+                ImageUrl = "https://via.placeholder.com/300x180.png?text=SanPham+A"
+            },
+            new ProductImportViewModel
+            {
+                TaskCode = "TASK001",
+                ProductItemId = "SP002",
+                ProductName = "Sản phẩm B",
+                Quantity = 50,
+                LocationStorage = "Kệ A2",
+                ImageUrl = "https://via.placeholder.com/300x180.png?text=SanPham+B"
+            }
+        };
+
+        // Trang nhập mã để quét task export
+        [HttpGet]
+        public IActionResult Export()
+        {
+            return View(new ExportTaskViewModel());
+        }
+
+        [HttpPost]
+        public IActionResult Export(ExportTaskViewModel model)
+        {
+            // Lấy danh sách sản phẩm thuộc task export (theo mã export)
+            var taskProducts = exportData
+                .Where(p => p.ExportCode == model.ExportCode)
+                .ToList(); // Không cần Select vì đã là ProductExportViewModel
+
+            if (!taskProducts.Any())
+            {
+                ModelState.AddModelError("", "Không tìm thấy mã Export.");
+                return View(model);
+            }
+
+            // Gán danh sách sản phẩm vào model để hiển thị lại
+            model.Products = taskProducts.Select(p => p.Product).ToList();
+
+
+            // Tìm sản phẩm phù hợp theo mã sản phẩm và vị trí quét
+            var matchedProduct = taskProducts
+             .Select(p => p.Product)
+             .FirstOrDefault(p =>
+                 p.ProductItemId == model.ScannedProductCode &&
+                 p.LocationStorage == model.ScannedLocationCode);
+
+
+            if (matchedProduct == null)
+            {
+                ModelState.AddModelError("", "Mã vị trí hoặc mã sản phẩm không khớp với nhiệm vụ xuất kho.");
+                return View(model);
+            }
+
+            // Kiểm tra số lượng
+            if (model.ScannedQuantity <= 0 || model.ScannedQuantity > matchedProduct.Quantity)
+            {
+                ModelState.AddModelError("", $"Số lượng không hợp lệ. Số lượng cần xuất còn lại: {matchedProduct.Quantity}");
+                return View(model);
+            }
+
+            // Trừ số lượng giả lập (vì đang dùng dữ liệu tĩnh)
+            matchedProduct.Quantity -= model.ScannedQuantity;
+
+            ViewBag.Success = "Xuất kho thành công!";
+            return View(model);
+        }
+    }
+}

@@ -11,11 +11,28 @@ namespace MadeHuman_User.Controllers.ShopControllers
         {
             _categoryService = categoryService ?? throw new ArgumentNullException(nameof(categoryService));
         }
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 4)
         {
-            var list = await _categoryService.GetAllAsync();
-            return View(list);
+            if (page < 1) page = 1;
+
+            var all = await _categoryService.GetAllAsync() ?? new List<CreateCategoryViewModel>();
+
+            var totalItems = all.Count;
+            var totalPages = Math.Max(1, (int)Math.Ceiling(totalItems / (double)pageSize));
+            if (page > totalPages) page = totalPages;
+
+            var data = all
+                .OrderBy(x => x.Name)                 // tuỳ bạn muốn order theo gì
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+
+            return View(data);
         }
+
 
         [HttpGet]
         public IActionResult Create() => View();

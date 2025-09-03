@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Madehuman_Share.ViewModel.PartTime_Task
@@ -21,7 +23,6 @@ namespace Madehuman_Share.ViewModel.PartTime_Task
         public DateTime? CheckInTime { get; set; }
         public DateTime? CheckOutTime { get; set; }
         public DateTime WorkDate { get; set; }
-
         public TimeSpan? BreakDuration { get; set; }
         public TimeSpan? OvertimeDuration { get; set; }
         public bool IsCompleted { get; set; } = false;

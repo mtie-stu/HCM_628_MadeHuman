@@ -1,0 +1,39 @@
+﻿@using Madehuman_Share.ViewModel.Shop
+@using System.Globalization
+@model ShopOrderDetailViewModel
+
+@{
+    CultureInfo culture = new CultureInfo("vi-VN"); // Định dạng kiểu tiền VNĐ
+}
+
+<h2 class="mb-4">Chi tiết đơn hàng</h2>
+
+<div class="card p-3 mb-4 border">
+    <div><strong>Mã đơn hàng:</strong> @Model.ShopOrderId</div>
+    <div><strong>Email khách hàng:</strong> @Model.AppUserEmail</div>
+    <div><strong>Ngày đặt hàng:</strong> @Model.OrderDate.ToString("dd/MM/yyyy")</div>
+    <div><strong>Trạng thái:</strong> <span class="badge bg-primary">@Model.Status</span></div>
+    <div><strong>Tổng tiền:</strong> <span class="text-danger fw-bold">@Model.TotalAmount.ToString("C0", culture)</span></div>
+</div>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>SKU</th>
+            <th class="text-center">Số lượng</th>
+            <th class="text-end">Đơn giá</th>
+            <th class="text-end">Thành tiền</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Items)
+        {
+            <tr>
+                <td>@item.ProductSKUCode</td>
+                <td class="text-center">@item.Quantity</td>
+                <td class="text-end">@item.UnitPrice.ToString("C0", culture)</td>
+                <td class="text-end">@((item.Quantity * item.UnitPrice).ToString("C0", culture))</td>
+            </tr>
+        }
+    </tbody>
+</table>

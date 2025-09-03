@@ -1,0 +1,349 @@
+﻿@using Madehuman_Share.ViewModel.Inbound
+@model InboundValidatePageViewModel
+@{
+    // ViewData["Title"] = "Xác nhận nhập kho";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+<link rel="stylesheet" href="~/css/pages/Inbound/inbound-validate.css" asp-append-version="true" />
+
+<div class="inbound-validate-page container py-4">
+
+    <!-- Header -->
+    <div class="page-head d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h2 class="page-title">
+                <i class="bi bi-inboxes me-2"></i> Xác nhận nhập kho
+            </h2>
+            <div class="page-subtext text-muted">
+                Quét / nhập thông tin lô – vị trí – SKU – số lượng để lưu kho.
+            </div>
+        </div>
+        <div class="step-chips d-none d-md-flex">
+            <span class="chip active"><i class="bi bi-123 me-1"></i> Lô</span>
+            <span class="chip"><i class="bi bi-geo-alt me-1"></i> Vị trí</span>
+            <span class="chip"><i class="bi bi-upc-scan me-1"></i> SKU</span>
+            <span class="chip"><i class="bi bi-clipboard-check me-1"></i> Số lượng</span>
+        </div>
+    </div>
+
+    <!-- Content -->
+<div class="row g-4 align-items-start">
+    <!-- Form card: THU NHỎ -->
+    <div class="col-lg-5 order-2 order-lg-1">
+        <form asp-action="ValidateScan" method="post" class="card form-card shadow-sm form-card--narrow">
+                @Html.AntiForgeryToken()
+            <div class="card-body p-4">
+                <!-- InboundTaskId (readonly) -->
+                <div class="mb-3">
+                    <label class="form-label">Mã nhiệm vụ nhập kho (InboundTaskId)</label>
+                    <div class="input-wrap">
+                        <i class="bi bi-qr-code-scan"></i>
+                        <input asp-for="ScanRequest.InboundTaskId" class="form-control" readonly />
+                    </div>
+                    <!-- Chip rút gọn + copy -->
+                    <div class="small text-muted mt-1">
+                        Mã: <span class="id-chip" title="Bấm để copy">@Model?.ScanRequest?.InboundTaskId</span>
+                    </div>
+                    <span class="text-danger small" asp-validation-for="ScanRequest.InboundTaskId"></span>
+                </div>
+
+                <!-- ProductBatchId -->
+                <div class="mb-3">
+                    <label class="form-label">Mã lô sản phẩm (ProductBatchId) <span class="req">*</span></label>
+                    <div class="input-wrap">
+                        <i class="bi bi-box-seam"></i>
+                        <input asp-for="ScanRequest.ProductBatchId" class="form-control" required placeholder="Quét/nhập GUID lô..." />
+                    </div>
+                    <span class="text-danger small" asp-validation-for="ScanRequest.ProductBatchId"></span>
+                </div>
+
+                <!-- NameLocation -->
+                <div class="mb-3">
+                    <label class="form-label">Tên vị trí kho (NameLocation)</label>
+                    <div class="input-wrap">
+                        <i class="bi bi-pin-map"></i>
+                        <input asp-for="ScanRequest.NameLocation" class="form-control" placeholder="VD: A1-01-03" />
+                    </div>
+                    <span class="text-danger small" asp-validation-for="ScanRequest.NameLocation"></span>
+                </div>
+
+                <!-- SKU -->
+                <div class="mb-3">
+                    <label class="form-label">SKU</label>
+                    <div class="input-wrap">
+                        <i class="bi bi-upc"></i>
+                        <input asp-for="ScanRequest.SKU" class="form-control" placeholder="Quét/nhập SKU..." />
+                    </div>
+                    <span class="text-danger small" asp-validation-for="ScanRequest.SKU"></span>
+                </div>
+
+                <!-- Quantity -->
+                <div class="mb-4">
+                    <label class="form-label">Số lượng</label>
+                    <div class="input-wrap">
+                        <i class="bi bi-123"></i>
+                        <input asp-for="ScanRequest.Quantity" class="form-control" inputmode="numeric" placeholder="Nhập số lượng..." />
+                    </div>
+                    <span class="text-danger small" asp-validation-for="ScanRequest.Quantity"></span>
+                </div>
+
+                <!-- Submit -->
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-orange btn-lg">
+                        <span class="btn-ripple"></span>
+                        <i class="bi bi-check2-circle me-2"></i> Xác nhận lưu kho
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Tips + Alerts dưới form trên màn hình lớn -->
+        <div class="info-card card shadow-sm mt-3 d-none d-lg-block">
+            <div class="card-body p-4">
+                <h5 class="card-title mb-3"><i class="bi bi-lightbulb me-2 text-orange"></i>Mẹo thao tác nhanh</h5>
+                <ul class="tips list-unstyled mb-0">
+                    <li><i class="bi bi-dot"></i> Ưu tiên <b>quét mã</b> để tránh sai sót.</li>
+                    <li><i class="bi bi-dot"></i> Trường bắt buộc được đánh dấu <span class="req">*</span>.</li>
+                    <li><i class="bi bi-dot"></i> Nhấn <kbd>Enter</kbd> để gửi nhanh khi đang ở ô Số lượng.</li>
+                </ul>
+            </div>
+        </div>
+
+            @if (ViewBag.Success != null)
+            {
+                <div class="alert alert-success mt-3 shadow-sm fade-in d-none d-lg-block">
+                    <i class="bi bi-check-circle me-1"></i> @ViewBag.Success
+                </div>
+            }
+            @if (ViewBag.Errors != null)
+            {
+                <div class="alert alert-danger mt-3 shadow-sm fade-in d-none d-lg-block">
+                    <div class="d-flex align-items-start">
+                        <i class="bi bi-x-circle me-2 fs-5"></i>
+                        <div>
+                            <div class="fw-semibold mb-1">Có lỗi xảy ra:</div>
+                            <ul class="mb-0">
+                                @foreach (var err in (List<string>)ViewBag.Errors)
+                                {
+                                        <li>@err</li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            }
+    </div>
+
+    <!-- Task panel: PHÓNG TO -->
+    <div class="col-lg-7 order-1 order-lg-2">
+        <div class="card shadow-sm task-card--wide">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center justify-content-between">
+                    <h4 class="card-title mb-0">
+                        <i class="bi bi-info-circle me-2 text-orange"></i>
+                        Thông tin InboundTask
+                    </h4>
+                        @if (Model?.TaskInfo != null)
+                        {
+                            <span class="badge bg-light text-dark">Lô: @Model.TaskInfo.ProductBatches?.Count ?? 0</span>
+                        }
+                </div>
+
+                    @if (Model?.TaskInfo != null)
+                    {
+                        <div class="info-grid mt-3 mb-3">
+                            <div><strong>ID:</strong> <span class="id-chip" title="Bấm để copy">@Model.TaskInfo.InboundTaskId</span></div>
+                            <div><strong>Trạng thái:</strong> @Model.TaskInfo.Status</div>
+                            <div><strong>Người tạo:</strong> @Model.TaskInfo.CreateBy</div>
+                            <div><strong>Thời gian:</strong> @Model.TaskInfo.CreateAt.ToString("dd/MM/yyyy HH:mm")</div>
+                        </div>
+
+                        <div class="table-wrap">
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle mb-0 table-hover table--dense">
+                                    <thead class="table-head-sticky">
+                                        <tr class="text-muted">
+                                            <th style="min-width:180px">BatchId</th>
+                                            <th style="min-width:120px">SKU</th>
+                                            <th style="min-width:80px">SL</th>
+                                            <th style="min-width:120px">Vị trí</th>
+                                            <th style="min-width:140px">Trạng thái</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model.TaskInfo.ProductBatches != null && Model.TaskInfo.ProductBatches.Any())
+                                        {
+                                            @foreach (var b in Model.TaskInfo.ProductBatches)
+                                            {
+                                                <tr>
+                                                    <td class="text-truncate" style="max-width:260px">
+                                                        <span class="id-chip" title="Bấm để copy">@b.ProductBatchId</span>
+                                                    </td>
+                                                    <td><span class="sku-chip">@b.SKU</span></td>
+                                                    <td>@b.Quantity</td>
+                                                    <td>@b.NameLocation</td>
+                                                    <td>@b.StatusProductBatch</td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                                <tr><td colspan="5" class="text-muted fst-italic">Chưa có lô nào.</td></tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-muted mt-3">Nhập hoặc truy cập với <b>inboundTaskId</b> để xem thông tin nhiệm vụ.</div>
+                    }
+
+                <!-- Tips + Alerts khi ở mobile (đưa vào dưới panel thông tin) -->
+                <div class="d-lg-none mt-3">
+                    <div class="info-card card shadow-sm">
+                        <div class="card-body p-3">
+                            <h6 class="card-title mb-2">
+                                <i class="bi bi-lightbulb me-2 text-orange"></i>Mẹo thao tác nhanh
+                            </h6>
+                            <ul class="tips list-unstyled mb-0 small">
+                                <li><i class="bi bi-dot"></i> Ưu tiên <b>quét mã</b>.</li>
+                                <li><i class="bi bi-dot"></i> Trường bắt buộc có <span class="req">*</span>.</li>
+                                <li><i class="bi bi-dot"></i> Nhấn <kbd>Enter</kbd> ở ô Số lượng.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                        @if (ViewBag.Success != null)
+                        {
+                            <div class="alert alert-success mt-3 shadow-sm fade-in">
+                                <i class="bi bi-check-circle me-1"></i> @ViewBag.Success
+                            </div>
+                        }
+                        @if (ViewBag.Errors != null)
+                        {
+                            <div class="alert alert-danger mt-3 shadow-sm fade-in">
+                                <div class="d-flex align-items-start">
+                                    <i class="bi bi-x-circle me-2 fs-5"></i>
+                                    <div>
+                                        <div class="fw-semibold mb-1">Có lỗi xảy ra:</div>
+                                        <ul class="mb-0">
+                                            @foreach (var err in (List<string>)ViewBag.Errors)
+                                            {
+                                                    <li>@err</li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<!-- Inline toast cho copy -->
+<div id="inlineAlert" class="inline-alert d-none"></div>
+
+@section Scripts {
+    <script>
+        // Autofocus vào ProductBatchId nếu có
+        const batchInput = document.getElementById("@Html.IdFor(m => m.ScanRequest.ProductBatchId)");
+        if (batchInput) batchInput.focus();
+
+        // Đổi trạng thái chip theo input focus
+        const chips = document.querySelectorAll(".step-chips .chip");
+        const map = new Map([
+            ["@Html.IdFor(m => m.ScanRequest.ProductBatchId)", 0],
+            ["@Html.IdFor(m => m.ScanRequest.NameLocation)",   1],
+            ["@Html.IdFor(m => m.ScanRequest.SKU)",            2],
+            ["@Html.IdFor(m => m.ScanRequest.Quantity)",       3],
+        ]);
+
+        document.addEventListener("focusin", (e) => {
+            const idx = map.get(e.target.id);
+            if (idx !== undefined) {
+                chips.forEach((c,i)=>c.classList.toggle("active", i===idx));
+            }
+        });
+
+        // Hiệu ứng ripple cho nút
+        document.querySelectorAll(".btn-orange").forEach(btn=>{
+            btn.addEventListener("click", function(e){
+                const ripple = this.querySelector(".btn-ripple");
+                const rect = this.getBoundingClientRect();
+                ripple.style.left = (e.clientX - rect.left) + "px";
+                ripple.style.top  = (e.clientY - rect.top)  + "px";
+                ripple.classList.add("show");
+                setTimeout(()=>ripple.classList.remove("show"), 500);
+            });
+        });
+
+        // ====== Rút gọn + Click-to-copy cho ID ======
+        const toast = document.getElementById('inlineAlert');
+
+        function showToast(type, text){
+            if (!toast) return;
+            toast.className = 'inline-alert ' + (type==='success'?'success':'error');
+            toast.textContent = text;
+            toast.classList.remove('d-none');
+            requestAnimationFrame(()=> toast.classList.add('show'));
+            setTimeout(()=>{
+                toast.classList.remove('show');
+                setTimeout(()=> toast.classList.add('d-none'), 160);
+            }, 1800);
+        }
+
+        function shortenId(str){
+            if (!str) return str;
+            const s = String(str).trim();
+            if (s.length >= 32) return s.slice(0,8) + '...' + s.slice(-8); // GUID: 8...8
+            if (s.length > 8)  return s.slice(0,4) + '...' + s.slice(-4);  // khác: 4...4
+            return s;
+        }
+
+        function enhanceIdChips(root=document){
+            root.querySelectorAll('.id-chip').forEach(chip=>{
+                const full = (chip.getAttribute('data-guid') || chip.textContent || '').trim();
+                if (!full || full === '—') return;
+                chip.setAttribute('data-guid', full);   // lưu full để copy
+                chip.textContent = shortenId(full);     // hiển thị rút gọn
+                chip.title = chip.title || 'Bấm để copy ID đầy đủ';
+                chip.classList.add('copy-guid');
+                chip.style.cursor = 'pointer';
+            });
+        }
+
+        document.addEventListener('click', (e)=>{
+            const el = e.target.closest('.copy-guid');
+            if (!el) return;
+            e.preventDefault();
+            e.stopPropagation();
+
+            const full = el.getAttribute('data-guid');
+            if (!full) return;
+
+            if (navigator.clipboard?.writeText) {
+                navigator.clipboard.writeText(full)
+                    .then(()=> showToast('success','✅ Đã copy đầy đủ mã'))
+                    .catch(()=> showToast('error','❌ Không thể copy.'));
+            } else {
+                const ta = document.createElement('textarea');
+                ta.value = full; ta.style.position='fixed'; ta.style.opacity='0';
+                document.body.appendChild(ta); ta.select();
+                try { document.execCommand('copy'); showToast('success','✅ Đã copy đầy đủ mã'); }
+                catch { showToast('error','❌ Không thể copy.'); }
+                finally { document.body.removeChild(ta); }
+            }
+        });
+
+        // Khởi tạo rút gọn+copy cho tất cả chip đã render
+        enhanceIdChips();
+    </script>
+}
